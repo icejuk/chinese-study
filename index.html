@@ -347,6 +347,15 @@
     .pin-block { margin-bottom: 10px; }
     .pin-block.hidden { display: none; }
 
+    /* Lesson selector */
+    .lsn-lessons { display: flex; gap: 6px; padding: 4px 0 6px; }
+    .lsn-lp {
+      padding: 5px 16px; border-radius: 99px; font-size: 11px; font-weight: 700;
+      cursor: pointer; border: 1.5px solid #e0e0e0; color: #999; background: white;
+      transition: all 0.15s; user-select: none;
+    }
+    .lsn-lp.active { background: #c62828; color: white; border-color: #c62828; }
+
     /* Lesson tab */
     .lsn-modes { display: flex; gap: 4px; padding: 6px 0 10px; flex-wrap: wrap; }
     .lsn-mode {
@@ -509,7 +518,11 @@
 
   <!-- บทที่ 1 -->
   <div class="section" data-type="lesson1">
-    <div class="sec-title">บทที่ 1 — 你好 · 12 คำพื้นฐาน</div>
+    <div class="sec-title" id="lsn-title">บทที่ 1 — 你好 · 12 คำพื้นฐาน</div>
+    <div class="lsn-lessons">
+      <div class="lsn-lp active" onclick="lsnSwitch(0)">บทที่ 1</div>
+      <div class="lsn-lp" onclick="lsnSwitch(1)">บทที่ 2</div>
+    </div>
     <div class="lsn-modes">
       <div class="lsn-mode active" onclick="lsnMode(this,'vocab')">📋 ศัพท์</div>
       <div class="lsn-mode" onclick="lsnMode(this,'flash')">🃏 ฝึก</div>
@@ -1212,43 +1225,78 @@ function playSound(zh, card) {
 }
 
 // ============ LESSON 1 ============
-const lsnVocab = [
-  { zh:'你',   py:'nǐ',     base:'ni',  tone:3, th:'คุณ',                    en:'you' },
-  { zh:'好',   py:'hǎo',    base:'hao', tone:3, th:'ดี / โอเค',             en:'good' },
-  { zh:'你好', py:'nǐ hǎo', base:'ni',  tone:0, th:'สวัสดี',                en:'hello' },
-  { zh:'一',   py:'yī',     base:'yi',  tone:1, th:'หนึ่ง',                 en:'one' },
-  { zh:'五',   py:'wǔ',     base:'wu',  tone:3, th:'ห้า',                   en:'five' },
-  { zh:'八',   py:'bā',     base:'ba',  tone:1, th:'แปด',                   en:'eight' },
-  { zh:'大',   py:'dà',     base:'da',  tone:4, th:'ใหญ่',                  en:'big' },
-  { zh:'不',   py:'bù',     base:'bu',  tone:4, th:'ไม่',                   en:'not' },
-  { zh:'口',   py:'kǒu',    base:'kou', tone:3, th:'ปาก',                   en:'mouth' },
-  { zh:'白',   py:'bái',    base:'bai', tone:2, th:'ขาว',                   en:'white' },
-  { zh:'女',   py:'nǚ',     base:'nü',  tone:3, th:'หญิง',                  en:'female' },
-  { zh:'马',   py:'mǎ',     base:'ma',  tone:3, th:'ม้า',                   en:'horse' },
+const lsnAllLessons = [
+  {
+    title: 'บทที่ 1 — 你好 · 12 คำพื้นฐาน',
+    vocab: [
+      { zh:'你',   py:'nǐ',     base:'ni',  tone:3, th:'คุณ',          en:'you' },
+      { zh:'好',   py:'hǎo',    base:'hao', tone:3, th:'ดี / โอเค',    en:'good' },
+      { zh:'你好', py:'nǐ hǎo', base:'ni',  tone:0, th:'สวัสดี',       en:'hello' },
+      { zh:'一',   py:'yī',     base:'yi',  tone:1, th:'หนึ่ง',        en:'one' },
+      { zh:'五',   py:'wǔ',     base:'wu',  tone:3, th:'ห้า',          en:'five' },
+      { zh:'八',   py:'bā',     base:'ba',  tone:1, th:'แปด',          en:'eight' },
+      { zh:'大',   py:'dà',     base:'da',  tone:4, th:'ใหญ่',         en:'big' },
+      { zh:'不',   py:'bù',     base:'bu',  tone:4, th:'ไม่',          en:'not' },
+      { zh:'口',   py:'kǒu',    base:'kou', tone:3, th:'ปาก',          en:'mouth' },
+      { zh:'白',   py:'bái',    base:'bai', tone:2, th:'ขาว',          en:'white' },
+      { zh:'女',   py:'nǚ',     base:'nü',  tone:3, th:'หญิง',         en:'female' },
+      { zh:'马',   py:'mǎ',     base:'ma',  tone:3, th:'ม้า',          en:'horse' },
+    ],
+    phrases: [
+      { zh:'你好',   py:'nǐ hǎo',  th:'สวัสดี',          en:'hello' },
+      { zh:'不好',   py:'bù hǎo',  th:'ไม่ดี',            en:'not good' },
+      { zh:'好大',   py:'hǎo dà',  th:'ใหญ่มาก',          en:'very big' },
+      { zh:'不大',   py:'bù dà',   th:'ไม่ใหญ่',          en:'not big' },
+      { zh:'大口',   py:'dà kǒu',  th:'ปากใหญ่',          en:'big mouth' },
+      { zh:'白马',   py:'bái mǎ',  th:'ม้าขาว',           en:'white horse' },
+      { zh:'好白',   py:'hǎo bái', th:'ขาวมาก',           en:'very white' },
+      { zh:'五口',   py:'wǔ kǒu',  th:'ห้าคน (ในบ้าน)',  en:'five members' },
+      { zh:'一口',   py:'yī kǒu',  th:'หนึ่งคำ',          en:'one bite' },
+      { zh:'不一',   py:'bù yī',   th:'ไม่เหมือนกัน',     en:'not the same' },
+      { zh:'女马',   py:'nǚ mǎ',   th:'ม้าตัวเมีย',       en:'female horse' },
+      { zh:'大女',   py:'dà nǚ',   th:'ลูกสาวคนโต',       en:'eldest daughter' },
+    ]
+  },
+  {
+    title: 'บทที่ 2 — 汉语不太难 · 14 คำ',
+    vocab: [
+      { zh:'忙',   py:'máng',   base:'mang', tone:2, th:'ยุ่ง',          en:'busy' },
+      { zh:'吗',   py:'ma',     base:'ma',   tone:0, th:'(คำถาม)',        en:'question particle' },
+      { zh:'很',   py:'hěn',    base:'hen',  tone:3, th:'มาก',            en:'very' },
+      { zh:'汉语', py:'Hànyǔ',  base:'han',  tone:4, th:'ภาษาจีน',       en:'Chinese' },
+      { zh:'难',   py:'nán',    base:'nan',  tone:2, th:'ยาก',            en:'difficult' },
+      { zh:'太',   py:'tài',    base:'tai',  tone:4, th:'เกินไป',         en:'too' },
+      { zh:'爸爸', py:'bàba',   base:'ba',   tone:4, th:'พ่อ',            en:'dad' },
+      { zh:'妈妈', py:'māma',   base:'ma',   tone:1, th:'แม่',            en:'mum' },
+      { zh:'他',   py:'tā',     base:'ta',   tone:1, th:'เขา (ชาย)',      en:'he/him' },
+      { zh:'她',   py:'tā',     base:'ta',   tone:1, th:'เธอ (หญิง)',     en:'she/her' },
+      { zh:'男',   py:'nán',    base:'nan',  tone:2, th:'ชาย',            en:'male' },
+      { zh:'哥哥', py:'gēge',   base:'ge',   tone:1, th:'พี่ชาย',         en:'elder brother' },
+      { zh:'弟弟', py:'dìdi',   base:'di',   tone:4, th:'น้องชาย',        en:'younger brother' },
+      { zh:'妹妹', py:'mèimei', base:'mei',  tone:4, th:'น้องสาว',        en:'younger sister' },
+    ],
+    phrases: [
+      { zh:'你忙吗',   py:'nǐ máng ma',   th:'คุณยุ่งไหม',       en:'are you busy?' },
+      { zh:'很忙',     py:'hěn máng',     th:'ยุ่งมาก',           en:'very busy' },
+      { zh:'不忙',     py:'bù máng',      th:'ไม่ยุ่ง',           en:'not busy' },
+      { zh:'汉语难吗', py:'Hànyǔ nán ma', th:'ภาษาจีนยากไหม',   en:'is Chinese difficult?' },
+      { zh:'不太难',   py:'bù tài nán',   th:'ไม่ค่อยยาก',        en:'not very difficult' },
+      { zh:'很难',     py:'hěn nán',      th:'ยากมาก',            en:'very difficult' },
+      { zh:'太难',     py:'tài nán',      th:'ยากเกินไป',         en:'too difficult' },
+      { zh:'不难',     py:'bù nán',       th:'ไม่ยาก',            en:'not difficult' },
+      { zh:'爸爸妈妈', py:'bàba māma',    th:'พ่อแม่',            en:'parents' },
+      { zh:'哥哥弟弟', py:'gēge dìdi',    th:'พี่น้องชาย',        en:'brothers' },
+    ]
+  }
 ];
 
-const lsnPhrases = [
-  { zh:'你好', py:'nǐ hǎo',  th:'สวัสดี',         en:'hello' },
-  { zh:'不好', py:'bù hǎo',  th:'ไม่ดี',           en:'not good' },
-  { zh:'好大', py:'hǎo dà',  th:'ใหญ่มาก',         en:'very big' },
-  { zh:'不大', py:'bù dà',   th:'ไม่ใหญ่',         en:'not big' },
-  { zh:'大口', py:'dà kǒu',  th:'ปากใหญ่',         en:'big mouth' },
-  { zh:'白马', py:'bái mǎ',  th:'ม้าขาว',          en:'white horse' },
-  { zh:'好白', py:'hǎo bái', th:'ขาวมาก',          en:'very white' },
-  { zh:'五口', py:'wǔ kǒu',  th:'ห้าคน (ในบ้าน)', en:'five members' },
-  { zh:'一口', py:'yī kǒu',  th:'หนึ่งคำ',         en:'one bite' },
-  { zh:'不一', py:'bù yī',   th:'ไม่เหมือนกัน',    en:'not the same' },
-  { zh:'女马', py:'nǚ mǎ',   th:'ม้าตัวเมีย',      en:'female horse' },
-  { zh:'大女', py:'dà nǚ',   th:'ลูกสาวคนโต',      en:'eldest daughter' },
-];
+let currentLsn = 0;
+let lsnFcDeck = [];
 
-// Combined deck for flashcard (vocab + phrases)
-let lsnFcDeck = [...lsnVocab, ...lsnPhrases];
-
-function lsnBuildPhrases() {
+function lsnBuildPhrases(phrases) {
   const grid = document.getElementById('lsn-pgrid');
-  if (grid.children.length) return;
-  lsnShuffle(lsnPhrases).forEach(p => {
+  grid.innerHTML = '';
+  lsnShuffle(phrases).forEach(p => {
     const d = document.createElement('div');
     d.className = 'phrase-card';
     d.innerHTML =
@@ -1280,10 +1328,10 @@ function lsnMode(el, mode) {
 }
 
 // Mode 1: vocab grid
-function lsnBuildGrid() {
+function lsnBuildGrid(vocab) {
   const grid = document.getElementById('lsn-vgrid');
-  if (grid.children.length) return;
-  lsnShuffle(lsnVocab).forEach(v => {
+  grid.innerHTML = '';
+  lsnShuffle(vocab).forEach(v => {
     const d = document.createElement('div');
     d.className = 'voc-card';
     d.style.color = '#c62828';
@@ -1330,25 +1378,32 @@ function _detectTone(syl) {
 }
 function _stripTone(syl) { return syl.normalize('NFD').replace(/[̀-ͯ]/g,''); }
 
-const _phraseQuizItems = [];
-lsnPhrases.forEach(p => {
-  const chars = [...p.zh];
-  const syls = p.py.split(' ');
-  syls.forEach((syl, i) => {
-    const tone = _detectTone(syl);
-    if (!tone || i >= chars.length) return;
-    const zhHtml = chars.map((c,j) =>
-      j===i ? `<span style="color:#c62828">${c}</span>`
-             : `<span style="color:#ccc">${c}</span>`
-    ).join('');
-    _phraseQuizItems.push({ zh:p.zh, zhHtml, py:syl, base:_stripTone(syl), tone, th:p.th });
+function makePhraseQuizItems(phrases) {
+  const items = [];
+  phrases.forEach(p => {
+    const chars = [...p.zh];
+    const syls = p.py.split(' ');
+    syls.forEach((syl, i) => {
+      const tone = _detectTone(syl);
+      if (!tone || i >= chars.length) return;
+      const zhHtml = chars.map((c,j) =>
+        j===i ? `<span style="color:#c62828">${c}</span>`
+               : `<span style="color:#ccc">${c}</span>`
+      ).join('');
+      items.push({ zh:p.zh, zhHtml, py:syl, base:_stripTone(syl), tone, th:p.th });
+    });
   });
-});
+  return items;
+}
 
-const tnPool = [
-  ...lsnVocab.filter(v => v.tone > 0).map(v => ({...v, zhHtml: v.zh})),
-  ..._phraseQuizItems
-];
+function makeTnPool(lesson) {
+  return [
+    ...lesson.vocab.filter(v => v.tone > 0).map(v => ({...v, zhHtml: v.zh})),
+    ...makePhraseQuizItems(lesson.phrases)
+  ];
+}
+
+let tnPool = makeTnPool(lsnAllLessons[0]);
 
 function lsnToneRestart() {
   tnQueue = lsnShuffle(tnPool); tnIdx = 0; tnC = 0; tnW = 0; tnT = 0;
@@ -1417,15 +1472,29 @@ function lsnToneDone() {
   document.getElementById('tn-prog').style.width = '100%';
 }
 
+function lsnSwitch(idx) {
+  currentLsn = idx;
+  document.querySelectorAll('.lsn-lp').forEach((b,i) => b.classList.toggle('active', i===idx));
+  const L = lsnAllLessons[idx];
+  document.getElementById('lsn-title').textContent = L.title;
+  lsnFcIdx = 0;
+  lsnFcDeck = lsnShuffle([...L.vocab, ...L.phrases]);
+  tnPool.length = 0;
+  makeTnPool(L).forEach(x => tnPool.push(x));
+  lsnBuildGrid(L.vocab);
+  lsnBuildPhrases(L.phrases);
+  lsnFcLoad();
+  lsnToneRestart();
+  // Reset to vocab mode
+  document.querySelectorAll('.lsn-mode').forEach((m,i) => m.classList.toggle('active', i===0));
+  document.querySelectorAll('.lsn-view').forEach(v => v.classList.toggle('active', v.dataset.mode==='vocab'));
+}
+
 let lsnBuilt = false;
 function lsnInit() {
   if (lsnBuilt) return;
   lsnBuilt = true;
-  lsnFcDeck = lsnShuffle([...lsnVocab, ...lsnPhrases]);
-  lsnBuildGrid();
-  lsnBuildPhrases();
-  lsnFcLoad();
-  lsnToneRestart();
+  lsnSwitch(0);
 }
 lsnInit();
 
