@@ -348,13 +348,15 @@
     .pin-block.hidden { display: none; }
 
     /* Lesson selector */
-    .lsn-lessons { display: flex; gap: 6px; padding: 4px 0 6px; }
+    .lsn-lessons { display: flex; gap: 6px; padding: 4px 0 8px; align-items: center; flex-wrap: wrap; }
+    .lsn-lessons-label { font-size: 10px; font-weight: 700; color: #aaa; margin-right: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
     .lsn-lp {
-      padding: 5px 16px; border-radius: 99px; font-size: 11px; font-weight: 700;
-      cursor: pointer; border: 1.5px solid #e0e0e0; color: #999; background: white;
+      width: 30px; height: 30px; border-radius: 50%; font-size: 12px; font-weight: 800;
+      cursor: pointer; border: 1.5px solid #e0e0e0; color: #aaa; background: white;
       transition: all 0.15s; user-select: none;
+      display: flex; align-items: center; justify-content: center;
     }
-    .lsn-lp.active { background: #c62828; color: white; border-color: #c62828; }
+    .lsn-lp.active { background: #c62828; color: white; border-color: #c62828; box-shadow: 0 2px 6px rgba(198,40,40,0.3); }
 
     /* Lesson tab */
     .lsn-modes { display: flex; gap: 4px; padding: 6px 0 10px; flex-wrap: wrap; }
@@ -509,6 +511,7 @@
 
 <div class="tabs">
   <div class="tab active" onclick="setTab(this,'lesson1')">📖 บทเรียน</div>
+  <div class="tab" onclick="setTab(this,'allvocab')">📚 ทบทวน</div>
   <div class="tab" onclick="setTab(this,'vocab')">🎲 คำศัพท์</div>
   <div class="tab" onclick="setTab(this,'pinyin')">🔤 พินอิน</div>
 </div>
@@ -520,12 +523,14 @@
   <div class="section" data-type="lesson1">
     <div class="sec-title" id="lsn-title">บทที่ 1 — 你好 · 12 คำพื้นฐาน</div>
     <div class="lsn-lessons">
-      <div class="lsn-lp active" onclick="lsnSwitch(0)">บทที่ 1</div>
-      <div class="lsn-lp" onclick="lsnSwitch(1)">บทที่ 2</div>
+      <span class="lsn-lessons-label">บท</span>
+      <div class="lsn-lp active" onclick="lsnSwitch(0)">1</div>
+      <div class="lsn-lp" onclick="lsnSwitch(1)">2</div>
+      <div class="lsn-lp" onclick="lsnSwitch(2)">3</div>
+      <div class="lsn-lp" onclick="lsnSwitch(3)">4</div>
     </div>
     <div class="lsn-modes">
       <div class="lsn-mode active" onclick="lsnMode(this,'vocab')">📋 ศัพท์</div>
-      <div class="lsn-mode" onclick="lsnMode(this,'flash')">🃏 ฝึก</div>
       <div class="lsn-mode" onclick="lsnMode(this,'tone')">🎵 วรรณยุกต์</div>
     </div>
 
@@ -534,33 +539,6 @@
       <div class="lsn-vgrid" id="lsn-vgrid"></div>
       <div class="phrase-hd">คำผสมจากบทนี้</div>
       <div class="phrase-grid" id="lsn-pgrid"></div>
-    </div>
-
-    <!-- ฝึก (flashcard) -->
-    <div class="lsn-view" data-mode="flash">
-      <div class="lsn-fc-wrap">
-        <div class="lsn-fc-bar"><div class="lsn-fc-bar-fill" id="lsn-fc-bar"></div></div>
-        <div class="lsn-fc-count" id="lsn-fc-count">1 / 12</div>
-        <div class="lsn-fc" id="lsn-fc" onclick="lsnFlip()">
-          <div class="lsn-fc-inner">
-            <div class="lsn-fc-face lsn-fc-front">
-              <div style="font-size:32px;font-weight:800;line-height:1.2" id="lsn-fc-th-front">คุณ</div>
-              <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:6px;font-style:italic" id="lsn-fc-en-front">you</div>
-              <div class="lsn-fc-hint">แตะเพื่อดูคำตอบ</div>
-            </div>
-            <div class="lsn-fc-face lsn-fc-back">
-              <div class="lsn-fc-py" id="lsn-fc-py">nǐ</div>
-              <div style="font-size:36px;font-weight:800;color:#888;margin-top:4px" id="lsn-fc-zh">你</div>
-              <div class="lsn-fc-en" id="lsn-fc-en">คลิกอีกครั้งเพื่อกลับ</div>
-            </div>
-          </div>
-        </div>
-        <div class="lsn-fc-ctrl">
-          <button class="lsn-fc-btn" onclick="lsnFcNav(-1)">◀</button>
-          <button class="lsn-fc-btn spk" onclick="lsnFcSpeak()">🔊</button>
-          <button class="lsn-fc-btn" onclick="lsnFcNav(1)">▶</button>
-        </div>
-      </div>
     </div>
 
     <!-- วรรณยุกต์ -->
@@ -592,6 +570,12 @@
         <button class="lsn-restart" onclick="lsnToneRestart()">เริ่มใหม่</button>
       </div>
     </div>
+  </div>
+
+  <!-- ทบทวนทุกบท -->
+  <div class="section hidden" data-type="allvocab">
+    <div class="sec-title" id="allvoc-title">ทบทวนทุกบท · กำลังโหลด...</div>
+    <div class="lsn-vgrid" id="all-vgrid"></div>
   </div>
 
   <!-- คำศัพท์ -->
@@ -1287,6 +1271,72 @@ const lsnAllLessons = [
       { zh:'爸爸妈妈', py:'bàba māma',    th:'พ่อแม่',            en:'parents' },
       { zh:'哥哥弟弟', py:'gēge dìdi',    th:'พี่น้องชาย',        en:'brothers' },
     ]
+  },
+  {
+    title: 'บทที่ 3 — 明天见 · 17 คำ',
+    vocab: [
+      { zh:'学',   py:'xué',      base:'xue',   tone:2, th:'เรียน',       en:'to learn' },
+      { zh:'英语', py:'Yīngyǔ',   base:'ying',  tone:1, th:'ภาษาอังกฤษ', en:'English' },
+      { zh:'去',   py:'qù',       base:'qu',    tone:4, th:'ไป',          en:'to go' },
+      { zh:'对',   py:'duì',      base:'dui',   tone:4, th:'ถูกต้อง',     en:'correct' },
+      { zh:'邮局', py:'yóujú',    base:'you',   tone:2, th:'ไปรษณีย์',   en:'post office' },
+      { zh:'寄',   py:'jì',       base:'ji',    tone:4, th:'ส่ง (จดหมาย)',en:'to mail' },
+      { zh:'信',   py:'xìn',      base:'xin',   tone:4, th:'จดหมาย',      en:'letter' },
+      { zh:'银行', py:'yínháng',  base:'yin',   tone:2, th:'ธนาคาร',      en:'bank' },
+      { zh:'取',   py:'qǔ',       base:'qu',    tone:3, th:'รับ / ถอน',   en:'to get' },
+      { zh:'钱',   py:'qián',     base:'qian',  tone:2, th:'เงิน',        en:'money' },
+      { zh:'明天', py:'míngtiān', base:'ming',  tone:2, th:'พรุ่งนี้',    en:'tomorrow' },
+      { zh:'天',   py:'tiān',     base:'tian',  tone:1, th:'วัน',         en:'day' },
+      { zh:'见',   py:'jiàn',     base:'jian',  tone:4, th:'พบ',          en:'to see' },
+      { zh:'六',   py:'liù',      base:'liu',   tone:4, th:'หก',          en:'six' },
+      { zh:'七',   py:'qī',       base:'qi',    tone:1, th:'เจ็ด',        en:'seven' },
+      { zh:'九',   py:'jiǔ',      base:'jiu',   tone:3, th:'เก้า',        en:'nine' },
+      { zh:'北京', py:'Běijīng',  base:'bei',   tone:3, th:'ปักกิ่ง',     en:'Beijing' },
+    ],
+    phrases: [
+      { zh:'明天见',   py:'míngtiān jiàn', th:'พรุ่งนี้แล้วพบกัน', en:'see you tomorrow' },
+      { zh:'去邮局',   py:'qù yóujú',      th:'ไปไปรษณีย์',        en:'go to post office' },
+      { zh:'寄信',     py:'jì xìn',        th:'ส่งจดหมาย',          en:'mail a letter' },
+      { zh:'去银行',   py:'qù yínháng',    th:'ไปธนาคาร',           en:'go to the bank' },
+      { zh:'取钱',     py:'qǔ qián',       th:'ถอนเงิน',            en:'withdraw money' },
+      { zh:'学汉语',   py:'xué Hànyǔ',     th:'เรียนภาษาจีน',       en:'study Chinese' },
+      { zh:'学英语',   py:'xué Yīngyǔ',    th:'เรียนภาษาอังกฤษ',   en:'study English' },
+      { zh:'对对',     py:'duì duì',        th:'ถูกต้องๆ',           en:'that\'s right' },
+      { zh:'明天去',   py:'míngtiān qù',   th:'ไปพรุ่งนี้',         en:'go tomorrow' },
+      { zh:'取信',     py:'qǔ xìn',        th:'รับจดหมาย',          en:'collect mail' },
+    ]
+  },
+  {
+    title: 'บทที่ 4 — 你去哪儿 · 15 คำ',
+    vocab: [
+      { zh:'今天',   py:'jīntiān',   base:'jin',  tone:1, th:'วันนี้',       en:'today' },
+      { zh:'昨天',   py:'zuótiān',   base:'zuo',  tone:2, th:'เมื่อวาน',     en:'yesterday' },
+      { zh:'星期',   py:'xīngqī',    base:'xing', tone:1, th:'สัปดาห์',      en:'week' },
+      { zh:'几',     py:'jǐ',        base:'ji',   tone:3, th:'กี่ / เท่าไร', en:'how many' },
+      { zh:'二',     py:'èr',        base:'er',   tone:4, th:'สอง',          en:'two' },
+      { zh:'三',     py:'sān',       base:'san',  tone:1, th:'สาม',          en:'three' },
+      { zh:'四',     py:'sì',        base:'si',   tone:4, th:'สี่',           en:'four' },
+      { zh:'哪儿',   py:'nǎr',       base:'nar',  tone:3, th:'ที่ไหน',        en:'where' },
+      { zh:'那儿',   py:'nàr',       base:'nar',  tone:4, th:'ที่นั่น',       en:'there' },
+      { zh:'我',     py:'wǒ',        base:'wo',   tone:3, th:'ฉัน / ผม',     en:'I; me' },
+      { zh:'回',     py:'huí',       base:'hui',  tone:2, th:'กลับ',          en:'to go back' },
+      { zh:'学校',   py:'xuéxiào',   base:'xue',  tone:2, th:'โรงเรียน',     en:'school' },
+      { zh:'再见',   py:'zàijiàn',   base:'zai',  tone:4, th:'ลาก่อน',       en:'goodbye' },
+      { zh:'对不起', py:'duìbuqǐ',   base:'dui',  tone:4, th:'ขอโทษ',        en:'sorry' },
+      { zh:'没关系', py:'méi guānxi',base:'mei',  tone:2, th:'ไม่เป็นไร',    en:'it\'s okay' },
+    ],
+    phrases: [
+      { zh:'你去哪儿',   py:'nǐ qù nǎr',         th:'คุณจะไปไหน',         en:'where are you going?' },
+      { zh:'我回学校',   py:'wǒ huí xuéxiào',    th:'ฉันกลับโรงเรียน',    en:'I\'m going back to school' },
+      { zh:'我去学校',   py:'wǒ qù xuéxiào',     th:'ฉันไปโรงเรียน',      en:'I go to school' },
+      { zh:'今天星期几', py:'jīntiān xīngqī jǐ', th:'วันนี้วันอะไร',      en:'what day is today?' },
+      { zh:'对不起',     py:'duìbuqǐ',            th:'ขอโทษ',              en:'I\'m sorry' },
+      { zh:'没关系',     py:'méi guānxi',         th:'ไม่เป็นไร',          en:'it\'s okay' },
+      { zh:'再见',       py:'zàijiàn',            th:'ลาก่อน',             en:'goodbye' },
+      { zh:'回学校',     py:'huí xuéxiào',        th:'กลับโรงเรียน',       en:'go back to school' },
+      { zh:'你好吗',     py:'nǐ hǎo ma',          th:'สบายดีไหม',          en:'how are you?' },
+      { zh:'我回去',     py:'wǒ huí qù',          th:'ฉันกลับไปแล้ว',      en:'I\'m going back' },
+    ]
   }
 ];
 
@@ -1477,13 +1527,10 @@ function lsnSwitch(idx) {
   document.querySelectorAll('.lsn-lp').forEach((b,i) => b.classList.toggle('active', i===idx));
   const L = lsnAllLessons[idx];
   document.getElementById('lsn-title').textContent = L.title;
-  lsnFcIdx = 0;
-  lsnFcDeck = lsnShuffle([...L.vocab, ...L.phrases]);
   tnPool.length = 0;
   makeTnPool(L).forEach(x => tnPool.push(x));
   lsnBuildGrid(L.vocab);
   lsnBuildPhrases(L.phrases);
-  lsnFcLoad();
   lsnToneRestart();
   // Reset to vocab mode
   document.querySelectorAll('.lsn-mode').forEach((m,i) => m.classList.toggle('active', i===0));
@@ -1498,6 +1545,26 @@ function lsnInit() {
 }
 lsnInit();
 
+function buildAllVocab() {
+  const grid = document.getElementById('all-vgrid');
+  if (grid.children.length) return;
+  const all = lsnAllLessons.flatMap(L => L.vocab);
+  document.getElementById('allvoc-title').textContent =
+    `ทบทวนทุกบท · ${all.length} คำ (สุ่มลำดับ)`;
+  lsnShuffle(all).forEach(v => {
+    const d = document.createElement('div');
+    d.className = 'voc-card';
+    d.style.color = '#c62828';
+    d.innerHTML =
+      `<div class="voc-zh" style="font-size:26px">${v.zh}</div>` +
+      `<div class="voc-py">${v.py}</div>` +
+      `<div class="voc-th">${v.th}</div>` +
+      `<div class="voc-play">▶</div>`;
+    d.addEventListener('click', () => playSound(v.zh, d));
+    grid.appendChild(d);
+  });
+}
+
 function setTab(el, type) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
@@ -1506,6 +1573,7 @@ function setTab(el, type) {
   });
   if (type === 'vocab') ensureVocabBuilt();
   if (type === 'lesson1') lsnInit();
+  if (type === 'allvocab') buildAllVocab();
 }
 
 function pinFilter(el, kind) {
