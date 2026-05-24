@@ -2,26 +2,46 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>พินอิน — สระ + พยัญชนะจีน</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇨🇳</text></svg>">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>鑫越 — เรียนภาษาจีน</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#b71c1c">
+  <meta name="description" content="เรียนภาษาจีนจากไทย — พินอิน คำศัพท์ บทเรียน และผันเสียง">
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="鑫越 จีน">
+
+  <!-- Icons -->
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon.svg">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: #f2f2f7; min-height: 100vh; }
 
     header {
       background: linear-gradient(135deg, #b71c1c, #e53935);
-      color: white; padding: 12px 16px 10px;
+      color: white; padding: 6px 16px 6px;
       text-align: center; position: sticky; top: 0; z-index: 20;
       box-shadow: 0 2px 8px rgba(0,0,0,0.25);
     }
     header h1 { font-size: 16px; font-weight: 800; letter-spacing: 0.3px; }
     header .sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+    .hd-name { display: inline-flex; align-items: center; gap: 10px; line-height: 1; }
+    .hd-name-text { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .hd-name-zh { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); letter-spacing: 1px; }
+    .hd-cat { width: 32px; height: 32px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35)); flex-shrink: 0; }
+    .hd-name-py { font-size: 15px; font-weight: 800; color: white; letter-spacing: 1.5px; line-height: 1; display: inline-flex; align-items: baseline; gap: 6px; }
+    .hd-name-th { font-size: 10px; color: rgba(255,255,255,0.6); letter-spacing: 0.3px; line-height: 1; }
 
     .tabs {
       display: flex; background: white;
       border-bottom: 1px solid #ddd;
-      position: sticky; top: 50px; z-index: 19;
+      position: sticky; top: 46px; z-index: 19;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       overflow-x: auto; scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
@@ -326,6 +346,72 @@
     .phrase-tag { display: inline-block; font-size: 9px; color: #fff; background: #e53935;
                   border-radius: 99px; padding: 1px 6px; margin-top: 5px; font-weight: 700; }
 
+    /* 不 / 一 page */
+    .bu-subnav {
+      display: flex; gap: 6px; padding: 4px 0 10px;
+      flex-wrap: wrap;
+    }
+    .bu-sub {
+      padding: 6px 12px; border-radius: 99px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      border: 1.5px solid #e0e0e0; color: #777; background: white;
+      transition: all 0.15s; user-select: none;
+    }
+    .bu-sub.active { background: #c62828; color: white; border-color: #c62828; box-shadow: 0 2px 6px rgba(198,40,40,0.3); }
+    .bu-pane { display: none; }
+    .bu-pane.active { display: block; }
+    .bu-intro {
+      background: linear-gradient(135deg, #fff5f5, #ffe9e9);
+      border: 1.5px solid #f5c6c6; border-radius: 14px;
+      padding: 14px 14px 12px; margin: 6px 0 14px;
+    }
+    .bu-intro-ttl { font-size: 14px; font-weight: 800; color: #b71c1c; margin-bottom: 6px; }
+    .bu-intro-body { font-size: 12px; color: #555; line-height: 1.55; }
+    .bu-intro-body b { color: #c62828; }
+    .bu-rule-box {
+      background: white; border-radius: 10px; padding: 10px 12px;
+      margin-top: 10px; border-left: 4px solid #c62828;
+      font-size: 12px; color: #333; line-height: 1.5;
+    }
+    .bu-rule-box .bu-sandhi { font-family: ui-monospace, monospace; color: #b71c1c; font-weight: 800; }
+    .bu-group { margin-bottom: 14px; }
+    .bu-group-hd {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 800; color: #666;
+      padding: 10px 2px 7px; text-transform: uppercase; letter-spacing: 0.5px;
+      border-top: 1px solid #ebebeb;
+    }
+    .bu-group-hd.special { color: #c62828; }
+    .bu-tone-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #eee; color: #555; font-size: 11px; font-weight: 800;
+    }
+    .bu-group.special .bu-tone-badge { background: #c62828; color: white; }
+    .bu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .bu-card {
+      background: white; border-radius: 12px;
+      padding: 11px 8px 9px; text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      cursor: pointer; border: 1.5px solid transparent;
+      transition: transform 0.12s; user-select: none;
+    }
+    .bu-card:active { transform: scale(0.93); }
+    .bu-card.playing { border-color: #e53935; background: #fff5f5; }
+    .bu-card.special { border: 1.5px solid #ffcdd2; background: #fff9f9; }
+    .bu-card.special.playing { border-color: #c62828; background: #ffe9e9; }
+    .bu-zh  { font-size: 24px; font-weight: 800; color: #222; line-height: 1; }
+    .bu-py  { font-size: 12px; color: #c62828; margin-top: 4px; font-weight: 700; font-family: ui-monospace, monospace; }
+    .bu-card.special .bu-py { color: #b71c1c; }
+    .bu-py .py-bu { background: #ffe0e0; padding: 0 3px; border-radius: 3px; }
+    .bu-card.special .bu-py .py-bu { background: #ffcdd2; }
+    .bu-th  { font-size: 11px; color: #444; margin-top: 3px; font-weight: 600; line-height: 1.3; }
+    .bu-py-pair { font-size: 11px; margin-top: 4px; line-height: 1.4; font-family: ui-monospace, monospace; }
+    .bu-py-pair .write { color: #999; text-decoration: line-through; text-decoration-color: #ddd; }
+    .bu-py-pair .arrow { color: #999; margin: 0 4px; }
+    .bu-py-pair .spoken { color: #c62828; font-weight: 800; }
+    .bu-py-pair .spoken .changed { background: #ffe0e0; padding: 0 3px; border-radius: 3px; }
+
     /* Pinyin tab pills */
     .pin-pills {
       display: flex; gap: 5px; padding: 6px 0 10px;
@@ -505,13 +591,21 @@
 <body>
 
 <header>
-  <h1>🇨🇳 พินอิน — แตะเพื่อฟังเสียง</h1>
-  <div class="sub">สระเดี่ยว • สระผสม • สระนาสิก • พยัญชนะ</div>
+
+
+  <div class="hd-name">
+    <svg class="hd-cat" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="black cat"><path fill="#0d0d0d" d="M10 30 L16 6 L26 24 Z"/><path fill="#0d0d0d" d="M54 30 L48 6 L38 24 Z"/><path fill="#1f1f1f" d="M18 12 L22 18 L20 22 Z"/><path fill="#1f1f1f" d="M46 12 L42 18 L44 22 Z"/><ellipse cx="32" cy="38" rx="22" ry="20" fill="#0d0d0d"/><ellipse cx="23" cy="36" rx="3.2" ry="5.5" fill="#ffe066"/><ellipse cx="41" cy="36" rx="3.2" ry="5.5" fill="#ffe066"/><ellipse cx="23" cy="36" rx="1" ry="4" fill="#0d0d0d"/><ellipse cx="41" cy="36" rx="1" ry="4" fill="#0d0d0d"/><circle cx="22" cy="34" r="0.8" fill="white"/><circle cx="40" cy="34" r="0.8" fill="white"/><path d="M30 44 L32 46 L34 44 Z" fill="#ff8a9a"/><path d="M28 47 Q32 51 36 47" stroke="#3a3a3a" stroke-width="1.2" fill="none" stroke-linecap="round"/><line x1="6" y1="38" x2="18" y2="40" stroke="#3a3a3a" stroke-width="0.8"/><line x1="6" y1="42" x2="18" y2="42" stroke="#3a3a3a" stroke-width="0.8"/><line x1="46" y1="40" x2="58" y2="38" stroke="#3a3a3a" stroke-width="0.8"/><line x1="46" y1="42" x2="58" y2="42" stroke="#3a3a3a" stroke-width="0.8"/></svg>
+    <div class="hd-name-text">
+      <div class="hd-name-py">Xīn Yuè <span class="hd-name-zh">(鑫越)</span></div>
+      <div class="hd-name-th">ผู้ที่มั่งคั่งและก้าวข้ามทุกขีดจำกัด</div>
+    </div>
+  </div>
 </header>
 
 <div class="tabs">
   <div class="tab active" onclick="setTab(this,'lesson1')">📖 บทเรียน</div>
   <div class="tab" onclick="setTab(this,'allvocab')">📚 ทบทวน</div>
+  <div class="tab" onclick="setTab(this,'bu')">🎵 ผันเสียง</div>
   <div class="tab" onclick="setTab(this,'vocab')">🎲 คำศัพท์</div>
   <div class="tab" onclick="setTab(this,'pinyin')">🔤 พินอิน</div>
 </div>
@@ -576,6 +670,78 @@
   <div class="section hidden" data-type="allvocab">
     <div class="sec-title" id="allvoc-title">ทบทวนทุกบท · กำลังโหลด...</div>
     <div class="lsn-vgrid" id="all-vgrid"></div>
+  </div>
+
+  <!-- ผันเสียง (tone sandhi) -->
+  <div class="section hidden" data-type="bu">
+    <div class="sec-title">การผันเสียง (Tone Sandhi)</div>
+    <div class="bu-subnav">
+      <div class="bu-sub active" onclick="buSub(this,'t3')">⭐ 3声</div>
+      <div class="bu-sub" onclick="buSub(this,'bu')">不 bù</div>
+      <div class="bu-sub" onclick="buSub(this,'yi')">一 yī</div>
+      <div class="bu-sub" onclick="buSub(this,'sp')">⚡ กรณีพิเศษ</div>
+    </div>
+
+    <div class="bu-pane active" data-sub="t3">
+      <div class="bu-intro">
+        <div class="bu-intro-ttl">⭐ กฎการผันเสียง 3+3 (สำคัญที่สุด!)</div>
+        <div class="bu-intro-body">
+          <b>เสียง 3 ติดกัน 2 ตัว</b> → ตัวแรกเปลี่ยนเป็น <b style="color:#c62828">เสียง 2</b><br>
+          แต่ <b>เขียน pinyin เหมือนเดิม</b> (สำคัญ! คนเรียนผันผิดบ่อย)
+        </div>
+        <div class="bu-rule-box">
+          <span class="bu-sandhi">◌̌ + ◌̌ → ◌́ + ◌̌</span><br>
+          ตัวอย่าง: 你好 เขียน <b>nǐ hǎo</b> → อ่าน <b style="color:#c62828">ní hǎo</b>
+        </div>
+      </div>
+      <div id="t3-content"></div>
+    </div>
+
+    <div class="bu-pane" data-sub="bu">
+      <div class="bu-intro">
+        <div class="bu-intro-ttl">🎯 กฎการผันเสียงของ 不 (ไม่)</div>
+        <div class="bu-intro-body">
+          ปกติ <b>不</b> ออกเสียงเป็น <b>bù</b> (เสียง 4 — ตก)<br>
+          <b style="color:#c62828">แต่เมื่อตามด้วยคำเสียง 4 ต้องเปลี่ยนเป็น bú (เสียง 2 — ขึ้น)</b>
+        </div>
+        <div class="bu-rule-box">
+          <span class="bu-sandhi">bù + ◌̄ / ◌́ / ◌̌ = bù</span> (เสียงเดิม)<br>
+          <span class="bu-sandhi">bù + ◌̀ = bú</span> (เปลี่ยนเป็นเสียง 2!)
+        </div>
+      </div>
+      <div id="bu-content"></div>
+    </div>
+
+    <div class="bu-pane" data-sub="yi">
+      <div class="bu-intro">
+        <div class="bu-intro-ttl">🎯 กฎการผันเสียงของ 一 (หนึ่ง)</div>
+        <div class="bu-intro-body">
+          อยู่เดี่ยวๆ หรือท้ายคำ → <b>yī</b> (เสียง 1)<br>
+          <b>+ เสียง 1, 2, 3 → yì</b> (เปลี่ยนเป็นเสียง 4!)<br>
+          <b style="color:#c62828">+ เสียง 4 → yí</b> (เปลี่ยนเป็นเสียง 2!)
+        </div>
+        <div class="bu-rule-box">
+          <span class="bu-sandhi">yī</span> (เดี่ยว/ท้าย): 第一 dì <b>yī</b><br>
+          <span class="bu-sandhi">yī + ◌̄ / ◌́ / ◌̌ = yì</span> (เสียง 4)<br>
+          <span class="bu-sandhi">yī + ◌̀ = yí</span> (เสียง 2!)
+        </div>
+      </div>
+      <div id="yi-content"></div>
+    </div>
+
+    <div class="bu-pane" data-sub="sp">
+      <div class="bu-intro">
+        <div class="bu-intro-ttl">⚡ กรณีพิเศษ — 不 เป็นเสียงเบา</div>
+        <div class="bu-intro-body">
+          เมื่อ <b>不</b> อยู่ <b>ตรงกลาง</b> โครงสร้างพิเศษ จะออกเสียงเบา (neutral tone — <b>bu</b>)
+        </div>
+        <div class="bu-rule-box">
+          <b>A-不-A คำถาม</b>: 是<b>不</b>是 → shì <b>bu</b> shì<br>
+          <b>เสริม "ทำไม่ได้"</b>: 看<b>不</b>见 → kàn <b>bu</b> jiàn
+        </div>
+      </div>
+      <div id="sp-content"></div>
+    </div>
   </div>
 
   <!-- คำศัพท์ -->
@@ -1178,33 +1344,71 @@ buildConsonants();
 let activeCard = null;
 let activeAudio = null;
 
+// preferred Chinese TTS voices (name patterns, lowercase)
+const ttsVoicePrefer = [
+  'tingting', 'ting-ting',          // Mac/iPhone/iPad ✨
+  'meijia', 'mei-jia',              // Mac Taiwan
+  'xiaoxiao', 'yaoyao',             // Edge/Windows
+  'sandy', 'shelley', 'flo',        // Mac newer
+  'huihui',                          // Windows
+];
+
+function pickChineseVoice() {
+  if (!window.speechSynthesis) return null;
+  const voices = speechSynthesis.getVoices();
+  if (!voices || !voices.length) return null;
+  // try preferred names first (any zh*)
+  for (const want of ttsVoicePrefer) {
+    const v = voices.find(v => v.name && v.name.toLowerCase().replace(/[\s_]/g,'').includes(want.replace(/[\s_-]/g,'')));
+    if (v) return v;
+  }
+  // any zh-CN voice
+  return voices.find(v => v.lang && v.lang.startsWith('zh') && v.lang.toLowerCase().includes('cn'))
+      || voices.find(v => v.lang && v.lang.startsWith('zh'))
+      || null;
+}
+
+// pre-warm voices list (Chrome loads asynchronously)
+if (window.speechSynthesis) {
+  speechSynthesis.getVoices();
+  speechSynthesis.addEventListener?.('voiceschanged', () => speechSynthesis.getVoices());
+}
+
 function playSound(zh, card) {
   if (activeAudio) { activeAudio.pause(); activeAudio = null; }
   if (activeCard) activeCard.classList.remove('playing');
+  if (window.speechSynthesis) speechSynthesis.cancel();
 
-  const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(zh)}&tl=zh-CN&client=gtx&ttsspeed=0.7`;
+  // 1) try Web Speech API with preferred voice (Tingting on Mac/iOS)
+  const voice = pickChineseVoice();
+  if (voice && window.speechSynthesis) {
+    const u = new SpeechSynthesisUtterance(zh);
+    u.voice = voice;
+    u.lang = voice.lang || 'zh-CN';
+    u.rate = 0.6;   // ช้าลง ชัดขึ้น
+    u.pitch = 1;
+    card.classList.add('playing');
+    activeCard = card;
+    u.onend = u.onerror = () => {
+      card.classList.remove('playing');
+      if (activeCard === card) activeCard = null;
+    };
+    speechSynthesis.speak(u);
+    return;
+  }
+
+  // 2) fallback → Google Translate TTS (Android, devices without good zh voice)
+  const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(zh)}&tl=zh-CN&client=gtx&ttsspeed=0.6`;
   const audio = new Audio(url);
   activeAudio = audio;
   activeCard = card;
   card.classList.add('playing');
-
   audio.onended = audio.onerror = () => {
     card.classList.remove('playing');
     if (activeCard === card) { activeCard = null; activeAudio = null; }
   };
-
   audio.play().catch(() => {
-    // fallback to Web Speech API
     card.classList.remove('playing');
-    if (!window.speechSynthesis) return;
-    const u = new SpeechSynthesisUtterance(zh);
-    u.lang = 'zh-CN'; u.rate = 0.75;
-    const voices = speechSynthesis.getVoices();
-    const v = voices.find(v => v.lang.startsWith('zh') && v.lang.includes('CN')) || voices.find(v => v.lang.startsWith('zh'));
-    if (v) u.voice = v;
-    card.classList.add('playing');
-    u.onend = u.onerror = () => card.classList.remove('playing');
-    speechSynthesis.speak(u);
   });
 }
 
@@ -1574,13 +1778,281 @@ function setTab(el, type) {
   if (type === 'vocab') ensureVocabBuilt();
   if (type === 'lesson1') lsnInit();
   if (type === 'allvocab') buildAllVocab();
+  if (type === 'bu') buildT3Page();
 }
+
+/* ---------------- 不 (bù) page ---------------- */
+const buGroups = [
+  {
+    tone: 1, label: '不 + เสียง 1 (¯)',
+    note: 'bù ปกติ (เสียง 4)', special: false,
+    items: [
+      { zh: '不喝', py: 'bù hē',   th: 'ไม่ดื่ม' },
+      { zh: '不吃', py: 'bù chī',  th: 'ไม่กิน' },
+      { zh: '不说', py: 'bù shuō', th: 'ไม่พูด' },
+      { zh: '不开', py: 'bù kāi',  th: 'ไม่เปิด' },
+    ],
+  },
+  {
+    tone: 2, label: '不 + เสียง 2 (´)',
+    note: 'bù ปกติ (เสียง 4)', special: false,
+    items: [
+      { zh: '不来', py: 'bù lái',  th: 'ไม่มา' },
+      { zh: '不行', py: 'bù xíng', th: 'ไม่ได้' },
+      { zh: '不忙', py: 'bù máng', th: 'ไม่ยุ่ง' },
+      { zh: '不难', py: 'bù nán',  th: 'ไม่ยาก' },
+    ],
+  },
+  {
+    tone: 3, label: '不 + เสียง 3 (ˇ)',
+    note: 'bù ปกติ (เสียง 4)', special: false,
+    items: [
+      { zh: '不好', py: 'bù hǎo',  th: 'ไม่ดี' },
+      { zh: '不买', py: 'bù mǎi',  th: 'ไม่ซื้อ' },
+      { zh: '不想', py: 'bù xiǎng',th: 'ไม่อยากจะ' },
+      { zh: '不少', py: 'bù shǎo', th: 'ไม่น้อย' },
+    ],
+  },
+  {
+    tone: 4, label: '不 + เสียง 4 (`) — เปลี่ยนเป็น bú!',
+    note: '⚠️ bù → bú (เสียง 2)', special: true,
+    items: [
+      { zh: '不是', py: 'bú shì', th: 'ไม่ใช่' },
+      { zh: '不去', py: 'bú qù',  th: 'ไม่ไป' },
+      { zh: '不要', py: 'bú yào', th: 'ไม่เอา' },
+      { zh: '不会', py: 'bú huì', th: 'ไม่เป็น/ไม่สามารถ' },
+      { zh: '不对', py: 'bú duì', th: 'ไม่ถูก' },
+      { zh: '不看', py: 'bú kàn', th: 'ไม่ดู' },
+      { zh: '不大', py: 'bú dà',  th: 'ไม่ใหญ่' },
+      { zh: '不在', py: 'bú zài', th: 'ไม่อยู่' },
+    ],
+  },
+];
+
+/* ---------- 一 (yī) ---------- */
+const yiGroups = [
+  {
+    tone: 0, label: '一 เดี่ยว / ท้ายคำ',
+    note: 'yī (เสียง 1 — เดิม)', special: false,
+    items: [
+      { zh: '一',     py: 'yī',          th: 'หนึ่ง (อ่านเลข)' },
+      { zh: '第一',   py: 'dì yī',       th: 'ที่หนึ่ง / ที่ 1' },
+      { zh: '星期一', py: 'xīngqī yī',   th: 'วันจันทร์' },
+      { zh: '十一',   py: 'shí yī',      th: 'สิบเอ็ด' },
+    ],
+  },
+  {
+    tone: 1, label: '一 + เสียง 1 (¯)',
+    note: '⚠️ yī → yì (เสียง 4)', special: true,
+    items: [
+      { zh: '一天', py: 'yì tiān', th: 'หนึ่งวัน' },
+      { zh: '一些', py: 'yì xiē',  th: 'บ้าง / นิดหน่อย' },
+      { zh: '一边', py: 'yì biān', th: 'ด้าน / ข้าง' },
+      { zh: '一杯', py: 'yì bēi',  th: 'หนึ่งแก้ว' },
+    ],
+  },
+  {
+    tone: 2, label: '一 + เสียง 2 (´)',
+    note: '⚠️ yī → yì (เสียง 4)', special: true,
+    items: [
+      { zh: '一年', py: 'yì nián', th: 'หนึ่งปี' },
+      { zh: '一回', py: 'yì huí',  th: 'หนึ่งครั้ง' },
+      { zh: '一人', py: 'yì rén',  th: 'หนึ่งคน' },
+      { zh: '一直', py: 'yì zhí',  th: 'ตลอด / ตรง' },
+    ],
+  },
+  {
+    tone: 3, label: '一 + เสียง 3 (ˇ)',
+    note: '⚠️ yī → yì (เสียง 4)', special: true,
+    items: [
+      { zh: '一起', py: 'yì qǐ',   th: 'ด้วยกัน' },
+      { zh: '一点', py: 'yì diǎn', th: 'นิดหนึ่ง' },
+      { zh: '一百', py: 'yì bǎi',  th: 'หนึ่งร้อย' },
+      { zh: '一手', py: 'yì shǒu', th: 'มือเดียว' },
+    ],
+  },
+  {
+    tone: 4, label: '一 + เสียง 4 (`)',
+    note: '🔴 yī → yí (เสียง 2!)', special: true, danger: true,
+    items: [
+      { zh: '一个', py: 'yí ge',   th: 'หนึ่งอัน/ชิ้น' },
+      { zh: '一定', py: 'yí dìng', th: 'แน่นอน' },
+      { zh: '一样', py: 'yí yàng', th: 'เหมือนกัน' },
+      { zh: '一半', py: 'yí bàn',  th: 'ครึ่งหนึ่ง' },
+      { zh: '一岁', py: 'yí suì',  th: 'หนึ่งขวบ' },
+      { zh: '一次', py: 'yí cì',   th: 'หนึ่งครั้ง' },
+    ],
+  },
+];
+
+/* ---------- กรณีพิเศษ ---------- */
+const spGroups = [
+  {
+    tone: 'A', label: 'A-不-A คำถาม',
+    note: '不 → bu (เบา)', special: true,
+    items: [
+      { zh: '是不是', py: 'shì bu shì', th: 'ใช่หรือไม่' },
+      { zh: '好不好', py: 'hǎo bu hǎo', th: 'ดีไหม' },
+      { zh: '去不去', py: 'qù bu qù',   th: 'ไปไหม' },
+      { zh: '来不来', py: 'lái bu lái', th: 'มาไหม' },
+      { zh: '吃不吃', py: 'chī bu chī', th: 'กินไหม' },
+      { zh: '要不要', py: 'yào bu yào', th: 'เอาไหม' },
+    ],
+  },
+  {
+    tone: 'B', label: 'ทำได้ / ทำไม่ได้ (potential)',
+    note: '不 → bu (เบา)', special: true,
+    items: [
+      { zh: '看不见', py: 'kàn bu jiàn', th: 'มองไม่เห็น' },
+      { zh: '听不懂', py: 'tīng bu dǒng',th: 'ฟังไม่เข้าใจ' },
+      { zh: '买不起', py: 'mǎi bu qǐ',  th: 'ซื้อไม่ไหว' },
+      { zh: '吃不下', py: 'chī bu xià', th: 'กินไม่ลง' },
+      { zh: '说不出', py: 'shuō bu chū',th: 'พูดไม่ออก' },
+      { zh: '走不动', py: 'zǒu bu dòng',th: 'เดินไม่ไหว' },
+    ],
+  },
+];
+
+function buSub(el, key) {
+  document.querySelectorAll('.bu-sub').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.bu-pane').forEach(p => p.classList.toggle('active', p.dataset.sub === key));
+  if (key === 't3') buildT3Page();
+  if (key === 'bu') buildBuPage();
+  if (key === 'yi') buildYiPage();
+  if (key === 'sp') buildSpPage();
+}
+
+/* ---------- 3rd tone sandhi ---------- */
+// each item: zh, write (pinyin เขียน), spoken (pinyin อ่านจริง), th
+const t3Groups = [
+  {
+    tone: '★', label: 'คำที่ใช้บ่อย (HSK1)',
+    note: '◌̌◌̌ → ◌́◌̌', special: true,
+    items: [
+      { zh: '你好',   write: 'nǐ hǎo',   spoken: 'ní hǎo',   th: 'สวัสดี' },
+      { zh: '很好',   write: 'hěn hǎo',  spoken: 'hén hǎo',  th: 'ดีมาก' },
+      { zh: '可以',   write: 'kě yǐ',    spoken: 'ké yǐ',    th: 'ได้ / สามารถ' },
+      { zh: '你早',   write: 'nǐ zǎo',   spoken: 'ní zǎo',   th: 'อรุณสวัสดิ์' },
+      { zh: '我也',   write: 'wǒ yě',    spoken: 'wó yě',    th: 'ฉันก็' },
+      { zh: '你有',   write: 'nǐ yǒu',   spoken: 'ní yǒu',   th: 'คุณมี' },
+    ],
+  },
+  {
+    tone: 'A', label: 'คำคู่ทั่วไป',
+    note: '◌̌◌̌ → ◌́◌̌', special: false,
+    items: [
+      { zh: '水果',   write: 'shuǐ guǒ', spoken: 'shuí guǒ', th: 'ผลไม้' },
+      { zh: '老板',   write: 'lǎo bǎn',  spoken: 'láo bǎn',  th: 'เจ้านาย' },
+      { zh: '小狗',   write: 'xiǎo gǒu', spoken: 'xiáo gǒu', th: 'หมา (เล็ก)' },
+      { zh: '美好',   write: 'měi hǎo',  spoken: 'méi hǎo',  th: 'สวยงาม' },
+      { zh: '勇敢',   write: 'yǒng gǎn', spoken: 'yóng gǎn', th: 'กล้าหาญ' },
+      { zh: '友好',   write: 'yǒu hǎo',  spoken: 'yóu hǎo',  th: 'เป็นมิตร' },
+    ],
+  },
+  {
+    tone: 'B', label: 'ทั้งวลี / 3+3+3',
+    note: 'ตัวที่ 1 และ 2 → เสียง 2', special: false,
+    items: [
+      { zh: '我也好', write: 'wǒ yě hǎo',  spoken: 'wó yé hǎo',  th: 'ฉันก็ดี' },
+      { zh: '请你买', write: 'qǐng nǐ mǎi',spoken: 'qíng ní mǎi', th: 'โปรดซื้อ' },
+      { zh: '很好买', write: 'hěn hǎo mǎi',spoken: 'hén háo mǎi', th: 'ซื้อได้ง่าย' },
+      { zh: '小姐姐', write: 'xiǎo jiě jie',spoken: 'xiáo jiě jie', th: 'พี่สาว (น่ารัก)' },
+    ],
+  },
+];
+
+function buildT3Page() {
+  const root = document.getElementById('t3-content');
+  if (root.dataset.built) return;
+  root.dataset.built = '1';
+  t3Groups.forEach(g => {
+    const wrap = document.createElement('div');
+    wrap.className = 'bu-group' + (g.special ? ' special' : '');
+    const hd = document.createElement('div');
+    hd.className = 'bu-group-hd' + (g.special ? ' special' : '');
+    hd.innerHTML = `<span class="bu-tone-badge">${g.tone}</span><span>${g.label}</span><span style="margin-left:auto;font-size:10px;color:#999;font-weight:600;text-transform:none;letter-spacing:0">${g.note}</span>`;
+    wrap.appendChild(hd);
+    const grid = document.createElement('div');
+    grid.className = 'bu-grid';
+    g.items.forEach(it => {
+      const card = document.createElement('div');
+      card.className = 'bu-card' + (g.special ? ' special' : '');
+      // highlight syllables that changed in spoken pinyin
+      const wParts = it.write.split(' ');
+      const sParts = it.spoken.split(' ');
+      const sHtml = sParts.map((s, i) => s !== wParts[i] ? `<span class="changed">${s}</span>` : s).join(' ');
+      card.innerHTML =
+        `<div class="bu-zh">${it.zh}</div>` +
+        `<div class="bu-py-pair"><span class="write">${it.write}</span><span class="arrow">→</span><span class="spoken">${sHtml}</span></div>` +
+        `<div class="bu-th">${it.th}</div>`;
+      card.addEventListener('click', () => playSound(it.zh, card));
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+    root.appendChild(wrap);
+  });
+}
+
+function _buildSandhiGroups(rootId, groups, syllableRegex) {
+  const root = document.getElementById(rootId);
+  if (root.dataset.built) return;
+  root.dataset.built = '1';
+  groups.forEach(g => {
+    const wrap = document.createElement('div');
+    wrap.className = 'bu-group' + (g.special ? ' special' : '');
+    const hd = document.createElement('div');
+    hd.className = 'bu-group-hd' + (g.special ? ' special' : '');
+    hd.innerHTML = `<span class="bu-tone-badge">${g.tone}</span><span>${g.label}</span><span style="margin-left:auto;font-size:10px;color:#999;font-weight:600;text-transform:none;letter-spacing:0">${g.note}</span>`;
+    wrap.appendChild(hd);
+    const grid = document.createElement('div');
+    grid.className = 'bu-grid';
+    g.items.forEach(it => {
+      const card = document.createElement('div');
+      card.className = 'bu-card' + ((g.special || g.danger) ? ' special' : '');
+      const pyHtml = it.py.replace(syllableRegex, '<span class="py-bu">$1</span>');
+      card.innerHTML =
+        `<div class="bu-zh">${it.zh}</div>` +
+        `<div class="bu-py">${pyHtml}</div>` +
+        `<div class="bu-th">${it.th}</div>`;
+      card.addEventListener('click', () => playSound(it.zh, card));
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+    root.appendChild(wrap);
+  });
+}
+
+function buildBuPage() { _buildSandhiGroups('bu-content', buGroups, /^(bù|bú)/); }
+function buildYiPage() { _buildSandhiGroups('yi-content', yiGroups, /^(yī|yì|yí)/); }
+function buildSpPage() { _buildSandhiGroups('sp-content', spGroups, /(bu)(?= )/); }
 
 function pinFilter(el, kind) {
   el.parentElement.querySelectorAll('.pin-pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.querySelectorAll('.pin-block').forEach(b => {
     b.classList.toggle('hidden', kind !== 'all' && b.dataset.pin !== kind);
+  });
+}
+
+/* ---------------- PWA: Service Worker ---------------- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        // check for updates every time the app opens
+        reg.update?.();
+        reg.addEventListener?.('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('🔄 New version available — refresh to update');
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('SW register failed:', err));
   });
 }
 </script>
