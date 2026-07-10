@@ -831,10 +831,10 @@
 
   <!-- คำศัพท์ -->
   <div class="section hidden" data-type="vocab">
-    <div class="sec-title">คำศัพท์พื้นฐาน 50 คำ</div>
+    <div class="sec-title">สุ่มศัพท์ทุกบท</div>
     <div class="voc-toolbar">
       <div id="voc-status" style="font-size:11px;color:#666;flex:1">⏳ กำลังโหลดคำศัพท์...</div>
-      <button class="voc-shuffle" onclick="shuffleVocab()" title="สุ่มคำใหม่">🔀</button>
+      <button class="voc-shuffle" onclick="shuffleVocab()" title="สลับลำดับใหม่">🔀</button>
     </div>
     <div id="vocab-groups"></div>
   </div>
@@ -1030,58 +1030,17 @@ const consonantGroups = [
   },
 ];
 
-const SHOW_COUNT = 50;
-
-async function fetchEnglishWords(n) {
-  const url = 'https://cdn.jsdelivr.net/gh/first20hours/google-10000-english@master/google-10000-english-no-swears.txt';
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Wordlist fetch failed');
-  const text = await res.text();
-  // เอาแค่ 2000 คำที่พบบ่อยสุด ความยาว 3-7 ตัว (เด็กอ่านง่าย)
-  const pool = text.split('\n')
-    .map(w => w.trim())
-    .filter(w => w.length >= 3 && w.length <= 7)
-    .slice(0, 2000);
-  // สุ่มเลือก n คำแบบไม่ซ้ำ
-  const picked = new Set();
-  while (picked.size < n && picked.size < pool.length) {
-    picked.add(pool[Math.floor(Math.random() * pool.length)]);
-  }
-  return [...picked];
-}
-
-async function gtranslate(text, tl, withRomanization = false) {
-  const dt = withRomanization ? 'dt=t&dt=rm' : 'dt=t';
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${tl}&${dt}&q=${encodeURIComponent(text)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('translate failed');
-  const data = await res.json();
-  const tx  = (data[0] || []).map(c => c[0]).filter(Boolean).join('');
-  const rom = (data[0] || []).map(c => c[2]).filter(Boolean).join(' ');
-  return { tx, rom };
-}
-
-async function buildOneCard(en) {
-  try {
-    const [zh, th] = await Promise.all([
-      gtranslate(en, 'zh-CN', true),
-      gtranslate(en, 'th',    false)
-    ]);
-    return { en, zh: zh.tx, py: zh.rom, th: th.tx };
-  } catch { return null; }
-}
-
 
 function renderVocabGrid(grid, items) {
   grid.innerHTML = '';
   items.forEach(v => {
     const d = document.createElement('div');
     d.className = 'voc-card';
-    d.style.color = '#1565c0';
+    d.style.color = '#c62828';
     d.innerHTML =
-      `<div class="voc-en">${v.en}</div>` +
-      `<div class="voc-zh">${v.zh}</div>` +
+      `<div class="voc-zh" style="font-size:26px">${v.zh}</div>` +
       `<div class="voc-py">${v.py || '-'}</div>` +
+      (v.thr ? `<div class="voc-thr">${v.thr}</div>` : '') +
       `<div class="voc-th">${v.th}</div>` +
       `<div class="voc-play">▶</div>`;
     d.addEventListener('click', () => playSound(v.zh, d));
@@ -1089,45 +1048,23 @@ function renderVocabGrid(grid, items) {
   });
 }
 
-async function buildVocab() {
+function buildVocab() {
   const status = document.getElementById('voc-status');
   const container = document.getElementById('vocab-groups');
   container.innerHTML = '';
-  status.style.color = '#666';
-  status.textContent = '⏳ กำลังดึงคำอังกฤษ + แปลเป็นจีน/ไทย...';
-
-  try {
-    const englishWords = await fetchEnglishWords(SHOW_COUNT);
-    const cards = (await Promise.all(englishWords.map(buildOneCard))).filter(Boolean);
-
-    if (cards.length === 0) {
-      status.textContent = '❌ แปลไม่สำเร็จ ลองกด 🔀 ใหม่';
-      status.style.color = '#c62828';
-      return;
-    }
-
-    status.innerHTML = `✅ ${cards.length} คำใหม่ · กด 🔀 สุ่มชุดใหม่<br><span style="font-size:9px;color:#999">EN→ZH→TH ผ่าน Google Translate</span>`;
-    status.style.color = '#2e7d32';
-
-    const grid = document.createElement('div');
-    grid.className = 'voc-grid';
-    grid.id = 'vg-main';
-    renderVocabGrid(grid, cards);
-    container.appendChild(grid);
-  } catch (e) {
-    status.textContent = '❌ โหลดไม่สำเร็จ: ' + e.message;
-    status.style.color = '#c62828';
-  }
+  const all = lsnShuffle(lsnAllLessons.flatMap(L => L.vocab));
+  status.style.color = '#2e7d32';
+  status.innerHTML = `🎲 สุ่มศัพท์ทุกบท ${all.length} คำ · กด 🔀 สลับลำดับใหม่`;
+  const grid = document.createElement('div');
+  grid.className = 'voc-grid';
+  grid.id = 'vg-main';
+  renderVocabGrid(grid, all);
+  container.appendChild(grid);
 }
 
 function shuffleVocab() { buildVocab(); }
 
-let vocabBuilt = false;
-function ensureVocabBuilt() {
-  if (vocabBuilt) return;
-  vocabBuilt = true;
-  buildVocab();
-}
+function ensureVocabBuilt() { buildVocab(); }
 
 const specialData = [
   {
@@ -2062,6 +1999,75 @@ const lsnAllLessons = [
       { zh:'我的同屋',         py:'wǒ de tóngwū',           th:'รูมเมทของฉัน',          en:'my roommate' },
     ]
   },
+  {
+    title: 'บทที่ 13 — 这是不是中药 · นี่ใช่ยาจีนไหม',
+    zh: '这是不是中药', py: 'Zhè shì bu shì zhōngyào', thTitle: 'นี่ใช่ยาจีนไหม',
+    vocab: [
+      { zh:'没有',     py:'méiyǒu',    base:'mei',   tone:2, thr:'เหม๋ยโหย่ว',   th:'ไม่มี / ไม่ได้(ทำ)',   en:'not have; did not' },
+      { zh:'箱子',     py:'xiāngzi',   base:'xiang', tone:1, thr:'เซียงจึ',      th:'กระเป๋าเดินทาง / กล่อง', en:'box; suitcase' },
+      { zh:'有',       py:'yǒu',       base:'you',   tone:3, thr:'โหย่ว',        th:'มี',                  en:'to have' },
+      { zh:'这儿',     py:'zhèr',      base:'zher',  tone:4, thr:'เจ้อร์',        th:'ที่นี่',               en:'here' },
+      { zh:'重',       py:'zhòng',     base:'zhong', tone:4, thr:'จ้ง',          th:'หนัก',                en:'heavy' },
+      { zh:'黑',       py:'hēi',       base:'hei',   tone:1, thr:'เฮย',          th:'ดำ',                  en:'black' },
+      { zh:'红',       py:'hóng',      base:'hong',  tone:2, thr:'หง๋',          th:'แดง',                 en:'red' },
+      { zh:'轻',       py:'qīng',      base:'qing',  tone:1, thr:'ชิง',          th:'เบา',                 en:'light' },
+      { zh:'旧',       py:'jiù',       base:'jiu',   tone:4, thr:'จิ้ว',          th:'เก่า / ใช้แล้ว',       en:'old; used' },
+      { zh:'药',       py:'yào',       base:'yao',   tone:4, thr:'เย้า',          th:'ยา',                  en:'medicine' },
+      { zh:'中药',     py:'zhōngyào',  base:'zhong', tone:1, thr:'จงเย้า',        th:'ยาจีน',               en:'Chinese medicine' },
+      { zh:'西药',     py:'xīyào',     base:'xi',    tone:1, thr:'ซีเย้า',        th:'ยาแผนปัจจุบัน',       en:'Western medicine' },
+      { zh:'茶叶',     py:'cháyè',     base:'cha',   tone:2, thr:'ฉ๋าเย่',        th:'ใบชา',                en:'tea leaves' },
+      { zh:'里',       py:'li',        base:'li',    tone:0, thr:'หลี่',          th:'ใน / ข้างใน',         en:'inside' },
+      { zh:'日用品',   py:'rìyòngpǐn', base:'ri',    tone:4, thr:'ลื่อย่งผิ่น',    th:'ของใช้ประจำวัน',      en:'daily necessities' },
+      { zh:'件',       py:'jiàn',      base:'jian',  tone:4, thr:'เจี้ยน',        th:'ตัว/ชุด (ลักษณนามเสื้อผ้า)', en:'measure word (clothes)' },
+      { zh:'衣服',     py:'yīfu',      base:'yi',    tone:1, thr:'อีฟุ',          th:'เสื้อผ้า',             en:'clothes' },
+      { zh:'把',       py:'bǎ',        base:'ba',    tone:3, thr:'ป่า',          th:'คัน/ด้าม (ลักษณนามของมีด้าม)', en:'measure word (handled tools)' },
+      { zh:'雨伞',     py:'yǔsǎn',     base:'yu',    tone:3, thr:'ยหวี่ส่าน',     th:'ร่ม',                 en:'umbrella' },
+      { zh:'雨',       py:'yǔ',        base:'yu',    tone:3, thr:'ยหวี่',         th:'ฝน',                  en:'rain' },
+      { zh:'平板电脑', py:'píngbǎn diànnǎo', base:'ping', tone:2, thr:'ผิงป่านเตี้ยนหน่าว', th:'แท็บเล็ต',  en:'tablet PC' },
+      { zh:'本',       py:'běn',       base:'ben',   tone:3, thr:'เปิ่น',         th:'เล่ม (ลักษณนามหนังสือ)', en:'measure word (books)' },
+      { zh:'词典',     py:'cídiǎn',    base:'ci',    tone:2, thr:'ฉือเตี่ยน',     th:'พจนานุกรม',           en:'dictionary' },
+      { zh:'优盘',     py:'yōupán',    base:'you',   tone:1, thr:'โยวผาน',       th:'แฟลชไดรฟ์ (USB)',     en:'USB flash drive' },
+      { zh:'支',       py:'zhī',       base:'zhi',   tone:1, thr:'จือ',          th:'แท่ง/ด้าม (ลักษณนามปากกา)', en:'measure word (pens)' },
+      { zh:'毛笔',     py:'máobǐ',     base:'mao',   tone:2, thr:'เหมา๋ปี่',       th:'พู่กัน',               en:'writing brush' },
+      { zh:'笔',       py:'bǐ',        base:'bi',    tone:3, thr:'ปี่',           th:'ปากกา',               en:'pen' },
+    ],
+    dialogue: [
+      { sp:'A', zh:'你没有箱子吗？', py:'Nǐ méiyǒu xiāngzi ma?', th:'(ที่สนามบิน) คุณไม่มีกระเป๋าหรือ' },
+      { sp:'B', zh:'有啊。我的在这儿呢。', py:'Yǒu a. Wǒ de zài zhèr ne.', th:'มีสิ ของฉันอยู่นี่ไง' },
+      { sp:'A', zh:'我的很重，你的重不重？', py:'Wǒ de hěn zhòng, nǐ de zhòng bu zhòng?', th:'ของฉันหนักมาก ของคุณหนักไหม' },
+      { sp:'B', zh:'这个黑的很重，那个红的比较轻。', py:'Zhège hēi de hěn zhòng, nàge hóng de bǐjiào qīng.', th:'ใบดำใบนี้หนักมาก ใบแดงใบนั้นค่อนข้างเบา' },
+      { sp:'A', zh:'你的箱子很新，我的很旧。', py:'Nǐ de xiāngzi hěn xīn, wǒ de hěn jiù.', th:'กระเป๋าของคุณใหม่มาก ของฉันเก่ามาก' },
+      { sp:'B', zh:'那个新的是朋友的。这个旧的是我的。', py:'Nàge xīn de shì péngyou de. Zhège jiù de shì wǒ de.', th:'ใบใหม่ใบนั้นของเพื่อน ใบเก่าใบนี้ของฉันเอง' },
+      { sp:'A', zh:'先生，这些黑的是什么？', py:'Xiānsheng, zhèxiē hēi de shì shénme?', th:'(ที่ด่านศุลกากร) คุณครับ ของสีดำเหล่านี้คืออะไร' },
+      { sp:'B', zh:'这是一些药。', py:'Zhè shì yìxiē yào.', th:'นี่คือยาจำนวนหนึ่ง' },
+      { sp:'A', zh:'什么药？', py:'Shénme yào?', th:'ยาอะไร' },
+      { sp:'B', zh:'中药。', py:'Zhōngyào.', th:'ยาจีน' },
+      { sp:'A', zh:'这是不是药？', py:'Zhè shì bu shì yào?', th:'นี่ใช่ยาไหม' },
+      { sp:'B', zh:'这不是药，这是茶叶。', py:'Zhè bú shì yào, zhè shì cháyè.', th:'นี่ไม่ใช่ยา นี่คือใบชา' },
+      { sp:'A', zh:'那个箱子里是什么？', py:'Nàge xiāngzi li shì shénme?', th:'ในกระเป๋าใบนั้นมีอะไร' },
+      { sp:'B', zh:'都是日用品。有两件衣服、一把雨伞和一个平板电脑，还有一本书、一本词典、两个优盘和三支毛笔。', py:'Dōu shì rìyòngpǐn. Yǒu liǎng jiàn yīfu, yì bǎ yǔsǎn hé yí gè píngbǎn diànnǎo, hái yǒu yì běn shū, yì běn cídiǎn, liǎng ge yōupán hé sān zhī máobǐ.', th:'ล้วนเป็นของใช้ประจำวัน มีเสื้อผ้า 2 ตัว ร่ม 1 คัน แท็บเล็ต 1 เครื่อง แล้วก็หนังสือ 1 เล่ม พจนานุกรม 1 เล่ม แฟลชไดรฟ์ 2 อัน กับพู่กัน 3 แท่ง' },
+    ],
+    notes: [
+      { ic:'⭐', t:'些 (xiē) บอกจำนวนไม่แน่นอน', b:'ใช้หลัง 一 / 哪 / 这 / 那 เท่านั้น เช่น 一些人 yìxiē rén (คนจำนวนหนึ่ง) · 哪些书 nǎxiē shū (หนังสือเล่มไหนบ้าง) · 这些留学生 zhèxiē liúxuéshēng (นักเรียนต่างชาติเหล่านี้) — ⚠️ 些 ใช้กับตัวเลขได้แค่ 一 ตัวเดียว ห้ามใช้กับเลขอื่น' },
+      { ic:'⭐', t:'คุณศัพท์เป็นภาคแสดง (形容词谓语句)', b:'คุณศัพท์ทำหน้าที่ภาคแสดงได้เลย ไม่ต้องใส่ 是 มักมี 很 นำหน้า · ปฏิเสธเติม 不 หน้าคุณศัพท์ เช่น 这个黑箱子很重 zhège hēi xiāngzi hěn zhòng (กระเป๋าดำใบนี้หนักมาก) · 我的箱子不重 (กระเป๋าของฉันไม่หนัก)' },
+      { ic:'⭐', t:'... 的 แทนคำนาม (ละคำนามได้)', b:'ถ้ารู้กันอยู่แล้วว่าพูดถึงอะไร ละคำนามหลัง 的 ได้เลย: 黑的 hēi de = อันสีดำ · 那个新的是朋友的 nàge xīn de shì péngyou de = ใบใหม่ใบนั้นเป็นของเพื่อน' },
+      { ic:'📐', t:'没(有) ใช้ 2 แบบ', b:'没有 + คำนาม = ไม่มี (我没有箱子 wǒ méiyǒu xiāngzi ฉันไม่มีกระเป๋า) · 没(有) + กริยา = ไม่ได้ทำ (我没有吃饭 wǒ méiyǒu chī fàn ฉันไม่ได้กินข้าว)' },
+      { ic:'🔢', t:'ลักษณนามชุดใหม่', b:'件 jiàn = ตัว/ชุด (เสื้อผ้า) · 把 bǎ = คัน/ด้าม (ของมีด้าม เช่น ร่ม) · 本 běn = เล่ม (หนังสือ) · 支 zhī = แท่ง/ด้าม (ปากกา พู่กัน) เช่น 两件衣服 · 一把雨伞 · 一本词典 · 三支毛笔' },
+      { ic:'💬', t:'ถามแบบ 是不是', b:'รูป V不V ของ 是: 这是不是中药? zhè shì bu shì zhōngyào? = นี่ใช่ยาจีนไหม (ความหมายเดียวกับ 这是中药吗?)' },
+      { ic:'📖', t:'ศัพท์เสริมจากโน้ต', b:'加油 jiāyóu (เจียโหยว) = สู้ ๆ · 红的旧箱子 hóng de jiù xiāngzi = กระเป๋าเก่าสีแดง' },
+    ],
+    phrases: [
+      { zh:'重不重',       py:'zhòng bu zhòng',          th:'หนักไหม',           en:'is it heavy?' },
+      { zh:'这是不是中药', py:'zhè shì bu shì zhōngyào', th:'นี่ใช่ยาจีนไหม',    en:'is this Chinese medicine?' },
+      { zh:'一些药',       py:'yìxiē yào',               th:'ยาจำนวนหนึ่ง',       en:'some medicine' },
+      { zh:'比较轻',       py:'bǐjiào qīng',             th:'ค่อนข้างเบา',        en:'relatively light' },
+      { zh:'两件衣服',     py:'liǎng jiàn yīfu',         th:'เสื้อผ้า 2 ตัว',     en:'two pieces of clothing' },
+      { zh:'一把雨伞',     py:'yì bǎ yǔsǎn',             th:'ร่ม 1 คัน',          en:'one umbrella' },
+      { zh:'一本词典',     py:'yì běn cídiǎn',           th:'พจนานุกรม 1 เล่ม',   en:'one dictionary' },
+      { zh:'三支毛笔',     py:'sān zhī máobǐ',           th:'พู่กัน 3 แท่ง',       en:'three writing brushes' },
+      { zh:'加油',         py:'jiāyóu',                  th:'สู้ ๆ',              en:'keep it up!' },
+    ]
+  },
 ];
 
 let currentLsn = 0;
@@ -2384,7 +2390,9 @@ const lsnSummary = [
       { t: '了 (le) แล้ว · 过 (guò) เคย · 会 (huì) สามารถ', b: 'กริยา + 了 = ทำแล้ว · กริยา + 过 = เคยทำ(ในอดีต) · 会 = ทำได้ (ทักษะที่ผ่านการฝึก)', ex: '吃饭了 chī fàn le (กินข้าวแล้ว) · 我学过汉语 wǒ xuéguo Hànyǔ (ฉันเคยเรียนภาษาจีน) · 我会说汉语 wǒ huì shuō Hànyǔ (ฉันพูดภาษาจีนได้)' },
       { t: '在 (zài) มี 2 หน้าที่', b: '在 + กริยา = กำลัง... · 在 + สถานที่ = อยู่ที่...', ex: '我在大学学习 wǒ zài dàxué xuéxí = ฉันเรียนอยู่ที่มหาวิทยาลัย · 他在家 tā zài jiā = เขาอยู่บ้าน' },
       { t: 'เปรียบเทียบด้วย 比 (bǐ) = กว่า', b: 'รูป A + 比 + B + คุณศัพท์', ex: '汉语比英语难 Hànyǔ bǐ Yīngyǔ nán = ภาษาจีนยากกว่าภาษาอังกฤษ' },
-      { t: 'ลักษณนามที่เจอบ่อย', b: '个 gè (ทั่วไป) · 位 wèi (คน แบบสุภาพ) · 口 kǒu (คนในครอบครัว) · 碗 wǎn (ถ้วย/ชาม) | 两 liǎng ใช้บอกจำนวน "2" ส่วน 几 jǐ = กี่/เท่าไร', ex: '一位老师 yí wèi lǎoshī = ครู 1 ท่าน · 五口人 wǔ kǒu rén = ครอบครัว 5 คน · 一碗汤 yì wǎn tāng = ซุป 1 ถ้วย' },
+      { t: 'ลักษณนามที่เจอบ่อย', b: '个 gè (ทั่วไป) · 位 wèi (คน แบบสุภาพ) · 口 kǒu (คนในครอบครัว) · 碗 wǎn (ถ้วย/ชาม) · 件 jiàn (เสื้อผ้า) · 把 bǎ (ของมีด้าม) · 本 běn (หนังสือ) · 支 zhī (ปากกา/พู่กัน) | 两 liǎng ใช้บอกจำนวน "2" ส่วน 几 jǐ = กี่/เท่าไร', ex: '一位老师 yí wèi lǎoshī = ครู 1 ท่าน · 五口人 wǔ kǒu rén = ครอบครัว 5 คน · 两件衣服 liǎng jiàn yīfu = เสื้อผ้า 2 ตัว · 一把雨伞 yì bǎ yǔsǎn = ร่ม 1 คัน · 三支毛笔 sān zhī máobǐ = พู่กัน 3 แท่ง' },
+      { t: 'คุณศัพท์เป็นภาคแสดงได้เลย (ไม่ต้องมี 是)', b: 'คุณศัพท์วางหลังประธานเป็นภาคแสดงได้ทันที มักมี 很 นำหน้า · ปฏิเสธเติม 不 หน้าคุณศัพท์', ex: '这个黑箱子很重 zhège hēi xiāngzi hěn zhòng = กระเป๋าดำใบนี้หนักมาก · 我的箱子不重 wǒ de xiāngzi bú zhòng = กระเป๋าของฉันไม่หนัก' },
+      { t: '些 (xiē) บอกจำนวนไม่แน่นอน', b: 'ใช้หลัง 一 / 哪 / 这 / 那 เท่านั้น — ห้ามใช้กับตัวเลขอื่นนอกจาก 一', ex: '一些药 yìxiē yào (ยาจำนวนหนึ่ง) · 哪些书 nǎxiē shū (หนังสือเล่มไหนบ้าง) · 这些留学生 zhèxiē liúxuéshēng (นักเรียนต่างชาติเหล่านี้)' },
       { t: 'ลำดับคำในประโยค', b: 'เวลา/วัน + ประธาน + สถานที่ + กริยา(ทำอะไร)', ex: '今天我去食堂吃饭 jīntiān wǒ qù shítáng chīfàn = วันนี้ฉันไปโรงอาหารกินข้าว' },
       { t: '不 vs 没(有)', b: '不 bù = ไม่ (ปฏิเสธทั่วไป/อนาคต) · 没有 méiyǒu + คำนาม = ไม่มี · 没(有) + กริยา = ยังไม่ได้ทำ', ex: '我不去 wǒ bú qù (ฉันไม่ไป) · 我没有钱 wǒ méiyǒu qián (ฉันไม่มีเงิน) · 我没吃饭 wǒ méi chīfàn (ฉันยังไม่ได้กินข้าว)' },
       { t: '要 (yào) vs 想 (xiǎng)', b: '要 = ต้องการ/จะเอา (need) · 想 = อยาก (want)', ex: '我要一碗汤 wǒ yào yì wǎn tāng (ฉันเอาซุป 1 ถ้วย) · 我想去中国 wǒ xiǎng qù Zhōngguó (ฉันอยากไปเมืองจีน)' },
