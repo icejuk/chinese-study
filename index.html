@@ -313,8 +313,15 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
       cursor: pointer; border: 1.5px solid transparent;
       transition: transform 0.12s; user-select: none;
+      position: relative;
     }
     .voc-card:active { transform: scale(0.91); }
+    .voc-star {
+      position: absolute; top: 2px; right: 4px;
+      font-size: 15px; line-height: 1; color: #ddd;
+      cursor: pointer; padding: 2px; z-index: 2;
+    }
+    .voc-star.on { color: #ffb300; }
     .voc-card.playing { border-color: currentColor; opacity: 0.85; }
     .voc-en   { font-size: 11px; color: #999; font-weight: 600; line-height: 1.2; min-height: 13px; }
     .voc-zh   { font-size: 22px; font-weight: 800; color: #222; line-height: 1; margin-top: 4px; }
@@ -322,6 +329,66 @@
     .voc-th   { font-size: 13px; color: #444; margin-top: 3px; font-weight: 600; line-height: 1.3; }
     .voc-play { font-size: 9px; color: #ddd; margin-top: 4px; }
     .voc-card.playing .voc-play { color: #888; }
+
+    /* ควิซเลือกตอบ */
+    .quiz-toolbar { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+    .quiz-mode-btn {
+      flex: 1; padding: 9px; border: 1.5px solid #e0e0e0; background: #fff;
+      border-radius: 10px; font-size: 12.5px; font-weight: 700; color: #888; cursor: pointer;
+    }
+    .quiz-mode-btn.on {
+      background: linear-gradient(135deg, #c62828, #e53935);
+      color: #fff; border-color: transparent;
+    }
+    .quiz-restart {
+      padding: 9px 13px; border: none; background: #f0f0f0;
+      border-radius: 10px; font-size: 15px; cursor: pointer;
+    }
+    .quiz-score { text-align: center; font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+    .quiz-scorebar { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+    .quiz-scorebar .quiz-score { flex: 1; margin-bottom: 0; }
+    .quiz-prompt-th { font-size: 30px; font-weight: 800; color: #222; line-height: 1.25; }
+    .quiz-listen { font-size: 60px; line-height: 1; cursor: pointer; }
+    .quiz-hint { font-size: 13px; color: #999; margin-top: 10px; }
+    .quiz-choice.zh { font-size: 22px; font-weight: 800; }
+    .stat-hd { font-size: 14px; font-weight: 800; color: #333; margin: 4px 0 10px; }
+    .stat-row {
+      display: flex; align-items: center; gap: 10px; background: #fff;
+      border-radius: 10px; padding: 9px 12px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+    .stat-zh { font-size: 24px; font-weight: 800; color: #222; min-width: 46px; text-align: center; }
+    .stat-info { flex: 1; font-size: 13px; color: #444; }
+    .stat-py { color: #c62828; font-weight: 600; }
+    .stat-wrong {
+      font-size: 12px; font-weight: 700; color: #c62828;
+      background: #ffebee; border-radius: 8px; padding: 3px 9px; white-space: nowrap;
+    }
+    .quiz-q {
+      background: #fff; border-radius: 14px; padding: 24px 14px; text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 12px; border: 2px solid #c62828;
+    }
+    .quiz-zh { font-size: 46px; font-weight: 800; color: #222; line-height: 1; }
+    .quiz-py { font-size: 16px; color: #c62828; font-weight: 600; margin-top: 10px; }
+    .quiz-play {
+      display: inline-block; margin-top: 12px; font-size: 12px; color: #888;
+      background: #f5f5f5; border-radius: 20px; padding: 6px 16px; cursor: pointer;
+    }
+    .quiz-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .quiz-choice {
+      padding: 15px 8px; border: 1.5px solid #e0e0e0; background: #fff;
+      border-radius: 12px; font-size: 14px; font-weight: 600; color: #333;
+      cursor: pointer; transition: transform 0.1s;
+    }
+    .quiz-choice:active { transform: scale(0.96); }
+    .quiz-choice.right { background: #e8f5e9; border-color: #2e7d32; color: #2e7d32; }
+    .quiz-choice.wrong { background: #ffebee; border-color: #c62828; color: #c62828; }
+    .quiz-empty, .quiz-done { text-align: center; padding: 32px 16px; color: #666; font-size: 14px; line-height: 1.75; }
+    .quiz-done-big { font-size: 50px; font-weight: 800; color: #c62828; }
+    .quiz-done-note { font-size: 12px; color: #999; margin: 10px 0 18px; }
+    .quiz-restart-btn {
+      padding: 11px 26px; border: none; background: linear-gradient(135deg, #c62828, #e53935);
+      color: #fff; border-radius: 22px; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
 
     /* Phrase section */
     .phrase-hd {
@@ -678,6 +745,7 @@
   <div class="tab" onclick="setTab(this,'allnotes')">📝 โน้ตรวม</div>
   <div class="tab" onclick="setTab(this,'bu')">🎵 ผันเสียง</div>
   <div class="tab" onclick="setTab(this,'vocab')">🎲 คำศัพท์</div>
+  <div class="tab" onclick="setTab(this,'quiz')">🎯 ควิซ</div>
   <div class="tab" onclick="setTab(this,'pinyin')">🔤 พินอิน</div>
 </div>
 
@@ -749,6 +817,27 @@
   <div class="section hidden" data-type="allvocab">
     <div class="sec-title" id="allvoc-title">ทบทวนทุกบท · กำลังโหลด...</div>
     <div class="lsn-vgrid" id="all-vgrid"></div>
+  </div>
+
+  <!-- ควิซเลือกตอบ -->
+  <div class="section hidden" data-type="quiz">
+    <div class="sec-title">ทดสอบคำศัพท์ · เลือกคำแปลให้ถูก</div>
+    <div class="quiz-toolbar">
+      <button class="quiz-mode-btn on" id="qset-all" onclick="quizSetSet('all')">ทุกคำ</button>
+      <button class="quiz-mode-btn" id="qset-star" onclick="quizSetSet('star')">⭐ ยังไม่แม่น</button>
+      <button class="quiz-mode-btn" id="qset-due" onclick="quizSetSet('due')">📅 ครบกำหนด</button>
+    </div>
+    <div class="quiz-toolbar">
+      <button class="quiz-mode-btn on" id="qdir-zh2th" onclick="quizSetDir('zh2th')">จีน→ไทย</button>
+      <button class="quiz-mode-btn" id="qdir-th2zh" onclick="quizSetDir('th2zh')">ไทย→จีน</button>
+      <button class="quiz-mode-btn" id="qdir-listen" onclick="quizSetDir('listen')">🔊 ฟัง</button>
+    </div>
+    <div class="quiz-scorebar">
+      <div class="quiz-score" id="quiz-score"></div>
+      <button class="quiz-restart" onclick="quizStart()" title="เริ่มใหม่">🔁</button>
+      <button class="quiz-restart" onclick="quizShowStats()" title="สถิติคำพลาดบ่อย">📊</button>
+    </div>
+    <div id="quiz-body"></div>
   </div>
 
   <!-- โน้ตรวมทุกบท -->
@@ -1044,6 +1133,7 @@ function renderVocabGrid(grid, items) {
       `<div class="voc-th">${v.th}</div>` +
       `<div class="voc-play">▶</div>`;
     d.addEventListener('click', () => playSound(v.zh, d));
+    addStarTo(d, v.zh);
     grid.appendChild(d);
   });
 }
@@ -1397,6 +1487,7 @@ if (window.speechSynthesis) {
 }
 
 function playSound(zh, card) {
+  if (!card) card = { classList: { add() {}, remove() {} } };
   if (activeAudio) { activeAudio.pause(); activeAudio = null; }
   if (activeCard) activeCard.classList.remove('playing');
   if (window.speechSynthesis) speechSynthesis.cancel();
@@ -2091,6 +2182,18 @@ const lsnAllLessons = [
       { zh:'出租车', py:'chūzūchē',   base:'chu',   tone:1, thr:'ชูจูเชอ',       th:'แท็กซี่',            en:'taxi' },
       { zh:'颜色',   py:'yánsè',      base:'yan',   tone:2, thr:'เอี๋ยนเซ่อ',    th:'สี',                 en:'color' },
       { zh:'蓝',     py:'lán',        base:'lan',   tone:2, thr:'ลาน๋',         th:'สีน้ำเงิน',          en:'blue' },
+      { zh:'红色',   py:'hóngsè',     base:'hong',  tone:2, thr:'หง๋เซ่อ',       th:'สีแดง',             en:'red' },
+      { zh:'黄色',   py:'huángsè',    base:'huang', tone:2, thr:'หวง๋เซ่อ',      th:'สีเหลือง',          en:'yellow' },
+      { zh:'蓝色',   py:'lánsè',      base:'lan',   tone:2, thr:'ลาน๋เซ่อ',      th:'สีน้ำเงิน',          en:'blue (color)' },
+      { zh:'绿色',   py:'lǜsè',       base:'lü',    tone:4, thr:'ลวี่เซ่อ',      th:'สีเขียว',           en:'green' },
+      { zh:'白色',   py:'báisè',      base:'bai',   tone:2, thr:'ไป๋เซ่อ',       th:'สีขาว',             en:'white' },
+      { zh:'黑色',   py:'hēisè',      base:'hei',   tone:1, thr:'เฮยเซ่อ',       th:'สีดำ',              en:'black' },
+      { zh:'紫色',   py:'zǐsè',       base:'zi',    tone:3, thr:'จื่อเซ่อ',      th:'สีม่วง',            en:'purple' },
+      { zh:'橙色',   py:'chéngsè',    base:'cheng', tone:2, thr:'เฉิ๋งเซ่อ',     th:'สีส้ม',             en:'orange' },
+      { zh:'灰色',   py:'huīsè',      base:'hui',   tone:1, thr:'ฮุยเซ่อ',       th:'สีเทา',             en:'gray' },
+      { zh:'棕色',   py:'zōngsè',     base:'zong',  tone:1, thr:'จงเซ่อ',        th:'สีน้ำตาล',          en:'brown' },
+      { zh:'粉红色', py:'fěnhóngsè',  base:'fen',   tone:3, thr:'เฟิ่นหง๋เซ่อ',   th:'สีชมพู',            en:'pink' },
+      { zh:'浅蓝色', py:'qiǎnlánsè',  base:'qian',  tone:3, thr:'เฉี่ยนลาน๋เซ่อ', th:'สีฟ้า (ฟ้าอ่อน)',   en:'light blue' },
       { zh:'辆',     py:'liàng',      base:'liang', tone:4, thr:'เลี่ยง',       th:'คัน (ลักษณนามรถ)',   en:'measure word (vehicles)' },
       { zh:'关',     py:'Guān',       base:'guan',  tone:1, thr:'กวาน',         th:'แซ่กวาน (นามสกุลจีน)', en:'Guan (surname)' },
     ],
@@ -2119,7 +2222,6 @@ const lsnAllLessons = [
       { ic:'⭐', t:'คำถามแบบเลือก: A 还是 B', b:'还是 (háishi) = "หรือ" ใช้ถามให้เลือกอย่างใดอย่างหนึ่ง เช่น 茶还是咖啡? chá háishi kāfēi? (ชาหรือกาแฟ) · 是新的还是旧的? shì xīn de háishi jiù de? (ใหม่หรือเก่า)' },
       { ic:'🗣️', t:'啊 เปลี่ยนความหมายตามวรรณยุกต์', b:'อุทาน 啊 (a) ออกเสียงต่างวรรณยุกต์ ความหมายต่างกัน — เสียง 4 (à) = "อ๋อ เข้าใจแล้ว / รู้แล้ว" เช่น 啊，知道了 à, zhīdào le (อ๋อ เข้าใจแล้ว) · 啊，在那儿呢 à, zài nàr ne (อ๋อ อยู่ตรงนั้นไง)' },
       { ic:'🚗', t:'หมวดยานพาหนะ (…车 chē)', b:'车 chē รถ · 自行车 zìxíngchē จักรยาน · 汽车 qìchē รถยนต์ · 摩托车 mótuōchē มอเตอร์ไซค์ · 出租车 chūzūchē แท็กซี่ | 骑 qí = ขี่ (จักรยาน/มอเตอร์ไซค์) · 开车 kāichē = ขับรถ · 打车 dǎchē = เรียกแท็กซี่' },
-      { ic:'🎨', t:'หมวดสี (…色 sè)', b:'颜色 yánsè สี · 红色 hóngsè แดง · 黄色 huángsè เหลือง · 蓝色 lánsè น้ำเงิน · 绿色 lǜsè เขียว · 白色 báisè ขาว · 黑色 hēisè ดำ · 紫色 zǐsè ม่วง · 橙色 chéngsè ส้ม · 灰色 huīsè เทา · 粉红色 fěnhóngsè ชมพู · 浅蓝色 qiǎnlánsè ฟ้าอ่อน' },
       { ic:'🔢', t:'辆 (liàng) ลักษณนามของรถ', b:'ใช้นับยานพาหนะ เช่น 两辆车 liǎng liàng chē (รถ 2 คัน) · 那辆蓝的 nà liàng lán de (คันสีน้ำเงินคันนั้น)' },
       { ic:'📖', t:'ศัพท์เสริมจากโน้ต', b:'上车 shàngchē = ขึ้นรถ · 下车 xiàchē = ลงรถ · 最 zuì = ที่สุด (最好 zuìhǎo ดีที่สุด · 最难 zuìnán ยากที่สุด) · 骑 qí = ขี่' },
     ],
@@ -2169,6 +2271,199 @@ function lsnShuffle(a) {
   return b;
 }
 
+/* ---------------- ติดดาว "ยังไม่แม่น" (localStorage) ---------------- */
+const STAR_KEY = 'xy-star-words';
+function getStars() {
+  try { return new Set(JSON.parse(localStorage.getItem(STAR_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function saveStars(set) { localStorage.setItem(STAR_KEY, JSON.stringify([...set])); }
+function isStarred(zh) { return getStars().has(zh); }
+function toggleStar(zh) {
+  const s = getStars();
+  if (s.has(zh)) s.delete(zh); else s.add(zh);
+  saveStars(s);
+  return s.has(zh);
+}
+function addStar(zh) {
+  const s = getStars();
+  if (!s.has(zh)) { s.add(zh); saveStars(s); }
+}
+function addStarTo(card, zh) {
+  const s = document.createElement('div');
+  s.className = 'voc-star' + (isStarred(zh) ? ' on' : '');
+  s.textContent = '★';
+  s.title = 'ติดดาวว่ายังไม่แม่น';
+  s.addEventListener('click', (e) => {
+    e.stopPropagation();
+    s.classList.toggle('on', toggleStar(zh));
+  });
+  card.appendChild(s);
+}
+
+/* ---------------- SRS (spaced repetition) + สถิติ ---------------- */
+const SRS_KEY = 'xy-srs';
+const SRS_INTERVALS = [0, 1, 2, 4, 7, 15, 30]; // จำนวนวันจนถึงรอบทวนถัดไป (index = box)
+function srsGet() { try { return JSON.parse(localStorage.getItem(SRS_KEY) || '{}'); } catch { return {}; } }
+function srsSave(o) { localStorage.setItem(SRS_KEY, JSON.stringify(o)); }
+function srsToday() { return Math.floor(Date.now() / 86400000); }
+function srsUpdate(zh, correct) {
+  const o = srsGet();
+  const r = o[zh] || { box: 0, due: srsToday(), wrong: 0, right: 0 };
+  if (correct) { r.right++; r.box = Math.min(r.box + 1, 6); r.due = srsToday() + SRS_INTERVALS[r.box]; }
+  else { r.wrong++; r.box = 1; r.due = srsToday(); } // ผิด → กลับมาทวนได้เลยวันนี้
+  o[zh] = r;
+  srsSave(o);
+}
+function srsDueWords() {
+  const o = srsGet(), t = srsToday();
+  return quizAllWords().filter(v => { const r = o[v.zh]; return !r || r.due <= t; });
+}
+
+/* ---------------- ควิซเลือกตอบ ---------------- */
+let quizPool = [], quizIdx = 0, quizRight = 0, quizWrong = 0, quizLocked = false;
+let quizSet = 'all';   // 'all' | 'star' | 'due'
+let quizDir = 'zh2th'; // 'zh2th' | 'th2zh' | 'listen'
+
+function quizAllWords() { return lsnAllLessons.flatMap(L => L.vocab); }
+
+function quizSetSet(set) {
+  quizSet = set;
+  ['all', 'star', 'due'].forEach(s => document.getElementById('qset-' + s).classList.toggle('on', s === set));
+  quizStart();
+}
+function quizSetDir(dir) {
+  quizDir = dir;
+  ['zh2th', 'th2zh', 'listen'].forEach(d => document.getElementById('qdir-' + d).classList.toggle('on', d === dir));
+  quizStart();
+}
+function quizSourceWords() {
+  if (quizSet === 'star') return quizAllWords().filter(v => isStarred(v.zh));
+  if (quizSet === 'due') return srsDueWords();
+  return quizAllWords();
+}
+
+function quizStart() {
+  quizPool = lsnShuffle(quizSourceWords());
+  quizIdx = 0; quizRight = 0; quizWrong = 0; quizLocked = false;
+  const body = document.getElementById('quiz-body');
+  if (!quizPool.length) {
+    document.getElementById('quiz-score').textContent = '';
+    const msg = quizSet === 'star'
+      ? '⭐ ยังไม่มีคำที่ติดดาว<br>แตะดาวมุมขวาบนของการ์ดคำที่ยังไม่แม่นก่อนนะ'
+      : '🎉 ไม่มีคำที่ครบกำหนดทวนวันนี้<br>เก่งมาก! กลับมาทวนพรุ่งนี้ หรือเลือก "ทุกคำ" เพื่อฝึกเพิ่ม';
+    body.innerHTML = `<div class="quiz-empty">${msg}</div>`;
+    return;
+  }
+  quizRender();
+}
+
+function updateQuizScore() {
+  document.getElementById('quiz-score').innerHTML =
+    `<span style="color:#2e7d32">✓ ${quizRight}</span> · ` +
+    `<span style="color:#c62828">✗ ${quizWrong}</span> · ` +
+    `<span style="color:#888">ข้อ ${Math.min(quizIdx + 1, quizPool.length)}/${quizPool.length}</span>`;
+}
+
+function quizRender() {
+  if (quizIdx >= quizPool.length) { quizDone(); return; }
+  quizLocked = false;
+  const q = quizPool[quizIdx];
+  const ansField = (quizDir === 'th2zh') ? 'zh' : 'th';
+  const correct = q[ansField];
+  const seen = new Set([correct]);
+  const distractors = [];
+  for (const v of lsnShuffle(quizAllWords())) {
+    if (!seen.has(v[ansField])) { seen.add(v[ansField]); distractors.push(v[ansField]); }
+    if (distractors.length === 3) break;
+  }
+  const choices = lsnShuffle([correct, ...distractors]);
+  updateQuizScore();
+  let promptHtml;
+  if (quizDir === 'zh2th')
+    promptHtml = `<div class="quiz-zh">${q.zh}</div><div class="quiz-py">${q.py}</div><div class="quiz-play" id="quiz-play">▶ ฟังเสียง</div>`;
+  else if (quizDir === 'th2zh')
+    promptHtml = `<div class="quiz-prompt-th">${q.th}</div><div class="quiz-hint">เลือกอักษรจีนที่ถูก</div>`;
+  else
+    promptHtml = `<div class="quiz-listen" id="quiz-play">🔊</div><div class="quiz-hint">แตะเพื่อฟังอีกครั้ง</div>`;
+  const choiceCls = (ansField === 'zh') ? 'quiz-choice zh' : 'quiz-choice';
+  const body = document.getElementById('quiz-body');
+  body.innerHTML =
+    `<div class="quiz-q" id="quiz-q">${promptHtml}</div>` +
+    `<div class="quiz-choices">` +
+      choices.map(c => `<button class="${choiceCls}">${c}</button>`).join('') +
+    `</div>`;
+  const play = document.getElementById('quiz-play');
+  if (play) play.addEventListener('click', function () { playSound(q.zh, this); });
+  if (quizDir === 'listen') playSound(q.zh);
+  [...body.querySelectorAll('.quiz-choice')].forEach(b => b.addEventListener('click', () => quizAnswer(b, q, correct)));
+}
+
+function quizAnswer(btn, q, correctAns) {
+  if (quizLocked) return;
+  quizLocked = true;
+  const body = document.getElementById('quiz-body');
+  const ok = btn.textContent === correctAns;
+  [...body.querySelectorAll('.quiz-choice')].forEach(b => {
+    b.disabled = true;
+    if (b.textContent === correctAns) b.classList.add('right');
+  });
+  if (quizDir === 'listen') {
+    const qc = document.getElementById('quiz-q');
+    if (qc) qc.innerHTML = `<div class="quiz-zh">${q.zh}</div><div class="quiz-py">${q.py}</div><div class="quiz-hint">${q.th}</div>`;
+  }
+  playSound(q.zh);
+  srsUpdate(q.zh, ok);
+  if (ok) {
+    quizRight++;
+    setTimeout(() => { quizIdx++; quizRender(); }, 850);
+  } else {
+    btn.classList.add('wrong');
+    quizWrong++;
+    addStar(q.zh);
+    setTimeout(() => { quizIdx++; quizRender(); }, 1600);
+  }
+  updateQuizScore();
+}
+
+function quizDone() {
+  const total = quizRight + quizWrong;
+  const pct = total ? Math.round(quizRight / total * 100) : 0;
+  document.getElementById('quiz-score').textContent = '';
+  document.getElementById('quiz-body').innerHTML =
+    `<div class="quiz-done">` +
+      `<div class="quiz-done-big">${pct}%</div>` +
+      `<div>ตอบถูก ${quizRight} · ผิด ${quizWrong} จาก ${total} ข้อ</div>` +
+      `<div class="quiz-done-note">คำที่ตอบผิดถูกติดดาว ⭐ และดึงมาทวนเร็วขึ้นแล้ว<br>พรุ่งนี้เปิดโหมด "📅 ครบกำหนด" เพื่อทวนคำที่ถึงรอบ</div>` +
+      `<button class="quiz-restart-btn" onclick="quizStart()">🔁 เริ่มใหม่</button>` +
+    `</div>`;
+}
+
+function quizShowStats() {
+  const o = srsGet();
+  const rows = quizAllWords()
+    .map(v => ({ v, r: o[v.zh] || { wrong: 0, right: 0, box: 0 } }))
+    .filter(x => x.r.wrong > 0)
+    .sort((a, b) => b.r.wrong - a.r.wrong || a.r.box - b.r.box)
+    .slice(0, 40);
+  document.getElementById('quiz-score').textContent = '';
+  const body = document.getElementById('quiz-body');
+  if (!rows.length) {
+    body.innerHTML = '<div class="quiz-empty">📊 ยังไม่มีสถิติ<br>ลองทำควิซสักรอบก่อน แล้วกลับมาดูคำที่พลาดบ่อยได้เลย</div>';
+    return;
+  }
+  body.innerHTML =
+    `<div class="stat-hd">📊 คำที่พลาดบ่อย (${rows.length} คำ)</div>` +
+    rows.map(x =>
+      `<div class="stat-row">` +
+        `<div class="stat-zh">${x.v.zh}</div>` +
+        `<div class="stat-info"><span class="stat-py">${x.v.py}</span> · ${x.v.th}</div>` +
+        `<div class="stat-wrong">ผิด ${x.r.wrong}</div>` +
+      `</div>`
+    ).join('') +
+    `<button class="quiz-restart-btn" style="margin-top:14px" onclick="quizStart()">↩ กลับไปทำควิซ</button>`;
+}
+
 function lsnMode(el, mode) {
   el.parentElement.querySelectorAll('.lsn-mode').forEach(m => m.classList.remove('active'));
   el.classList.add('active');
@@ -2190,6 +2485,7 @@ function lsnBuildGrid(vocab) {
       `<div class="voc-th">${v.th}</div>` +
       `<div class="voc-play">▶</div>`;
     d.addEventListener('click', () => playSound(v.zh, d));
+    addStarTo(d, v.zh);
     grid.appendChild(d);
   });
 }
@@ -2401,6 +2697,7 @@ function buildAllVocab() {
       `<div class="voc-th">${v.th}</div>` +
       `<div class="voc-play">▶</div>`;
     d.addEventListener('click', () => playSound(v.zh, d));
+    addStarTo(d, v.zh);
     grid.appendChild(d);
   });
 }
@@ -2414,6 +2711,7 @@ function setTab(el, type) {
   if (type === 'vocab') ensureVocabBuilt();
   if (type === 'lesson1') lsnInit();
   if (type === 'allvocab') buildAllVocab();
+  if (type === 'quiz') quizStart();
   if (type === 'allnotes') buildAllNotes();
   if (type === 'bu') buildT3Page();
 }
