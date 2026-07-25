@@ -351,6 +351,7 @@
     .quiz-listen { font-size: 60px; line-height: 1; cursor: pointer; }
     .quiz-hint { font-size: 13px; color: #999; margin-top: 10px; }
     .quiz-choice.zh { font-size: 22px; font-weight: 800; }
+    .quiz-choice.py { color: #c62828; font-weight: 700; }
     .stat-hd { font-size: 14px; font-weight: 800; color: #333; margin: 4px 0 10px; }
     .stat-row {
       display: flex; align-items: center; gap: 10px; background: #fff;
@@ -829,7 +830,7 @@
     </div>
     <div class="quiz-toolbar">
       <button class="quiz-mode-btn on" id="qdir-zh2th" onclick="quizSetDir('zh2th')">จีน→ไทย</button>
-      <button class="quiz-mode-btn" id="qdir-th2zh" onclick="quizSetDir('th2zh')">ไทย→จีน</button>
+      <button class="quiz-mode-btn" id="qdir-th2py" onclick="quizSetDir('th2py')">ไทย→พินอิน</button>
       <button class="quiz-mode-btn" id="qdir-listen" onclick="quizSetDir('listen')">🔊 ฟัง</button>
     </div>
     <div class="quiz-scorebar">
@@ -2237,6 +2238,68 @@ const lsnAllLessons = [
       { zh:'那辆蓝的',       py:'nà liàng lán de',         th:'คันสีน้ำเงินคันนั้น', en:'that blue one' },
     ]
   },
+  {
+    title: 'บทที่ 15 — 你家有几口人 · ครอบครัวคุณมีกี่คน',
+    zh: '你家有几口人', py: 'Nǐ jiā yǒu jǐ kǒu rén', thTitle: 'ครอบครัวคุณมีกี่คน',
+    vocab: [
+      { zh:'全',     py:'quán',      base:'quan',  tone:2, thr:'เฉวี๋ยน',      th:'ทั้ง / ทั้งหมด',      en:'whole; all' },
+      { zh:'照片',   py:'zhàopiàn',  base:'zhao',  tone:4, thr:'จ้าวเพี่ยน',    th:'รูปถ่าย',            en:'photo' },
+      { zh:'张',     py:'zhāng',     base:'zhang', tone:1, thr:'จัง',          th:'ใบ/แผ่น (ลักษณนามกระดาษ/รูป)', en:'measure word (sheets)' },
+      { zh:'看',     py:'kàn',       base:'kan',   tone:4, thr:'ค่าน',         th:'ดู / มอง / เห็น',    en:'to look; to watch' },
+      { zh:'姐姐',   py:'jiějie',    base:'jie',   tone:3, thr:'เจี่ยเจีย',     th:'พี่สาว',             en:'elder sister' },
+      { zh:'只',     py:'zhǐ',       base:'zhi',   tone:3, thr:'จื่อ',         th:'เพียง / แค่',         en:'only; just' },
+      { zh:'做',     py:'zuò',       base:'zuo',   tone:4, thr:'จั้ว',         th:'ทำ',                 en:'to do' },
+      { zh:'大夫',   py:'dàifu',     base:'dai',   tone:4, thr:'ไต้ฝุ',         th:'หมอ',                en:'doctor' },
+      { zh:'医院',   py:'yīyuàn',    base:'yi',    tone:1, thr:'อีเยวี่ยน',     th:'โรงพยาบาล',          en:'hospital' },
+      { zh:'公司',   py:'gōngsī',    base:'gong',  tone:1, thr:'กงซือ',        th:'บริษัท',             en:'company' },
+      { zh:'商店',   py:'shāngdiàn', base:'shang', tone:1, thr:'ซางเตี้ยน',    th:'ร้านค้า',            en:'shop; store' },
+      { zh:'律师',   py:'lǜshī',     base:'lü',    tone:4, thr:'ลวี่ซือ',       th:'ทนายความ',           en:'lawyer' },
+      { zh:'外贸',   py:'wàimào',    base:'wai',   tone:4, thr:'ว่ายเม่า',      th:'การค้าต่างประเทศ',   en:'foreign trade' },
+      { zh:'小',     py:'xiǎo',      base:'xiao',  tone:3, thr:'เสี่ยว',       th:'เล็ก',               en:'small' },
+      { zh:'员工',   py:'yuángōng',  base:'yuan',  tone:2, thr:'เหยวนกง',      th:'พนักงาน',            en:'employee; staff' },
+      { zh:'大概',   py:'dàgài',     base:'da',    tone:4, thr:'ต้าไก้',        th:'ประมาณ',             en:'about; approximately' },
+      { zh:'多',     py:'duō',       base:'duo',   tone:1, thr:'ตัว',          th:'กว่า / เศษ (หลังตัวเลข)', en:'more; odd (after number)' },
+      { zh:'外国',   py:'wàiguó',    base:'wai',   tone:4, thr:'ว่ายกั๋ว',      th:'ต่างประเทศ',         en:'foreign country' },
+    ],
+    dialogue: [
+      { sp:'麦克', zh:'你家有几口人？', py:'Nǐ jiā yǒu jǐ kǒu rén?', th:'(ดูรูปกัน) ครอบครัวคุณมีกี่คน' },
+      { sp:'玛丽', zh:'我家有五口人，爸爸、妈妈、哥哥、姐姐和我。', py:'Wǒ jiā yǒu wǔ kǒu rén, bàba, māma, gēge, jiějie hé wǒ.', th:'ครอบครัวฉันมี 5 คน พ่อ แม่ พี่ชาย พี่สาว และฉัน' },
+      { sp:'麦克', zh:'你有没有全家的照片？', py:'Nǐ yǒu méiyǒu quán jiā de zhàopiàn?', th:'คุณมีรูปถ่ายทั้งครอบครัวไหม' },
+      { sp:'玛丽', zh:'有一张。你看，这是我们全家的照片。你有哥哥姐姐吗？', py:'Yǒu yì zhāng. Nǐ kàn, zhè shì wǒmen quán jiā de zhàopiàn. Nǐ yǒu gēge jiějie ma?', th:'มีใบหนึ่ง ดูสิ นี่รูปทั้งครอบครัวของเรา คุณมีพี่ชายพี่สาวไหม' },
+      { sp:'麦克', zh:'我没有哥哥，也没有姐姐，只有两个弟弟。', py:'Wǒ méiyǒu gēge, yě méiyǒu jiějie, zhǐ yǒu liǎng gè dìdi.', th:'ฉันไม่มีพี่ชาย ไม่มีพี่สาว มีแค่น้องชาย 2 คน' },
+      { sp:'玛丽', zh:'你爸爸、妈妈做什么工作？', py:'Nǐ bàba, māma zuò shénme gōngzuò?', th:'พ่อกับแม่คุณทำงานอะไร' },
+      { sp:'麦克', zh:'我妈妈是大夫，在医院工作，爸爸是一家公司的经理。', py:'Wǒ māma shì dàifu, zài yīyuàn gōngzuò, bàba shì yì jiā gōngsī de jīnglǐ.', th:'แม่ฉันเป็นหมอ ทำงานที่โรงพยาบาล พ่อเป็นผู้จัดการบริษัทแห่งหนึ่ง' },
+      { sp:'玛丽', zh:'我妈妈在商店工作，爸爸是律师。', py:'Wǒ māma zài shāngdiàn gōngzuò, bàba shì lǜshī.', th:'แม่ฉันทำงานร้านค้า พ่อเป็นทนายความ' },
+      { sp:'王老师', zh:'你们是一家什么公司？', py:'Nǐmen shì yì jiā shénme gōngsī?', th:'พวกคุณเป็นบริษัทอะไร' },
+      { sp:'关经理', zh:'是一家外贸公司。', py:'Shì yì jiā wàimào gōngsī.', th:'เป็นบริษัทการค้าต่างประเทศ' },
+      { sp:'王老师', zh:'是一家大公司吗？', py:'Shì yì jiā dà gōngsī ma?', th:'เป็นบริษัทใหญ่ไหม' },
+      { sp:'关经理', zh:'不是。是一家比较小的公司。', py:'Bú shì. Shì yì jiā bǐjiào xiǎo de gōngsī.', th:'ไม่ใช่ เป็นบริษัทที่ค่อนข้างเล็ก' },
+      { sp:'王老师', zh:'有多少员工？', py:'Yǒu duōshao yuángōng?', th:'มีพนักงานกี่คน' },
+      { sp:'关经理', zh:'大概有一百多个员工。', py:'Dàgài yǒu yì bǎi duō gè yuángōng.', th:'ประมาณร้อยกว่าคน' },
+      { sp:'王老师', zh:'都是中国员工吗？', py:'Dōu shì Zhōngguó yuángōng ma?', th:'เป็นพนักงานจีนทั้งหมดไหม' },
+      { sp:'关经理', zh:'不都是中国员工，也有外国员工。', py:'Bù dōu shì Zhōngguó yuángōng, yě yǒu wàiguó yuángōng.', th:'ไม่ได้เป็นพนักงานจีนทั้งหมด มีพนักงานต่างชาติด้วย' },
+    ],
+    notes: [
+      { ic:'⭐', t:'全 (quán) = ทั้ง / ทั้งหมด', b:'วางหน้าคำนาม (全 + N) แปลว่า "ทั้ง...ทั้งหมด"', ex:'全家 quánjiā ทั้งครอบครัว · 全班 quánbān ทั้งห้อง · 全国 quánguó ทั้งประเทศ' },
+      { ic:'⭐', t:'只 (zhǐ) = เพียง / แค่', b:'คำวิเศษณ์ วางหน้ากริยา บอกว่า "มีแค่นั้น"', ex:'只有两个弟弟 zhǐ yǒu liǎng gè dìdi = มีแค่น้องชาย 2 คน' },
+      { ic:'🔢', t:'多 (duō) บอก "กว่า / เศษ"', b:'วางหลังตัวเลขเพื่อบอกจำนวนโดยประมาณ "...กว่า"', ex:'一百多 yì bǎi duō ร้อยกว่า · 二十多 èrshí duō ยี่สิบกว่า' },
+      { ic:'👉', t:'ตำแหน่ง 不 กับ 都 เปลี่ยนความหมาย', b:'不都是 = ไม่ทั้งหมด (บางส่วนใช่ บางส่วนไม่ใช่) · 都不是 = ไม่ใช่สักอันเลย', ex:'不都是中国员工 = ไม่ได้เป็นพนักงานจีนทั้งหมด' },
+      { ic:'💬', t:'ถามอาชีพ: 做什么工作', b:'你做什么工作? nǐ zuò shénme gōngzuò? = คุณทำงานอะไร · ตอบด้วย 是 (อาชีพ) หรือ 在...工作 (ที่ทำงาน)', ex:'我是大夫，在医院工作 = ฉันเป็นหมอ ทำงานที่โรงพยาบาล' },
+      { ic:'👨‍👩‍👧', t:'คำเรียกพี่น้อง (ทบทวน)', b:'姐姐 jiějie พี่สาว · 哥哥 gēge พี่ชาย · 弟弟 dìdi น้องชาย · 妹妹 mèimei น้องสาว' },
+      { ic:'📖', t:'ศัพท์เสริมจากโน้ต', b:'大夫 dàifu = 医生 yīshēng (หมอ) · 张 zhāng ใช้กับของแบน (รูป/กระดาษ/โต๊ะ) · 家 jiā ยังใช้เป็นลักษณนามของบริษัท/ร้าน (一家公司)' },
+    ],
+    phrases: [
+      { zh:'你家有几口人',   py:'nǐ jiā yǒu jǐ kǒu rén',   th:'ครอบครัวคุณมีกี่คน',  en:'how many in your family?' },
+      { zh:'全家的照片',     py:'quán jiā de zhàopiàn',    th:'รูปถ่ายทั้งครอบครัว',  en:'family photo' },
+      { zh:'一张照片',       py:'yì zhāng zhàopiàn',       th:'รูป 1 ใบ',            en:'one photo' },
+      { zh:'做什么工作',     py:'zuò shénme gōngzuò',      th:'ทำงานอะไร',           en:'what job do you do?' },
+      { zh:'在医院工作',     py:'zài yīyuàn gōngzuò',      th:'ทำงานที่โรงพยาบาล',   en:'work at a hospital' },
+      { zh:'有多少员工',     py:'yǒu duōshao yuángōng',    th:'มีพนักงานกี่คน',      en:'how many employees?' },
+      { zh:'一百多个',       py:'yì bǎi duō gè',           th:'ร้อยกว่า (คน/อัน)',   en:'over a hundred' },
+      { zh:'比较小',         py:'bǐjiào xiǎo',             th:'ค่อนข้างเล็ก',        en:'relatively small' },
+      { zh:'只有两个弟弟',   py:'zhǐ yǒu liǎng gè dìdi',   th:'มีแค่น้องชาย 2 คน',   en:'only two younger brothers' },
+    ]
+  },
 ];
 
 let currentLsn = 0;
@@ -2334,7 +2397,7 @@ function quizSetSet(set) {
 }
 function quizSetDir(dir) {
   quizDir = dir;
-  ['zh2th', 'th2zh', 'listen'].forEach(d => document.getElementById('qdir-' + d).classList.toggle('on', d === dir));
+  ['zh2th', 'th2py', 'listen'].forEach(d => document.getElementById('qdir-' + d).classList.toggle('on', d === dir));
   quizStart();
 }
 function quizSourceWords() {
@@ -2369,7 +2432,7 @@ function quizRender() {
   if (quizIdx >= quizPool.length) { quizDone(); return; }
   quizLocked = false;
   const q = quizPool[quizIdx];
-  const ansField = (quizDir === 'th2zh') ? 'zh' : 'th';
+  const ansField = (quizDir === 'th2py') ? 'py' : 'th';
   const correct = q[ansField];
   const seen = new Set([correct]);
   const distractors = [];
@@ -2382,11 +2445,11 @@ function quizRender() {
   let promptHtml;
   if (quizDir === 'zh2th')
     promptHtml = `<div class="quiz-zh">${q.zh}</div><div class="quiz-py">${q.py}</div><div class="quiz-play" id="quiz-play">▶ ฟังเสียง</div>`;
-  else if (quizDir === 'th2zh')
-    promptHtml = `<div class="quiz-prompt-th">${q.th}</div><div class="quiz-hint">เลือกอักษรจีนที่ถูก</div>`;
+  else if (quizDir === 'th2py')
+    promptHtml = `<div class="quiz-prompt-th">${q.th}</div><div class="quiz-hint">เลือกพินอินที่ถูก</div>`;
   else
     promptHtml = `<div class="quiz-listen" id="quiz-play">🔊</div><div class="quiz-hint">แตะเพื่อฟังอีกครั้ง</div>`;
-  const choiceCls = (ansField === 'zh') ? 'quiz-choice zh' : 'quiz-choice';
+  const choiceCls = (ansField === 'py') ? 'quiz-choice py' : 'quiz-choice';
   const body = document.getElementById('quiz-body');
   body.innerHTML =
     `<div class="quiz-q" id="quiz-q">${promptHtml}</div>` +
