@@ -569,9 +569,9 @@
     }
     .phrase-card:active { transform: scale(0.93); }
     .phrase-card.playing { border-color: #e53935; background: #fff5f5; }
-    .phrase-zh  { font-size: 24px; font-weight: 800; color: #222; line-height: 1; }
-    .phrase-py  { font-size: 11px; color: #c62828; margin-top: 4px; font-weight: 700; }
-    .phrase-th  { font-size: 11px; color: #444; margin-top: 3px; font-weight: 600; line-height: 1.3; }
+    .phrase-py  { font-size: 16px; color: var(--red-700); font-weight: 800; line-height: 1.3; }
+    .phrase-zh  { font-size: 18px; font-weight: 700; color: var(--ink-2); line-height: 1.35; margin-top: 1px; }
+    .phrase-th  { font-size: 11.5px; color: var(--ink-2); margin-top: 3px; font-weight: 600; }
     .phrase-tag { display: inline-block; font-size: 9px; color: #fff; background: #e53935;
                   border-radius: 99px; padding: 1px 6px; margin-top: 5px; font-weight: 700; }
 
@@ -680,6 +680,11 @@
       display: flex; align-items: center; justify-content: center;
     }
     .lsn-lp.active { background: var(--red-700); color: white; border-color: var(--red-700); box-shadow: var(--sh-red); }
+    .lsn-lp.seen::after {
+      content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+      width: 4px; height: 4px; border-radius: 50%; background: var(--star);
+    }
+    .lsn-lp.active.seen::after { background: rgba(255,255,255,0.9); }
 
     /* Lesson tab */
     .lsn-modes {
@@ -804,15 +809,24 @@
       border-radius: 8px; margin-top: 6px; text-align: center;
       font-size: 12px; color: #555;
     }
-    .lsn-reveal.show { display: block; }
-    .lsn-reveal b { color: #c62828; font-family: ui-monospace, monospace; }
+    /* จองที่ไว้ล่วงหน้า ปุ่มจะไม่ขยับตำแหน่งระหว่างข้อ */
+    .lsn-reveal { display: block; visibility: hidden; }
+    .lsn-reveal.show { visibility: visible; }
+    .lsn-reveal b { color: var(--red-700); font-family: ui-monospace, monospace; }
+    /* ปุ่มข้อถัดไป: แถบติดล่างจอ (เดิมอยู่ที่ y≈764px = หลุดขอบจอ) */
     .lsn-next {
-      display: none; width: 100%; margin-top: 10px; padding: 11px;
-      background: linear-gradient(135deg,#c62828,#e53935); color: white;
-      border: none; border-radius: 8px; font-weight: 700; font-size: 13px;
-      cursor: pointer;
+      display: none; width: 100%; min-height: 50px;
+      margin: 12px 0 0; padding: 14px;
+      background: var(--grad-red); color: white; font-family: inherit;
+      border: none; border-radius: var(--r-md); font-weight: 800; font-size: 14px;
+      cursor: pointer; box-shadow: var(--sh-red);
     }
     .lsn-next.show { display: block; }
+    .lsn-next-bar {
+      position: sticky; bottom: 0; z-index: 12;
+      margin: 0 -8px; padding: 0 8px calc(6px + var(--sab));
+      background: linear-gradient(to top, var(--bg) 62%, rgba(242,242,247,0));
+    }
     .lsn-prog { width: 100%; margin-top: 10px; }
     .lsn-prog-track { height: 3px; background: #e0e0e0; border-radius: 2px; overflow: hidden; }
     .lsn-prog-fill  { height: 100%; background: linear-gradient(90deg,#c62828,#ffb300); transition: width 0.4s; }
@@ -846,15 +860,29 @@
     }
     .dlg-row:active { transform: scale(0.98); }
     .dlg-row.playing { border-color: #e53935; background: #fff5f5; }
+    /* ป้ายผู้พูด: สีตาม "ตัวละคร" ไม่ใช่ตามลำดับแถว + มีชื่อไทยกำกับ */
     .dlg-sp {
-      flex-shrink: 0; font-size: 11px; font-weight: 800; color: white;
-      background: #c62828; border-radius: 8px; padding: 3px 8px;
-      height: fit-content; margin-top: 2px;
+      flex-shrink: 0; min-width: 60px; text-align: center;
+      font-size: 11px; font-weight: 800; color: white;
+      background: var(--ink-3); border-radius: var(--r-sm); padding: 4px 8px;
+      height: fit-content; margin-top: 2px; line-height: 1.35;
     }
-    .dlg-row:nth-child(even) .dlg-sp { background: #1565c0; }
-    .dlg-zh { font-size: 16px; font-weight: 700; color: #222; line-height: 1.45; }
-    .dlg-py { font-size: 12px; color: #c62828; font-weight: 600; margin-top: 2px; line-height: 1.4; }
-    .dlg-th { font-size: 12px; color: #555; margin-top: 2px; line-height: 1.4; }
+    .dlg-sp-zh { display: block; font-size: 9.5px; font-weight: 600; opacity: 0.82; }
+    .dlg-sp-0 { background: var(--red-700); }
+    .dlg-sp-1 { background: #1565c0; }
+    .dlg-sp-2 { background: #00695c; }
+    .dlg-sp-3 { background: #6a1b9a; }
+    /* พินอินนำ อักษรจีนเป็นชั้นรอง (ให้ตรงกับการ์ดศัพท์) */
+    .dlg-py { font-size: 15px; color: var(--red-700); font-weight: 800; line-height: 1.35; }
+    .dlg-zh { font-size: 15px; font-weight: 600; color: var(--ink-2); line-height: 1.5; margin-top: 1px; }
+    .dlg-th { font-size: 12.5px; color: var(--ink-2); margin-top: 3px; }
+    /* หัวข้อคั่นฉาก */
+    .dlg-sec {
+      display: inline-block; margin: 16px 0 7px;
+      font-size: 12px; font-weight: 800; color: #fff;
+      background: var(--grad-red); border-radius: var(--r-pill); padding: 6px 14px;
+    }
+    .dlg-row:first-child .dlg-sec, .dlg-sec:first-child { margin-top: 2px; }
 
     /* โน้ตของฉัน */
     .note-card {
@@ -897,7 +925,8 @@
       margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
       border-left: 4px solid #ffb300;
     }
-    .sum-t { font-size: 13.5px; font-weight: 800; color: #333; line-height: 1.5; }
+    .sum-b, .sum-ex, .note-b, .sum-intro { max-width: 62ch; }
+    .sum-t { font-size: 13.5px; font-weight: 800; color: var(--ink-1); line-height: 1.5; }
     .sum-b { font-size: 12.5px; color: #555; margin-top: 6px; line-height: 1.75; }
     .sum-ex {
       font-size: 12.5px; color: #c62828; margin-top: 7px; line-height: 1.7;
@@ -976,6 +1005,8 @@
         <div class="lsn-tones" id="tn-tones"></div>
         <div class="lsn-fb" id="tn-fb"></div>
         <div class="lsn-reveal" id="tn-reveal">คำตอบ: <b id="tn-ans"></b></div>
+      </div>
+      <div class="lsn-next-bar">
         <button class="lsn-next" id="tn-next" onclick="lsnToneNext()">ข้อถัดไป →</button>
       </div>
       <div class="lsn-prog">
@@ -1333,7 +1364,8 @@ function buildVocab() {
 
 function shuffleVocab() { buildVocab(); }
 
-function ensureVocabBuilt() { buildVocab(); }
+let vocBuilt = false;
+function ensureVocabBuilt() { if (vocBuilt) return; vocBuilt = true; buildVocab(); }
 
 const specialData = [
   {
@@ -2302,13 +2334,15 @@ const lsnAllLessons = [
       { zh:'笔',       py:'bǐ',        base:'bi',    tone:3, thr:'ปี่',           th:'ปากกา',               en:'pen' },
     ],
     dialogue: [
-      { sp:'A', zh:'你没有箱子吗？', py:'Nǐ méiyǒu xiāngzi ma?', th:'(ที่สนามบิน) คุณไม่มีกระเป๋าหรือ' },
+      { sec:'ฉากที่ 1 · ที่สนามบิน (在机场)' },
+      { sp:'A', zh:'你没有箱子吗？', py:'Nǐ méiyǒu xiāngzi ma?', th:'คุณไม่มีกระเป๋าหรือ' },
       { sp:'B', zh:'有啊。我的在这儿呢。', py:'Yǒu a. Wǒ de zài zhèr ne.', th:'มีสิ ของฉันอยู่นี่ไง' },
       { sp:'A', zh:'我的很重，你的重不重？', py:'Wǒ de hěn zhòng, nǐ de zhòng bu zhòng?', th:'ของฉันหนักมาก ของคุณหนักไหม' },
       { sp:'B', zh:'这个黑的很重，那个红的比较轻。', py:'Zhège hēi de hěn zhòng, nàge hóng de bǐjiào qīng.', th:'ใบดำใบนี้หนักมาก ใบแดงใบนั้นค่อนข้างเบา' },
       { sp:'A', zh:'你的箱子很新，我的很旧。', py:'Nǐ de xiāngzi hěn xīn, wǒ de hěn jiù.', th:'กระเป๋าของคุณใหม่มาก ของฉันเก่ามาก' },
       { sp:'B', zh:'那个新的是朋友的。这个旧的是我的。', py:'Nàge xīn de shì péngyou de. Zhège jiù de shì wǒ de.', th:'ใบใหม่ใบนั้นของเพื่อน ใบเก่าใบนี้ของฉันเอง' },
-      { sp:'A', zh:'先生，这些黑的是什么？', py:'Xiānsheng, zhèxiē hēi de shì shénme?', th:'(ที่ด่านศุลกากร) คุณครับ ของสีดำเหล่านี้คืออะไร' },
+      { sec:'ฉากที่ 2 · ที่ด่านศุลกากร (在海关)' },
+      { sp:'A', zh:'先生，这些黑的是什么？', py:'Xiānsheng, zhèxiē hēi de shì shénme?', th:'คุณครับ ของสีดำเหล่านี้คืออะไร' },
       { sp:'B', zh:'这是一些药。', py:'Zhè shì yìxiē yào.', th:'นี่คือยาจำนวนหนึ่ง' },
       { sp:'A', zh:'什么药？', py:'Shénme yào?', th:'ยาอะไร' },
       { sp:'B', zh:'中药。', py:'Zhōngyào.', th:'ยาจีน' },
@@ -2377,7 +2411,8 @@ const lsnAllLessons = [
       { zh:'关',     py:'Guān',       base:'guan',  tone:1, thr:'กวาน',         th:'แซ่กวาน (นามสกุลจีน)', en:'Guan (surname)' },
     ],
     dialogue: [
-      { sp:'关经理', zh:'王老师，好久不见了。', py:'Wáng lǎoshī, hǎojiǔ bú jiàn le.', th:'(คุยกัน) ครูหวัง ไม่ได้เจอกันนานเลย' },
+      { sec:'ฉากที่ 1 · ทักทาย ถามสารทุกข์ (您身体好吗)' },
+      { sp:'关经理', zh:'王老师，好久不见了。', py:'Wáng lǎoshī, hǎojiǔ bú jiàn le.', th:'ครูหวัง ไม่ได้เจอกันนานเลย' },
       { sp:'王老师', zh:'啊！关经理，欢迎，欢迎！', py:'À! Guān jīnglǐ, huānyíng, huānyíng!', th:'อ๋อ! ผู้จัดการกวาน ยินดีต้อนรับ ๆ' },
       { sp:'关经理', zh:'您身体好吗？', py:'Nín shēntǐ hǎo ma?', th:'สุขภาพคุณดีไหม' },
       { sp:'王老师', zh:'很好。您身体怎么样？', py:'Hěn hǎo. Nín shēntǐ zěnmeyàng?', th:'ดีมาก สุขภาพคุณเป็นยังไงบ้าง' },
@@ -2386,7 +2421,8 @@ const lsnAllLessons = [
       { sp:'关经理', zh:'不太忙。您呢？', py:'Bú tài máng. Nín ne?', th:'ไม่ค่อยยุ่ง แล้วคุณล่ะ' },
       { sp:'王老师', zh:'刚开学，有点儿忙。喝点儿什么？茶还是咖啡？', py:'Gāng kāixué, yǒudiǎnr máng. Hē diǎnr shénme? Chá háishi kāfēi?', th:'เพิ่งเปิดเทอม ยุ่งนิดหน่อย ดื่มอะไรดี ชาหรือกาแฟ' },
       { sp:'关经理', zh:'来杯茶吧！', py:'Lái bēi chá ba!', th:'เอาชาสักแก้วละกัน' },
-      { sp:'田芳', zh:'我的车呢？', py:'Wǒ de chē ne?', th:'(หาจักรยาน) รถของฉันอยู่ไหนล่ะ' },
+      { sec:'ฉากที่ 2 · หาจักรยาน (你的自行车是新的还是旧的)' },
+      { sp:'田芳', zh:'我的车呢？', py:'Wǒ de chē ne?', th:'รถของฉันอยู่ไหนล่ะ' },
       { sp:'张东', zh:'你的车是什么颜色的？', py:'Nǐ de chē shì shénme yánsè de?', th:'รถของคุณสีอะไร' },
       { sp:'田芳', zh:'蓝的。', py:'Lán de.', th:'สีน้ำเงิน' },
       { sp:'张东', zh:'是新的还是旧的？', py:'Shì xīn de háishi jiù de?', th:'คันใหม่หรือคันเก่า' },
@@ -2440,7 +2476,8 @@ const lsnAllLessons = [
       { zh:'外国',   py:'wàiguó',    base:'wai',   tone:4, thr:'ว่ายกั๋ว',      th:'ต่างประเทศ',         en:'foreign country' },
     ],
     dialogue: [
-      { sp:'麦克', zh:'你家有几口人？', py:'Nǐ jiā yǒu jǐ kǒu rén?', th:'(ดูรูปกัน) ครอบครัวคุณมีกี่คน' },
+      { sec:'ฉากที่ 1 · ดูรูปครอบครัว (你家有几口人)' },
+      { sp:'麦克', zh:'你家有几口人？', py:'Nǐ jiā yǒu jǐ kǒu rén?', th:'ครอบครัวคุณมีกี่คน' },
       { sp:'玛丽', zh:'我家有五口人，爸爸、妈妈、哥哥、姐姐和我。', py:'Wǒ jiā yǒu wǔ kǒu rén, bàba, māma, gēge, jiějie hé wǒ.', th:'ครอบครัวฉันมี 5 คน พ่อ แม่ พี่ชาย พี่สาว และฉัน' },
       { sp:'麦克', zh:'你有没有全家的照片？', py:'Nǐ yǒu méiyǒu quán jiā de zhàopiàn?', th:'คุณมีรูปถ่ายทั้งครอบครัวไหม' },
       { sp:'玛丽', zh:'有一张。你看，这是我们全家的照片。你有哥哥姐姐吗？', py:'Yǒu yì zhāng. Nǐ kàn, zhè shì wǒmen quán jiā de zhàopiàn. Nǐ yǒu gēge jiějie ma?', th:'มีใบหนึ่ง ดูสิ นี่รูปทั้งครอบครัวของเรา คุณมีพี่ชายพี่สาวไหม' },
@@ -2448,6 +2485,7 @@ const lsnAllLessons = [
       { sp:'玛丽', zh:'你爸爸、妈妈做什么工作？', py:'Nǐ bàba, māma zuò shénme gōngzuò?', th:'พ่อกับแม่คุณทำงานอะไร' },
       { sp:'麦克', zh:'我妈妈是大夫，在医院工作，爸爸是一家公司的经理。', py:'Wǒ māma shì dàifu, zài yīyuàn gōngzuò, bàba shì yì jiā gōngsī de jīnglǐ.', th:'แม่ฉันเป็นหมอ ทำงานที่โรงพยาบาล พ่อเป็นผู้จัดการบริษัทแห่งหนึ่ง' },
       { sp:'玛丽', zh:'我妈妈在商店工作，爸爸是律师。', py:'Wǒ māma zài shāngdiàn gōngzuò, bàba shì lǜshī.', th:'แม่ฉันทำงานร้านค้า พ่อเป็นทนายความ' },
+      { sec:'ฉากที่ 2 · คุยเรื่องบริษัท (你们公司有多少员工)' },
       { sp:'王老师', zh:'你们是一家什么公司？', py:'Nǐmen shì yì jiā shénme gōngsī?', th:'พวกคุณเป็นบริษัทอะไร' },
       { sp:'关经理', zh:'是一家外贸公司。', py:'Shì yì jiā wàimào gōngsī.', th:'เป็นบริษัทการค้าต่างประเทศ' },
       { sp:'王老师', zh:'是一家大公司吗？', py:'Shì yì jiā dà gōngsī ma?', th:'เป็นบริษัทใหญ่ไหม' },
@@ -2491,8 +2529,8 @@ function lsnBuildPhrases(phrases) {
     const d = document.createElement('div');
     d.className = 'phrase-card';
     d.innerHTML =
-      `<div class="phrase-zh">${p.zh}</div>` +
       `<div class="phrase-py">${p.py}</div>` +
+      `<div class="phrase-zh">${p.zh}</div>` +
       `<div class="phrase-th">${p.th}</div>`;
     d.addEventListener('click', () => playSound(p.zh, d));
     grid.appendChild(d);
@@ -3030,6 +3068,12 @@ function lsnMode(el, mode) {
   el.parentElement.querySelectorAll('.lsn-mode').forEach(m => m.classList.remove('active'));
   el.classList.add('active');
   document.querySelectorAll('.lsn-view').forEach(v => v.classList.toggle('active', v.dataset.mode === mode));
+  navSave({ mode });
+  // เลื่อนกลับไปหัวโหมด — กันหน้าเปล่าเมื่อสลับจากโหมดยาวไปโหมดสั้น
+  const bar = document.querySelector('.lsn-modes');
+  const top = window.scrollY + bar.getBoundingClientRect().top
+            - parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--top-h') || 0);
+  if (window.scrollY > top) window.scrollTo({ top: Math.max(top, 0), behavior: 'instant' });
 }
 
 // Mode 1: vocab grid (เรียงตามลำดับในหนังสือ)
@@ -3053,16 +3097,38 @@ function lsnBuildGrid(vocab) {
 }
 
 // Mode: บทสนทนา
+/* ชื่อไทยของผู้พูด — ป้ายเดิมเป็นอักษรจีนล้วนซึ่งอ่านไม่ออก */
+const SPEAKER_TH = {
+  'A': 'A', 'B': 'B', 'C': 'C',
+  '老师': 'คุณครู', '王老师': 'ครูหวัง', '关经理': 'ผจก.กวาน', '营业员': 'พนักงาน',
+  '麦克': 'ไมค์', '玛丽': 'แมรี่', '田芳': 'เถียนฟาง', '张东': 'จางตง',
+  '李昌浩': 'อีชางโฮ', '爱德华': 'เอ็ดเวิร์ด',
+};
+
 function lsnBuildDlg(dialogue) {
   const box = document.getElementById('lsn-dlg');
   box.innerHTML = '';
+  const order = [];   // สีตามลำดับที่ผู้พูดโผล่ครั้งแรกในบทนี้
   (dialogue || []).forEach(l => {
+    if (l.sec) {
+      const h = document.createElement('div');
+      h.className = 'dlg-sec';
+      h.textContent = l.sec;
+      box.appendChild(h);
+      return;
+    }
+    if (!order.includes(l.sp)) order.push(l.sp);
+    const ci = order.indexOf(l.sp) % 4;
+    const th = SPEAKER_TH[l.sp] || l.sp;
+    const isCode = /^[A-Z]$/.test(l.sp);
     const d = document.createElement('div');
     d.className = 'dlg-row';
     d.innerHTML =
-      `<div class="dlg-sp">${l.sp}</div>` +
-      `<div><div class="dlg-zh">${l.zh}</div>` +
-      `<div class="dlg-py">${l.py}</div>` +
+      `<div class="dlg-sp dlg-sp-${ci}">${th}` +
+        (isCode ? '' : `<span class="dlg-sp-zh">${l.sp}</span>`) +
+      `</div>` +
+      `<div><div class="dlg-py">${l.py}</div>` +
+      `<div class="dlg-zh">${l.zh}</div>` +
       `<div class="dlg-th">${l.th}</div></div>`;
     d.addEventListener('click', () => playSound(l.zh, d));
     box.appendChild(d);
@@ -3212,9 +3278,21 @@ function lsnToneDone() {
 
 function lsnSwitch(idx) {
   currentLsn = idx;
-  document.querySelectorAll('.lsn-lp').forEach((b,i) => b.classList.toggle('active', i===idx));
+  try { localStorage.setItem(LSN_KEY, idx); } catch {}
+  document.querySelectorAll('.lsn-lp').forEach((b,i) => {
+    b.classList.toggle('active', i === idx);
+    b.setAttribute('aria-current', i === idx ? 'true' : 'false');
+  });
+  const active = document.querySelectorAll('.lsn-lp')[idx];
+  if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
   const L = lsnAllLessons[idx];
   document.getElementById('lsn-title').textContent = L.title;
+  // ใส่จำนวนในปุ่มโหมด ให้รู้ปริมาณก่อนกด
+  const modes = document.querySelectorAll('.lsn-mode');
+  const counts = [L.vocab.length, (L.dialogue || []).filter(x => !x.sec).length, (L.notes || []).length];
+  ['📋 ศัพท์', '💬 สนทนา', '📝 โน้ต'].forEach((lbl, i) => {
+    if (modes[i]) modes[i].innerHTML = `${lbl} <b style="opacity:.75">${counts[i]}</b>`;
+  });
   tnPool.length = 0;
   makeTnPool(L).forEach(x => tnPool.push(x));
   lsnBuildGrid(L.vocab);
@@ -3228,18 +3306,23 @@ function lsnSwitch(idx) {
 }
 
 let lsnBuilt = false;
+const LSN_KEY = 'xy-lsn';
 function lsnInit() {
   if (lsnBuilt) return;
   lsnBuilt = true;
   const picker = document.getElementById('lsn-picker');
+  const seen = getStars();
   lsnAllLessons.forEach((L, i) => {
-    const b = document.createElement('div');
-    b.className = 'lsn-lp' + (i === 0 ? ' active' : '');
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lsn-lp' + (L.vocab.some(v => seen.has(v.zh)) ? ' seen' : '');
     b.textContent = i + 1;
+    b.setAttribute('aria-label', 'บทที่ ' + (i + 1) + ' ' + L.thTitle);
     b.addEventListener('click', () => lsnSwitch(i));
     picker.appendChild(b);
   });
-  lsnSwitch(0);
+  const saved = parseInt(localStorage.getItem(LSN_KEY) || '0', 10);
+  lsnSwitch(Math.min(Math.max(saved || 0, 0), lsnAllLessons.length - 1));
 }
 lsnInit();
 
@@ -3678,8 +3761,14 @@ function pinFilter(el, kind) {
 buildNav();
 (function bootNav() {
   const fromHash = (location.hash || '').slice(1);
-  const saved = navLoad().tab;
-  goTab(navValid(fromHash) ? fromHash : (navValid(saved) ? saved : 'lesson1'));
+  const n = navLoad();
+  goTab(navValid(fromHash) ? fromHash : (navValid(n.tab) ? n.tab : 'lesson1'));
+  // คืนโหมดย่อยของบทเรียนที่เปิดค้างไว้
+  if (n.mode && n.mode !== 'vocab') {
+    const m = [...document.querySelectorAll('.lsn-mode')]
+      .find(x => (x.getAttribute('onclick') || '').includes(`'${n.mode}'`));
+    if (m) lsnMode(m, n.mode);
+  }
 })();
 
 /* ---------------- PWA: Service Worker ---------------- */
