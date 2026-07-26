@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>鑫越 — เรียนภาษาจีน</title>
 
   <!-- PWA -->
@@ -20,14 +20,74 @@
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="apple-touch-icon" href="./icon.svg">
   <style>
+    /* ===== Design tokens (ธีมแดง) ===== */
+    :root {
+      /* แดงแบรนด์ */
+      --red-900: #7f1414;
+      --red-800: #b71c1c;
+      --red-700: #c62828;
+      --red-600: #d32f2f;
+      --red-500: #e53935;
+      --red-50:  #ffebee;
+      --grad-red: linear-gradient(135deg, #c62828, #e53935);
+      --grad-red-dark: linear-gradient(135deg, #b71c1c, #e53935);
+      /* สถานะ — แยกจากแดงแบรนด์ให้แยกออกในแวบเดียว */
+      --ok:     #2e7d32;
+      --ok-bg:  #e8f5e9;
+      --err:    #7f1d1d;
+      --err-bg: #fdecea;
+      /* คำอ่านไทย (อำพัน) */
+      --amber:    #a15c00;
+      --amber-bg: #fff8e1;
+      --star:     #f2a600;
+      /* หมึก / พื้น */
+      --ink-1: #1f1f22;
+      --ink-2: #46464b;
+      --ink-3: #5f5f66;
+      --ink-4: #83838c;
+      --line:  #dcdce2;
+      --bg:    #f2f2f7;
+      --surface: #ffffff;
+      /* จังหวะ */
+      --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-pill: 99px;
+      --sh-1: 0 1px 3px rgba(0,0,0,0.08);
+      --sh-2: 0 2px 8px rgba(0,0,0,0.10);
+      --sh-red: 0 2px 8px rgba(198,40,40,0.28);
+      /* safe area + ความสูง chrome */
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+      --hd-h: 48px;
+      --top-h: 48px;
+      --bnav-h: 58px;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: #f2f2f7; min-height: 100vh; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg); min-height: 100vh;
+      -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+      overscroll-behavior-y: contain;
+      padding-bottom: calc(var(--bnav-h) + var(--sab));
+    }
+    html { scroll-padding-top: calc(var(--top-h) + 8px); }
+
+    /* ข้อความไทยต้องมีที่ให้วรรณยุกต์บน-ล่าง */
+    .voc-thr, .voc-th, .thai, .ex-th, .sp-mean, .sp-label, .dlg-th,
+    .lsn-q-th, .phrase-th, .bu-th, .hd-name-th, .sum-b, .note-b { line-height: 1.5; }
+    .pinyin, .ex-py, .sp-after, .sp-before { line-height: 1.25; }
+
+    /* ===== topbar: header + tabs เป็นชั้น sticky เดียว (เลิก magic number) ===== */
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      box-shadow: var(--sh-2);
+    }
 
     header {
-      background: linear-gradient(135deg, #b71c1c, #e53935);
-      color: white; padding: 6px 16px 6px;
-      text-align: center; position: sticky; top: 0; z-index: 20;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      background: var(--grad-red-dark);
+      color: white; padding: calc(6px + var(--sat)) 16px 6px;
+      text-align: center;
     }
     header h1 { font-size: 16px; font-weight: 800; letter-spacing: 0.3px; }
     header .sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
@@ -36,34 +96,75 @@
     .hd-name-zh { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); letter-spacing: 1px; }
     .hd-cat { width: 32px; height: 32px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35)); flex-shrink: 0; }
     .hd-name-py { font-size: 15px; font-weight: 800; color: white; letter-spacing: 1.5px; line-height: 1; display: inline-flex; align-items: baseline; gap: 6px; }
-    .hd-name-th { font-size: 10px; color: rgba(255,255,255,0.6); letter-spacing: 0.3px; line-height: 1; }
+    .hd-name-th { font-size: 11px; color: rgba(255,255,255,0.82); letter-spacing: 0.3px; line-height: 1; }
 
-    .tabs {
-      display: flex; background: white;
-      border-bottom: 1px solid #ddd;
-      position: sticky; top: 46px; z-index: 19;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      overflow-x: auto; scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
+    /* ===== nav ระดับ 1: 4 กลุ่ม (มือถือ = แถบล่างในระยะนิ้วโป้ง) ===== */
+    .bnav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      background: rgba(255,255,255,0.96);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      backdrop-filter: saturate(180%) blur(12px);
+      border-top: 1px solid var(--line);
+      padding-bottom: var(--sab);
     }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tabs::after {
-      content: '›'; position: sticky; right: 0;
-      background: linear-gradient(to right, transparent, white 40%);
-      color: #bbb; font-size: 18px; line-height: 38px;
-      padding: 0 6px 0 16px; pointer-events: none;
-      flex-shrink: 0;
+    .bnav button {
+      min-height: var(--bnav-h); border: 0; background: none; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      font-family: inherit; font-size: 11px; font-weight: 700; color: var(--ink-4);
+      padding: 6px 2px; transition: color 0.15s;
     }
-    .tab {
-      flex-shrink: 0; padding: 9px 12px; text-align: center;
-      font-size: 11px; font-weight: 600; color: #999;
-      cursor: pointer; border-bottom: 2.5px solid transparent;
-      transition: all 0.2s; user-select: none; white-space: nowrap;
-    }
-    .tab.active { color: #c62828; border-bottom-color: #c62828; }
+    .bnav .bn-ic { font-size: 21px; line-height: 1; }
+    .bnav button.on { color: var(--red-700); }
+    .bnav button.on .bn-ic { transform: scale(1.06); }
+    .bnav button:active { opacity: 0.6; }
 
-    .content { padding: 8px 8px 24px; }
+    /* ===== nav ระดับ 2: segmented control ===== */
+    .subnav {
+      display: flex; gap: 6px; background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      padding: 7px calc(10px + var(--sal)) 8px calc(10px + var(--sar));
+    }
+    .subnav.empty { display: none; }
+    .subnav button {
+      flex: 1; min-height: 40px; cursor: pointer; font-family: inherit;
+      border: 1.5px solid var(--line); background: var(--surface);
+      border-radius: var(--r-sm); font-size: 12.5px; font-weight: 700; color: var(--ink-3);
+      white-space: nowrap; transition: all 0.15s;
+    }
+    .subnav button.on {
+      background: var(--grad-red); color: #fff; border-color: transparent;
+      box-shadow: var(--sh-red);
+    }
+
+    .content {
+      max-width: 640px; margin: 0 auto;
+      padding: 8px calc(8px + var(--sar)) calc(24px + var(--sab)) calc(8px + var(--sal));
+    }
+
+    /* ปุ่มกลับขึ้นบน */
+    .fab-top {
+      position: fixed; z-index: 29;
+      right: calc(14px + var(--sar));
+      bottom: calc(14px + var(--bnav-h) + var(--sab));
+      width: 46px; height: 46px; border-radius: 50%; border: 0;
+      background: var(--grad-red); color: #fff; font-size: 21px; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(198,40,40,0.42);
+      display: none; align-items: center; justify-content: center;
+    }
+    .fab-top.show { display: flex; }
+
+    @media (min-width: 700px) {
+      body { padding-bottom: 0; }
+      .bnav {
+        position: static; border-top: 0; border-bottom: 1px solid var(--line);
+        padding-bottom: 0; background: var(--surface); backdrop-filter: none;
+      }
+      .bnav button { min-height: 52px; flex-direction: row; gap: 7px; font-size: 13px; }
+      .bnav .bn-ic { font-size: 18px; }
+      .bnav button.on { box-shadow: inset 0 -3px 0 var(--red-700); }
+      .fab-top { bottom: calc(20px + var(--sab)); }
+    }
 
     .section { margin-bottom: 10px; }
     .section.hidden { display: none; }
@@ -91,21 +192,19 @@
 
     .pinyin {
       font-size: 19px; font-weight: 900;
-      color: #c62828; line-height: 1;
-      letter-spacing: -0.3px;
+      color: var(--red-700);
     }
     .pinyin.sm { font-size: 14px; }
-    .card .zh { font-size: 13px; color: #bbb; margin-top: 1px; }
+    .card .zh { font-size: 13px; color: var(--ink-4); margin-top: 1px; }
     .thai {
-      font-size: 10px; color: #555;
-      margin-top: 3px; line-height: 1.3;
-      min-height: 14px;
+      font-size: 11px; color: var(--ink-2);
+      margin-top: 3px; min-height: 16px;
     }
     .play-btn {
-      display: inline-block; margin-top: 4px;
-      font-size: 10px; color: #ccc;
-      width: 18px; height: 18px; line-height: 18px;
-      border-radius: 50%; background: #f5f5f5;
+      display: inline-block; margin-top: 5px;
+      font-size: 11px; color: var(--red-700);
+      width: 24px; height: 24px; line-height: 24px;
+      border-radius: 50%; background: var(--red-50);
       transition: all 0.15s;
     }
     .card.playing .play-btn { background: #e53935; color: white; }
@@ -233,9 +332,9 @@
     .ex-card.orange .ex-py { color: #e65100; }
     .ex-card.teal   .ex-py { color: #00695c; }
     .ex-zh { font-size: 18px; color: #333; margin-top: 1px; line-height: 1; }
-    .ex-th { font-size: 9.5px; color: #777; margin-top: 3px; line-height: 1.2; }
-    .ex-play { font-size: 9px; color: #ddd; margin-top: 3px; }
-    .ex-card.playing .ex-play { color: #e53935; }
+    .ex-th { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+    .ex-play { display: inline-block; font-size: 10px; font-weight: 700; color: var(--red-700); background: var(--red-50); border-radius: var(--r-pill); padding: 1px 8px; margin-top: 4px; }
+    .ex-card.playing .ex-play { background: var(--red-700); color: #fff; }
 
     /* Special cases tab */
     .sp-section { margin-bottom: 12px; }
@@ -258,10 +357,10 @@
     .sp-arrow  { font-size: 9px; color: #ccc; line-height: 1; }
     .sp-after  { font-size: 15px; font-weight: 900; line-height: 1; }
     .sp-zh     { font-size: 17px; color: #333; margin-top: 2px; line-height: 1; }
-    .sp-mean   { font-size: 9.5px; color: #666; margin-top: 3px; line-height: 1.3; }
-    .sp-label  { font-size: 8.5px; color: #aaa; margin-top: 2px; line-height: 1.2; }
-    .sp-play   { font-size: 9px; color: #ddd; margin-top: 3px; }
-    .sp-card.playing .sp-play { color: #888; }
+    .sp-mean   { font-size: 11px; color: var(--ink-2); margin-top: 3px; }
+    .sp-label  { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+    .sp-play   { display: inline-block; font-size: 10px; font-weight: 700; color: var(--red-700); background: var(--red-50); border-radius: var(--r-pill); padding: 1px 8px; margin-top: 4px; }
+    .sp-card.playing .sp-play { background: var(--red-700); color: #fff; }
     .bg-violet    { background: #5e35b1; }
     .bg-indigo    { background: #3949ab; }
     .bg-teal2     { background: #00796b; }
@@ -317,32 +416,43 @@
     }
     .voc-card:active { transform: scale(0.91); }
     .voc-star {
-      position: absolute; top: 2px; right: 4px;
-      font-size: 15px; line-height: 1; color: #ddd;
-      cursor: pointer; padding: 2px; z-index: 2;
+      position: absolute; top: -1px; right: 0;
+      font-size: 17px; line-height: 1; color: #9a9aa2;
+      cursor: pointer; padding: 7px; z-index: 2;
     }
-    .voc-star.on { color: #ffb300; }
+    .voc-star.on { color: var(--star); }
     .voc-card.playing { border-color: currentColor; opacity: 0.85; }
-    .voc-en   { font-size: 11px; color: #999; font-weight: 600; line-height: 1.2; min-height: 13px; }
-    .voc-zh   { font-size: 22px; font-weight: 800; color: #222; line-height: 1; margin-top: 4px; }
-    .voc-py   { font-size: 13px; color: #c62828; margin-top: 3px; line-height: 1.3; font-weight: 600; }
-    .voc-th   { font-size: 13px; color: #444; margin-top: 3px; font-weight: 600; line-height: 1.3; }
-    .voc-play { font-size: 9px; color: #ddd; margin-top: 4px; }
-    .voc-card.playing .voc-play { color: #888; }
+    /* ลำดับชั้นการ์ด: พินอิน (อ่านได้) เป็นพระเอก → อักษรจีนเป็นชั้นรอง */
+    .voc-en   { font-size: 11px; color: var(--ink-4); font-weight: 600; line-height: 1.35; }
+    .voc-py   { font-size: 17px; font-weight: 800; color: var(--red-700); line-height: 1.3; letter-spacing: -0.2px; }
+    .voc-zh   { font-size: 19px; font-weight: 700; color: var(--ink-2); line-height: 1.25; margin-top: 1px; }
+    .voc-th   { font-size: 12px; color: var(--ink-2); margin-top: 3px; font-weight: 600; }
+    .voc-play {
+      display: inline-block; margin-top: 5px;
+      font-size: 10px; font-weight: 700; color: var(--red-700);
+      background: var(--red-50); border-radius: var(--r-pill); padding: 2px 9px;
+    }
+    .voc-card.playing .voc-play { background: var(--red-700); color: #fff; }
+    @media (min-width: 560px) {
+      .voc-grid, .lsn-vgrid { grid-template-columns: repeat(4, 1fr) !important; }
+    }
 
     /* ควิซเลือกตอบ */
-    .quiz-toolbar { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+    .quiz-toolbar { display: flex; gap: 6px; align-items: center; margin-bottom: 7px; }
     .quiz-mode-btn {
-      flex: 1; padding: 9px; border: 1.5px solid #e0e0e0; background: #fff;
-      border-radius: 10px; font-size: 12.5px; font-weight: 700; color: #888; cursor: pointer;
+      flex: 1; min-height: 42px; padding: 8px 4px; font-family: inherit;
+      border: 1.5px solid var(--line); background: var(--surface);
+      border-radius: var(--r-sm); font-size: 12.5px; font-weight: 700; color: var(--ink-3);
+      cursor: pointer; white-space: nowrap;
     }
     .quiz-mode-btn.on {
-      background: linear-gradient(135deg, #c62828, #e53935);
-      color: #fff; border-color: transparent;
+      background: var(--grad-red); color: #fff; border-color: transparent;
+      box-shadow: var(--sh-red);
     }
     .quiz-restart {
-      padding: 9px 13px; border: none; background: #f0f0f0;
-      border-radius: 10px; font-size: 15px; cursor: pointer;
+      min-width: 44px; min-height: 42px; padding: 8px 12px; border: none;
+      background: #ebebf0; color: var(--ink-2);
+      border-radius: var(--r-sm); font-size: 16px; cursor: pointer;
     }
     .quiz-score { text-align: center; font-size: 13px; font-weight: 700; margin-bottom: 12px; }
     .quiz-scorebar { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
@@ -364,6 +474,56 @@
       font-size: 12px; font-weight: 700; color: #c62828;
       background: #ffebee; border-radius: 8px; padding: 3px 9px; white-space: nowrap;
     }
+
+    /* เรียงประโยค */
+    .sb-cats {
+      display: flex; flex-wrap: nowrap; gap: 6px;
+      overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      scroll-snap-type: x proximity; margin: 0 -8px 10px; padding: 2px 8px 4px;
+    }
+    .sb-cats::-webkit-scrollbar { display: none; }
+    .sb-cat {
+      flex-shrink: 0; scroll-snap-align: center; font-family: inherit;
+      min-height: 40px; padding: 8px 14px; border: 1.5px solid var(--line); background: var(--surface);
+      border-radius: var(--r-pill); font-size: 12.5px; font-weight: 700; color: var(--ink-3);
+      cursor: pointer; white-space: nowrap;
+    }
+    .sb-cat.on { background: var(--grad-red); color: #fff; border-color: transparent; box-shadow: var(--sh-red); }
+    .sb-progress { text-align: center; font-size: 13px; font-weight: 700; color: #888; margin-bottom: 12px; }
+    .sb-prompt {
+      background: #fff; border-radius: 14px; padding: 18px 14px; text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 12px; border: 2px solid #c62828;
+    }
+    .sb-prompt-th { font-size: 22px; font-weight: 800; color: #222; line-height: 1.35; }
+    .sb-note { font-size: 12px; color: #999; margin-top: 8px; }
+    .sb-answer {
+      min-height: 122px; display: flex; flex-wrap: wrap; gap: 7px; align-content: flex-start;
+      padding: 12px; border: 2px dashed #c3c3cb; border-radius: var(--r-md);
+      margin-bottom: 14px; background: #fafafb;
+    }
+    .sb-answer.correct { border-color: var(--ok); border-style: solid; background: var(--ok-bg); }
+    .sb-answer.wrong { border-color: var(--err); border-width: 3px; background: var(--err-bg); animation: sbShake 0.3s; }
+    @keyframes sbShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+    .sb-answer-hint { color: #bbb; font-size: 13px; margin: auto; }
+    .sb-bank { display: flex; flex-wrap: wrap; gap: 7px; justify-content: flex-start; margin-bottom: 14px; }
+    .sb-tile {
+      display: flex; flex-direction: column-reverse; align-items: center; gap: 1px;
+      min-height: 48px; padding: 7px 13px; border: 1.5px solid var(--line); background: var(--surface);
+      border-radius: 10px; cursor: pointer; transition: transform 0.1s, opacity 0.15s;
+      font-family: inherit;
+    }
+    .sb-tile:active { transform: scale(0.94); }
+    .sb-tile:disabled { opacity: 0.75; }
+    .sb-tile.used { opacity: 0.2; pointer-events: none; }
+    .sb-tile-zh { font-size: 16px; font-weight: 700; color: var(--ink-2); line-height: 1.2; }
+    .sb-tile-py { font-size: 14px; color: var(--red-700); font-weight: 800; line-height: 1.25; }
+    .sb-actions { display: flex; gap: 8px; justify-content: center; }
+    .sb-btn {
+      padding: 9px 16px; border: 1.5px solid #e0e0e0; background: #fff;
+      border-radius: 10px; font-size: 13px; font-weight: 700; color: #666; cursor: pointer;
+    }
+    .sb-solved { text-align: center; font-size: 14px; color: #2e7d32; font-weight: 700; margin-bottom: 12px; line-height: 1.7; }
+    .sb-solved-py { color: #c62828; font-size: 15px; }
     .quiz-q {
       background: #fff; border-radius: 14px; padding: 24px 14px; text-align: center;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 12px; border: 2px solid #c62828;
@@ -376,13 +536,14 @@
     }
     .quiz-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .quiz-choice {
-      padding: 15px 8px; border: 1.5px solid #e0e0e0; background: #fff;
-      border-radius: 12px; font-size: 14px; font-weight: 600; color: #333;
+      min-height: 54px; padding: 14px 8px; font-family: inherit;
+      border: 1.5px solid var(--line); background: var(--surface);
+      border-radius: var(--r-md); font-size: 14px; font-weight: 600; color: var(--ink-1);
       cursor: pointer; transition: transform 0.1s;
     }
     .quiz-choice:active { transform: scale(0.96); }
-    .quiz-choice.right { background: #e8f5e9; border-color: #2e7d32; color: #2e7d32; }
-    .quiz-choice.wrong { background: #ffebee; border-color: #c62828; color: #c62828; }
+    .quiz-choice.right { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); font-weight: 800; }
+    .quiz-choice.wrong, .quiz-choice.wrong.py { background: var(--err-bg); border-color: var(--err); color: var(--err); text-decoration: line-through; }
     .quiz-empty, .quiz-done { text-align: center; padding: 32px 16px; color: #666; font-size: 14px; line-height: 1.75; }
     .quiz-done-big { font-size: 50px; font-weight: 800; color: #c62828; }
     .quiz-done-note { font-size: 12px; color: #999; margin: 10px 0 18px; }
@@ -502,23 +663,36 @@
     .pin-block.hidden { display: none; }
 
     /* Lesson selector */
-    .lsn-lessons { display: flex; gap: 6px; padding: 4px 0 8px; align-items: center; flex-wrap: wrap; }
-    .lsn-lessons-label { font-size: 10px; font-weight: 700; color: #aaa; margin-right: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    /* ตัวเลือกบท: แถวเดียวเลื่อนแนวนอน (ไม่ล้นหลายแถวเมื่อบทเพิ่ม) */
+    .lsn-lessons {
+      display: flex; gap: 8px; align-items: center;
+      flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; scroll-snap-type: x proximity;
+      margin: 0 -8px; padding: 4px 8px 9px;
+    }
+    .lsn-lessons::-webkit-scrollbar { display: none; }
+    .lsn-lessons-label { font-size: 11px; font-weight: 700; color: var(--ink-3); margin-right: 2px; flex-shrink: 0; }
     .lsn-lp {
-      width: 30px; height: 30px; border-radius: 50%; font-size: 12px; font-weight: 800;
-      cursor: pointer; border: 1.5px solid #e0e0e0; color: #aaa; background: white;
-      transition: all 0.15s; user-select: none;
+      width: 38px; height: 38px; border-radius: 50%; font-size: 13px; font-weight: 800;
+      cursor: pointer; border: 1.5px solid var(--line); color: var(--ink-3); background: var(--surface);
+      transition: all 0.15s; user-select: none; flex-shrink: 0; scroll-snap-align: center;
+      font-family: inherit; position: relative;
       display: flex; align-items: center; justify-content: center;
     }
-    .lsn-lp.active { background: #c62828; color: white; border-color: #c62828; box-shadow: 0 2px 6px rgba(198,40,40,0.3); }
+    .lsn-lp.active { background: var(--red-700); color: white; border-color: var(--red-700); box-shadow: var(--sh-red); }
 
     /* Lesson tab */
-    .lsn-modes { display: flex; gap: 4px; padding: 6px 0 10px; flex-wrap: wrap; }
+    .lsn-modes {
+      display: flex; gap: 5px; flex-wrap: nowrap;
+      position: sticky; top: var(--top-h); z-index: 18;
+      background: var(--bg); margin: 0 -8px; padding: 7px 8px 9px;
+      box-shadow: 0 6px 8px -7px rgba(0,0,0,0.25);
+    }
     .lsn-mode {
-      flex: 1; min-width: 70px; padding: 7px 8px; border-radius: 8px;
-      font-size: 11px; font-weight: 700; cursor: pointer; user-select: none;
-      background: white; border: 1.5px solid #e0e0e0; color: #777;
-      text-align: center; transition: all 0.15s;
+      flex: 1; min-width: 0; padding: 10px 4px; border-radius: var(--r-sm);
+      font-size: 11.5px; font-weight: 700; cursor: pointer; user-select: none;
+      background: var(--surface); border: 1.5px solid var(--line); color: var(--ink-3);
+      text-align: center; transition: all 0.15s; white-space: nowrap;
     }
     .lsn-mode.active {
       background: linear-gradient(135deg,#c62828,#e53935);
@@ -617,13 +791,14 @@
     .lsn-tone-mark { font-size: 22px; font-weight: 800; color: #c62828; font-family: ui-monospace, monospace; }
     .lsn-tone-desc { font-size: 9.5px; color: #888; }
     .lsn-tone.ok  { border-color: #2e7d32; background: #e8f5e9; }
-    .lsn-tone.ok .lsn-tone-mark { color: #2e7d32; }
-    .lsn-tone.bad { border-color: #c62828; background: #ffebee; }
+    .lsn-tone.ok .lsn-tone-mark { color: var(--ok); }
+    .lsn-tone.bad { border-color: var(--err); background: var(--err-bg); }
+    .lsn-tone.bad .lsn-tone-mark { color: var(--err); }
     .lsn-tone:disabled { cursor: default; }
 
     .lsn-fb { min-height: 24px; margin-top: 10px; font-size: 13px; font-weight: 700; text-align: center; }
     .lsn-fb.ok  { color: #2e7d32; }
-    .lsn-fb.bad { color: #c62828; }
+    .lsn-fb.bad { color: var(--err); }
     .lsn-reveal {
       display: none; background: #f5f5f5; padding: 8px 12px;
       border-radius: 8px; margin-top: 6px; text-align: center;
@@ -656,7 +831,11 @@
     }
 
     /* คำอ่านภาษาไทยบนการ์ดศัพท์ */
-    .voc-thr { font-size: 11px; color: #e08a00; margin-top: 2px; font-weight: 700; line-height: 1.2; }
+    .voc-thr {
+      display: inline-block; font-size: 12.5px; font-weight: 700;
+      color: var(--amber); background: var(--amber-bg);
+      border-radius: 6px; padding: 0 6px; margin-top: 3px;
+    }
 
     /* บทสนทนา */
     .dlg-row {
@@ -728,6 +907,7 @@
 </head>
 <body>
 
+<div class="topbar">
 <header>
 
 
@@ -740,15 +920,11 @@
   </div>
 </header>
 
-<div class="tabs">
-  <div class="tab active" onclick="setTab(this,'lesson1')">📖 บทเรียน</div>
-  <div class="tab" onclick="setTab(this,'allvocab')">📚 ทบทวน</div>
-  <div class="tab" onclick="setTab(this,'allnotes')">📝 โน้ตรวม</div>
-  <div class="tab" onclick="setTab(this,'bu')">🎵 ผันเสียง</div>
-  <div class="tab" onclick="setTab(this,'vocab')">🎲 คำศัพท์</div>
-  <div class="tab" onclick="setTab(this,'quiz')">🎯 ควิซ</div>
-  <div class="tab" onclick="setTab(this,'pinyin')">🔤 พินอิน</div>
+  <nav class="bnav" id="bnav"></nav>
+  <nav class="subnav empty" id="subnav"></nav>
 </div>
+
+<button class="fab-top" id="fabTop" aria-label="กลับขึ้นบน">↑</button>
 
 <div class="content">
   <div class="no-audio" id="noAudio">⚠️ เบราว์เซอร์นี้ไม่รองรับเสียง กรุณาใช้ Chrome หรือ Safari</div>
@@ -814,12 +990,6 @@
     </div>
   </div>
 
-  <!-- ทบทวนทุกบท -->
-  <div class="section hidden" data-type="allvocab">
-    <div class="sec-title" id="allvoc-title">ทบทวนทุกบท · กำลังโหลด...</div>
-    <div class="lsn-vgrid" id="all-vgrid"></div>
-  </div>
-
   <!-- ควิซเลือกตอบ -->
   <div class="section hidden" data-type="quiz">
     <div class="sec-title">ทดสอบคำศัพท์ · เลือกคำแปลให้ถูก</div>
@@ -839,6 +1009,14 @@
       <button class="quiz-restart" onclick="quizShowStats()" title="สถิติคำพลาดบ่อย">📊</button>
     </div>
     <div id="quiz-body"></div>
+  </div>
+
+  <!-- เรียงประโยค -->
+  <div class="section hidden" data-type="sentence">
+    <div class="sec-title">เรียงประโยค · แตะคำเรียงให้ถูก</div>
+    <div class="sb-cats" id="sb-cats"></div>
+    <div class="sb-progress" id="sb-progress"></div>
+    <div id="sb-body"></div>
   </div>
 
   <!-- โน้ตรวมทุกบท -->
@@ -1128,11 +1306,11 @@ function renderVocabGrid(grid, items) {
     d.className = 'voc-card';
     d.style.color = '#c62828';
     d.innerHTML =
-      `<div class="voc-zh" style="font-size:26px">${v.zh}</div>` +
       `<div class="voc-py">${v.py || '-'}</div>` +
+      `<div class="voc-zh">${v.zh}</div>` +
       (v.thr ? `<div class="voc-thr">${v.thr}</div>` : '') +
       `<div class="voc-th">${v.th}</div>` +
-      `<div class="voc-play">▶</div>`;
+      `<div class="voc-play">▶ ฟัง</div>`;
     d.addEventListener('click', () => playSound(v.zh, d));
     addStarTo(d, v.zh);
     grid.appendChild(d);
@@ -2354,12 +2532,15 @@ function addStar(zh) {
 }
 function addStarTo(card, zh) {
   const s = document.createElement('div');
-  s.className = 'voc-star' + (isStarred(zh) ? ' on' : '');
-  s.textContent = '★';
+  const on0 = isStarred(zh);
+  s.className = 'voc-star' + (on0 ? ' on' : '');
+  s.textContent = on0 ? '★' : '☆';
   s.title = 'ติดดาวว่ายังไม่แม่น';
   s.addEventListener('click', (e) => {
     e.stopPropagation();
-    s.classList.toggle('on', toggleStar(zh));
+    const on = toggleStar(zh);
+    s.classList.toggle('on', on);
+    s.textContent = on ? '★' : '☆';
   });
   card.appendChild(s);
 }
@@ -2527,6 +2708,324 @@ function quizShowStats() {
     `<button class="quiz-restart-btn" style="margin-top:14px" onclick="quizStart()">↩ กลับไปทำควิซ</button>`;
 }
 
+/* ---------------- เรียงประโยค (word order) ---------------- */
+const sbData = [
+  /* ===== 的 (de) = ของ / ขยายคำนาม — 20 ===== */
+  { th:'พ่อของฉัน', cat:'de', note:'A + 的 + B = B ของ A', tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'爸爸',py:'bàba'}] },
+  { th:'แม่ของฉัน', cat:'de', tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'妈妈',py:'māma'}] },
+  { th:'หนังสือของครู', cat:'de', tokens:[{zh:'老师',py:'lǎoshī'},{zh:'的',py:'de'},{zh:'书',py:'shū'}] },
+  { th:'ชื่อของคุณ', cat:'de', tokens:[{zh:'你',py:'nǐ'},{zh:'的',py:'de'},{zh:'名字',py:'míngzi'}] },
+  { th:'รูมเมทของฉัน', cat:'de', tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'同屋',py:'tóngwū'}] },
+  { th:'ครูของพวกเรา', cat:'de', tokens:[{zh:'我们',py:'wǒmen'},{zh:'的',py:'de'},{zh:'老师',py:'lǎoshī'}] },
+  { th:'หนังสือของใคร', cat:'de', note:'谁的 = ของใคร', tokens:[{zh:'谁',py:'shéi'},{zh:'的',py:'de'},{zh:'书',py:'shū'}] },
+  { th:'บริษัทของแม่ฉัน', cat:'de', tokens:[{zh:'我',py:'wǒ'},{zh:'妈妈',py:'māma'},{zh:'的',py:'de'},{zh:'公司',py:'gōngsī'}] },
+  { th:'เบอร์มือถือของเขา', cat:'de', tokens:[{zh:'他',py:'tā'},{zh:'的',py:'de'},{zh:'手机',py:'shǒujī'},{zh:'号码',py:'hàomǎ'}] },
+  { th:'นิตยสารของเพื่อนฉัน', cat:'de', tokens:[{zh:'我',py:'wǒ'},{zh:'朋友',py:'péngyou'},{zh:'的',py:'de'},{zh:'杂志',py:'zázhì'}] },
+  { th:'รูปถ่ายทั้งครอบครัวของเรา', cat:'de', tokens:[{zh:'我们',py:'wǒmen'},{zh:'全家',py:'quánjiā'},{zh:'的',py:'de'},{zh:'照片',py:'zhàopiàn'}] },
+  { th:'นี่คือมือถือของฉัน', cat:'de', tokens:[{zh:'这',py:'zhè'},{zh:'是',py:'shì'},{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'手机',py:'shǒujī'}] },
+  { th:'พี่สาวของเขาเป็นหมอ', cat:'de', tokens:[{zh:'他',py:'tā'},{zh:'的',py:'de'},{zh:'姐姐',py:'jiějie'},{zh:'是',py:'shì'},{zh:'大夫',py:'dàifu'}] },
+  { th:'รถของฉันเป็นสีน้ำเงิน', cat:'de', note:'的 ท้ายประโยค = ...อันที่เป็น...', tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'车',py:'chē'},{zh:'是',py:'shì'},{zh:'蓝',py:'lán'},{zh:'的',py:'de'}] },
+  { th:'ผู้จัดการบริษัทแห่งหนึ่ง', cat:'de', tokens:[{zh:'一',py:'yì'},{zh:'家',py:'jiā'},{zh:'公司',py:'gōngsī'},{zh:'的',py:'de'},{zh:'经理',py:'jīnglǐ'}] },
+  { th:'นั่นคือนิตยสารของใคร', cat:'de', tokens:[{zh:'那',py:'nà'},{zh:'是',py:'shì'},{zh:'谁',py:'shéi'},{zh:'的',py:'de'},{zh:'杂志',py:'zázhì'}] },
+  { th:'ครูของพวกคุณคือใคร', cat:'de', tokens:[{zh:'你们',py:'nǐmen'},{zh:'的',py:'de'},{zh:'老师',py:'lǎoshī'},{zh:'是',py:'shì'},{zh:'谁',py:'shéi'}] },
+  { th:'อันสีดำนี้หนักมาก', cat:'de', note:'的 แทนคำนามที่ละไว้ (黑的 = อันสีดำ)', tokens:[{zh:'这个',py:'zhège'},{zh:'黑',py:'hēi'},{zh:'的',py:'de'},{zh:'很',py:'hěn'},{zh:'重',py:'zhòng'}] },
+  { th:'ใบใหม่ใบนั้นเป็นของเพื่อน', cat:'de', tokens:[{zh:'那个',py:'nàge'},{zh:'新',py:'xīn'},{zh:'的',py:'de'},{zh:'是',py:'shì'},{zh:'朋友',py:'péngyou'},{zh:'的',py:'de'}] },
+  { th:'ใบเก่าใบนี้เป็นของฉัน', cat:'de', tokens:[{zh:'这个',py:'zhège'},{zh:'旧',py:'jiù'},{zh:'的',py:'de'},{zh:'是',py:'shì'},{zh:'我',py:'wǒ'},{zh:'的',py:'de'}] },
+
+  /* ===== 呢 (ne) = ล่ะ / ยืนยัน — 20 ===== */
+  { th:'แล้วคุณล่ะ', cat:'ne', note:'呢 = แล้ว...ล่ะ (ถามย้อน)', tokens:[{zh:'你',py:'nǐ'},{zh:'呢',py:'ne'}] },
+  { th:'แล้วคุณล่ะ (สุภาพ)', cat:'ne', tokens:[{zh:'您',py:'nín'},{zh:'呢',py:'ne'}] },
+  { th:'แล้วเขาล่ะ', cat:'ne', tokens:[{zh:'他',py:'tā'},{zh:'呢',py:'ne'}] },
+  { th:'แล้วพวกเขาล่ะ', cat:'ne', tokens:[{zh:'他们',py:'tāmen'},{zh:'呢',py:'ne'}] },
+  { th:'อยู่ตรงนั้นไง', cat:'ne', tokens:[{zh:'在',py:'zài'},{zh:'那儿',py:'nàr'},{zh:'呢',py:'ne'}] },
+  { th:'รถของฉันอยู่ไหนล่ะ', cat:'ne', note:'ใช้ 呢 ถามหาสิ่งของ', tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'车',py:'chē'},{zh:'呢',py:'ne'}] },
+  { th:'หนังสือของฉันอยู่ไหนล่ะ', cat:'ne', tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'书',py:'shū'},{zh:'呢',py:'ne'}] },
+  { th:'มือถือของฉันอยู่ไหนล่ะ', cat:'ne', tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'手机',py:'shǒujī'},{zh:'呢',py:'ne'}] },
+  { th:'ร่มของคุณอยู่ไหนล่ะ', cat:'ne', tokens:[{zh:'你',py:'nǐ'},{zh:'的',py:'de'},{zh:'雨伞',py:'yǔsǎn'},{zh:'呢',py:'ne'}] },
+  { th:'พจนานุกรมของฉันอยู่ไหนล่ะ', cat:'ne', tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'词典',py:'cídiǎn'},{zh:'呢',py:'ne'}] },
+  { th:'แล้วแม่ของฉันล่ะ', cat:'ne', tokens:[{zh:'我',py:'wǒ'},{zh:'妈妈',py:'māma'},{zh:'呢',py:'ne'}] },
+  { th:'แล้วครูของพวกคุณล่ะ', cat:'ne', tokens:[{zh:'你们',py:'nǐmen'},{zh:'的',py:'de'},{zh:'老师',py:'lǎoshī'},{zh:'呢',py:'ne'}] },
+  { th:'เขาอยู่บ้าน(นะ)', cat:'ne', note:'呢 ท้ายประโยคบอกเล่า = ยืนยัน', tokens:[{zh:'他',py:'tā'},{zh:'在',py:'zài'},{zh:'家',py:'jiā'},{zh:'呢',py:'ne'}] },
+  { th:'เขาอยู่โรงเรียน(นะ)', cat:'ne', tokens:[{zh:'他',py:'tā'},{zh:'在',py:'zài'},{zh:'学校',py:'xuéxiào'},{zh:'呢',py:'ne'}] },
+  { th:'เขาอยู่โรงพยาบาล(นะ)', cat:'ne', tokens:[{zh:'他',py:'tā'},{zh:'在',py:'zài'},{zh:'医院',py:'yīyuàn'},{zh:'呢',py:'ne'}] },
+  { th:'ฉันอยู่โรงอาหาร(นะ)', cat:'ne', tokens:[{zh:'我',py:'wǒ'},{zh:'在',py:'zài'},{zh:'食堂',py:'shítáng'},{zh:'呢',py:'ne'}] },
+  { th:'ของฉันอยู่ตรงนี้ไง', cat:'ne', tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'在',py:'zài'},{zh:'这儿',py:'zhèr'},{zh:'呢',py:'ne'}] },
+  { th:'จักรยานของคุณอยู่ไหนล่ะ', cat:'ne', tokens:[{zh:'你',py:'nǐ'},{zh:'的',py:'de'},{zh:'自行车',py:'zìxíngchē'},{zh:'呢',py:'ne'}] },
+  { th:'ฉันกำลังเรียนภาษาจีน(นะ)', cat:'ne', note:'在 + กริยา = กำลัง... คู่กับ 呢', tokens:[{zh:'我',py:'wǒ'},{zh:'在',py:'zài'},{zh:'学习',py:'xuéxí'},{zh:'汉语',py:'Hànyǔ'},{zh:'呢',py:'ne'}] },
+  { th:'พี่สาวของฉันอยู่ห้องสมุด(นะ)', cat:'ne', tokens:[{zh:'我',py:'wǒ'},{zh:'姐姐',py:'jiějie'},{zh:'在',py:'zài'},{zh:'图书馆',py:'túshūguǎn'},{zh:'呢',py:'ne'}] },
+
+  /* ===== 没有 (méiyǒu) = ไม่มี / ยังไม่ได้ทำ — 20 ===== */
+  { th:'ฉันไม่มีเงิน', cat:'mei', note:'没有 + คำนาม = ไม่มี', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'钱',py:'qián'}] },
+  { th:'ฉันไม่มีพี่ชาย', cat:'mei', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'哥哥',py:'gēge'}] },
+  { th:'ฉันไม่มีพี่สาว', cat:'mei', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'姐姐',py:'jiějie'}] },
+  { th:'เขาไม่มีน้องสาว', cat:'mei', tokens:[{zh:'他',py:'tā'},{zh:'没有',py:'méiyǒu'},{zh:'妹妹',py:'mèimei'}] },
+  { th:'ฉันไม่มีร่ม', cat:'mei', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'雨伞',py:'yǔsǎn'}] },
+  { th:'ฉันไม่มีพจนานุกรม', cat:'mei', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'词典',py:'cídiǎn'}] },
+  { th:'เขาไม่มีมือถือ', cat:'mei', tokens:[{zh:'他',py:'tā'},{zh:'没有',py:'méiyǒu'},{zh:'手机',py:'shǒujī'}] },
+  { th:'เขาไม่มีเพื่อน', cat:'mei', tokens:[{zh:'他',py:'tā'},{zh:'没有',py:'méiyǒu'},{zh:'朋友',py:'péngyou'}] },
+  { th:'ฉันไม่มีงาน', cat:'mei', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'工作',py:'gōngzuò'}] },
+  { th:'ฉันยังไม่ได้กินข้าว', cat:'mei', note:'没有 + กริยา = ยังไม่ได้ทำ', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'吃',py:'chī'},{zh:'饭',py:'fàn'}] },
+  { th:'ฉันยังไม่ได้ดื่มกาแฟ', cat:'mei', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'喝',py:'hē'},{zh:'咖啡',py:'kāfēi'}] },
+  { th:'ฉันยังไม่ได้ไปโรงเรียน', cat:'mei', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'去',py:'qù'},{zh:'学校',py:'xuéxiào'}] },
+  { th:'ฉันยังไม่ได้ดูรูปถ่าย', cat:'mei', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'看',py:'kàn'},{zh:'照片',py:'zhàopiàn'}] },
+  { th:'เขายังไม่ได้แลกเงินหยวน', cat:'mei', tokens:[{zh:'他',py:'tā'},{zh:'没有',py:'méiyǒu'},{zh:'换',py:'huàn'},{zh:'人民币',py:'rénmínbì'}] },
+  { th:'คุณไม่มีกระเป๋าหรือ', cat:'mei', tokens:[{zh:'你',py:'nǐ'},{zh:'没有',py:'méiyǒu'},{zh:'箱子',py:'xiāngzi'},{zh:'吗',py:'ma'}] },
+  { th:'คุณมีเงินไหม', cat:'mei', note:'有没有 = รูปถามใช่/ไม่', tokens:[{zh:'你',py:'nǐ'},{zh:'有',py:'yǒu'},{zh:'没有',py:'méiyǒu'},{zh:'钱',py:'qián'}] },
+  { th:'คุณมีมือถือไหม', cat:'mei', tokens:[{zh:'你',py:'nǐ'},{zh:'有',py:'yǒu'},{zh:'没有',py:'méiyǒu'},{zh:'手机',py:'shǒujī'}] },
+  { th:'คุณมีรูปถ่ายทั้งครอบครัวไหม', cat:'mei', tokens:[{zh:'你',py:'nǐ'},{zh:'有',py:'yǒu'},{zh:'没有',py:'méiyǒu'},{zh:'全家',py:'quánjiā'},{zh:'的',py:'de'},{zh:'照片',py:'zhàopiàn'}] },
+  { th:'ฉันไม่มีหนังสือภาษาจีน', cat:'mei', tokens:[{zh:'我',py:'wǒ'},{zh:'没有',py:'méiyǒu'},{zh:'中文',py:'Zhōngwén'},{zh:'书',py:'shū'}] },
+  { th:'บริษัทนี้ไม่มีพนักงานต่างชาติ', cat:'mei', tokens:[{zh:'这',py:'zhè'},{zh:'家',py:'jiā'},{zh:'公司',py:'gōngsī'},{zh:'没有',py:'méiyǒu'},{zh:'外国',py:'wàiguó'},{zh:'员工',py:'yuángōng'}] },
+
+  /* ===== 不 (bù) = ไม่ — 20 ===== */
+  { th:'ฉันไม่ไป', cat:'bu', note:'不 + กริยา = ไม่... (หน้าเสียง 4 อ่าน bú)', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bú'},{zh:'去',py:'qù'}] },
+  { th:'ฉันไม่เอา', cat:'bu', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bú'},{zh:'要',py:'yào'}] },
+  { th:'ฉันไม่ยุ่ง', cat:'bu', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bù'},{zh:'忙',py:'máng'}] },
+  { th:'ฉันไม่ซื้อ', cat:'bu', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bù'},{zh:'买',py:'mǎi'}] },
+  { th:'เขาไม่รู้', cat:'bu', tokens:[{zh:'他',py:'tā'},{zh:'不',py:'bù'},{zh:'知道',py:'zhīdào'}] },
+  { th:'เขาไม่อยู่บ้าน', cat:'bu', tokens:[{zh:'他',py:'tā'},{zh:'不',py:'bú'},{zh:'在',py:'zài'},{zh:'家',py:'jiā'}] },
+  { th:'นี่ไม่ใช่ยา', cat:'bu', tokens:[{zh:'这',py:'zhè'},{zh:'不',py:'bú'},{zh:'是',py:'shì'},{zh:'药',py:'yào'}] },
+  { th:'นี่ไม่ใช่ของฉัน', cat:'bu', tokens:[{zh:'这',py:'zhè'},{zh:'不',py:'bú'},{zh:'是',py:'shì'},{zh:'我',py:'wǒ'},{zh:'的',py:'de'}] },
+  { th:'เขาไม่ใช่คนจีน', cat:'bu', tokens:[{zh:'他',py:'tā'},{zh:'不',py:'bú'},{zh:'是',py:'shì'},{zh:'中国',py:'Zhōngguó'},{zh:'人',py:'rén'}] },
+  { th:'เธอไม่ใช่หมอ', cat:'bu', tokens:[{zh:'她',py:'tā'},{zh:'不',py:'bú'},{zh:'是',py:'shì'},{zh:'大夫',py:'dàifu'}] },
+  { th:'ฉันไม่กินข้าว', cat:'bu', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bù'},{zh:'吃',py:'chī'},{zh:'饭',py:'fàn'}] },
+  { th:'ฉันไม่ดื่มเบียร์', cat:'bu', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bù'},{zh:'喝',py:'hē'},{zh:'啤酒',py:'píjiǔ'}] },
+  { th:'ฉันไม่ดื่มชา', cat:'bu', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bù'},{zh:'喝',py:'hē'},{zh:'茶',py:'chá'}] },
+  { th:'ฉันไม่รู้จักเขา', cat:'bu', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bú'},{zh:'认识',py:'rènshi'},{zh:'他',py:'tā'}] },
+  { th:'เขาไม่เรียนภาษาจีน', cat:'bu', tokens:[{zh:'他',py:'tā'},{zh:'不',py:'bù'},{zh:'学习',py:'xuéxí'},{zh:'汉语',py:'Hànyǔ'}] },
+  { th:'ฉันไม่ไปโรงเรียน', cat:'bu', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bú'},{zh:'去',py:'qù'},{zh:'学校',py:'xuéxiào'}] },
+  { th:'ฉันไม่ไปธนาคาร', cat:'bu', tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bú'},{zh:'去',py:'qù'},{zh:'银行',py:'yínháng'}] },
+  { th:'กระเป๋าใบนี้ไม่หนัก', cat:'bu', tokens:[{zh:'这个',py:'zhège'},{zh:'箱子',py:'xiāngzi'},{zh:'不',py:'bú'},{zh:'重',py:'zhòng'}] },
+  { th:'ภาษาจีนไม่ยากเกินไป', cat:'bu', note:'不太 + คุณศัพท์ = ไม่...เกินไป', tokens:[{zh:'汉语',py:'Hànyǔ'},{zh:'不',py:'bú'},{zh:'太',py:'tài'},{zh:'难',py:'nán'}] },
+  { th:'ช่วงนี้งานไม่ค่อยยุ่ง', cat:'bu', tokens:[{zh:'最近',py:'zuìjìn'},{zh:'工作',py:'gōngzuò'},{zh:'不',py:'bú'},{zh:'太',py:'tài'},{zh:'忙',py:'máng'}] },
+
+  /* ===== 吗 / V不V = คำถามใช่-ไม่ — 20 ===== */
+  { th:'คุณสบายดีไหม', cat:'ask', note:'เติม 吗 ท้ายประโยค = คำถามใช่/ไม่', tokens:[{zh:'你',py:'nǐ'},{zh:'好',py:'hǎo'},{zh:'吗',py:'ma'}] },
+  { th:'คุณยุ่งไหม', cat:'ask', tokens:[{zh:'你',py:'nǐ'},{zh:'忙',py:'máng'},{zh:'吗',py:'ma'}] },
+  { th:'ภาษาจีนยากไหม', cat:'ask', tokens:[{zh:'汉语',py:'Hànyǔ'},{zh:'难',py:'nán'},{zh:'吗',py:'ma'}] },
+  { th:'สุขภาพดีไหม', cat:'ask', tokens:[{zh:'身体',py:'shēntǐ'},{zh:'好',py:'hǎo'},{zh:'吗',py:'ma'}] },
+  { th:'เขาอยู่บ้านไหม', cat:'ask', tokens:[{zh:'他',py:'tā'},{zh:'在',py:'zài'},{zh:'家',py:'jiā'},{zh:'吗',py:'ma'}] },
+  { th:'คุณดื่มชาไหม', cat:'ask', tokens:[{zh:'你',py:'nǐ'},{zh:'喝',py:'hē'},{zh:'茶',py:'chá'},{zh:'吗',py:'ma'}] },
+  { th:'นี่ของคุณไหม', cat:'ask', tokens:[{zh:'这',py:'zhè'},{zh:'是',py:'shì'},{zh:'你',py:'nǐ'},{zh:'的',py:'de'},{zh:'吗',py:'ma'}] },
+  { th:'คุณเป็นคนจีนไหม', cat:'ask', tokens:[{zh:'你',py:'nǐ'},{zh:'是',py:'shì'},{zh:'中国',py:'Zhōngguó'},{zh:'人',py:'rén'},{zh:'吗',py:'ma'}] },
+  { th:'คุณรู้จักเขาไหม', cat:'ask', tokens:[{zh:'你',py:'nǐ'},{zh:'认识',py:'rènshi'},{zh:'他',py:'tā'},{zh:'吗',py:'ma'}] },
+  { th:'คุณมีพี่ชายพี่สาวไหม', cat:'ask', tokens:[{zh:'你',py:'nǐ'},{zh:'有',py:'yǒu'},{zh:'哥哥',py:'gēge'},{zh:'姐姐',py:'jiějie'},{zh:'吗',py:'ma'}] },
+  { th:'เป็นบริษัทใหญ่ไหม', cat:'ask', tokens:[{zh:'是',py:'shì'},{zh:'一',py:'yì'},{zh:'家',py:'jiā'},{zh:'大',py:'dà'},{zh:'公司',py:'gōngsī'},{zh:'吗',py:'ma'}] },
+  { th:'เป็นพนักงานจีนทั้งหมดไหม', cat:'ask', tokens:[{zh:'都',py:'dōu'},{zh:'是',py:'shì'},{zh:'中国',py:'Zhōngguó'},{zh:'员工',py:'yuángōng'},{zh:'吗',py:'ma'}] },
+  { th:'คุณยุ่งไหม (รูป V不V)', cat:'ask', note:'V + 不 + V = ถามใช่/ไม่ ความหมายเท่ากับ V吗', tokens:[{zh:'你',py:'nǐ'},{zh:'忙',py:'máng'},{zh:'不',py:'bù'},{zh:'忙',py:'máng'}] },
+  { th:'คุณไปไหม (รูป V不V)', cat:'ask', tokens:[{zh:'你',py:'nǐ'},{zh:'去',py:'qù'},{zh:'不',py:'bú'},{zh:'去',py:'qù'}] },
+  { th:'คุณกินไหม (รูป V不V)', cat:'ask', tokens:[{zh:'你',py:'nǐ'},{zh:'吃',py:'chī'},{zh:'不',py:'bù'},{zh:'吃',py:'chī'}] },
+  { th:'คุณเอาไหม (รูป V不V)', cat:'ask', tokens:[{zh:'你',py:'nǐ'},{zh:'要',py:'yào'},{zh:'不',py:'bú'},{zh:'要',py:'yào'}] },
+  { th:'ของคุณหนักไหม (รูป V不V)', cat:'ask', tokens:[{zh:'你',py:'nǐ'},{zh:'的',py:'de'},{zh:'重',py:'zhòng'},{zh:'不',py:'bú'},{zh:'重',py:'zhòng'}] },
+  { th:'นี่ใช่ยาไหม (รูป 是不是)', cat:'ask', note:'是不是 = ใช่หรือไม่', tokens:[{zh:'这',py:'zhè'},{zh:'是',py:'shì'},{zh:'不',py:'bú'},{zh:'是',py:'shì'},{zh:'药',py:'yào'}] },
+  { th:'นี่ใช่ยาจีนไหม (รูป 是不是)', cat:'ask', tokens:[{zh:'这',py:'zhè'},{zh:'是',py:'shì'},{zh:'不',py:'bú'},{zh:'是',py:'shì'},{zh:'中药',py:'zhōngyào'}] },
+  { th:'เขาเป็นหมอใช่ไหม (รูป 是不是)', cat:'ask', tokens:[{zh:'他',py:'tā'},{zh:'是',py:'shì'},{zh:'不',py:'bú'},{zh:'是',py:'shì'},{zh:'大夫',py:'dàifu'}] },
+
+  /* ===== จำนวน + ลักษณนาม + คำนาม — 20 ===== */
+  { th:'คน 3 คน', cat:'mw', note:'เลข + ลักษณนาม + คำนาม', tokens:[{zh:'三',py:'sān'},{zh:'个',py:'gè'},{zh:'人',py:'rén'}] },
+  { th:'น้องชาย 2 คน', cat:'mw', note:'บอกจำนวน "2" ใช้ 两 ไม่ใช่ 二', tokens:[{zh:'两',py:'liǎng'},{zh:'个',py:'gè'},{zh:'弟弟',py:'dìdi'}] },
+  { th:'ซาลาเปา 1 ลูก', cat:'mw', note:'一 หน้าเสียง 4 อ่าน yí', tokens:[{zh:'一',py:'yí'},{zh:'个',py:'gè'},{zh:'包子',py:'bāozi'}] },
+  { th:'ไข่ไก่ 1 ฟอง', cat:'mw', tokens:[{zh:'一',py:'yí'},{zh:'个',py:'gè'},{zh:'鸡蛋',py:'jīdàn'}] },
+  { th:'แฟลชไดรฟ์ 2 อัน', cat:'mw', tokens:[{zh:'两',py:'liǎng'},{zh:'个',py:'gè'},{zh:'优盘',py:'yōupán'}] },
+  { th:'ครู 1 ท่าน', cat:'mw', note:'位 = ลักษณนามของคน แบบสุภาพ', tokens:[{zh:'一',py:'yí'},{zh:'位',py:'wèi'},{zh:'老师',py:'lǎoshī'}] },
+  { th:'ศาสตราจารย์ 2 ท่าน', cat:'mw', tokens:[{zh:'两',py:'liǎng'},{zh:'位',py:'wèi'},{zh:'教授',py:'jiàoshòu'}] },
+  { th:'ครอบครัวมี 5 คน', cat:'mw', note:'口 = ลักษณนามคนในครอบครัว', tokens:[{zh:'五',py:'wǔ'},{zh:'口',py:'kǒu'},{zh:'人',py:'rén'}] },
+  { th:'รูป 1 ใบ', cat:'mw', note:'张 = ลักษณนามของแบน (รูป/กระดาษ)', tokens:[{zh:'一',py:'yì'},{zh:'张',py:'zhāng'},{zh:'照片',py:'zhàopiàn'}] },
+  { th:'รูป 2 ใบ', cat:'mw', tokens:[{zh:'两',py:'liǎng'},{zh:'张',py:'zhāng'},{zh:'照片',py:'zhàopiàn'}] },
+  { th:'หนังสือ 1 เล่ม', cat:'mw', note:'本 = ลักษณนามหนังสือ', tokens:[{zh:'一',py:'yì'},{zh:'本',py:'běn'},{zh:'书',py:'shū'}] },
+  { th:'พจนานุกรม 1 เล่ม', cat:'mw', tokens:[{zh:'一',py:'yì'},{zh:'本',py:'běn'},{zh:'词典',py:'cídiǎn'}] },
+  { th:'พู่กัน 3 แท่ง', cat:'mw', note:'支 = ลักษณนามปากกา/พู่กัน', tokens:[{zh:'三',py:'sān'},{zh:'支',py:'zhī'},{zh:'毛笔',py:'máobǐ'}] },
+  { th:'เสื้อผ้า 2 ตัว', cat:'mw', note:'件 = ลักษณนามเสื้อผ้า', tokens:[{zh:'两',py:'liǎng'},{zh:'件',py:'jiàn'},{zh:'衣服',py:'yīfu'}] },
+  { th:'ร่ม 1 คัน', cat:'mw', note:'把 = ลักษณนามของมีด้าม', tokens:[{zh:'一',py:'yì'},{zh:'把',py:'bǎ'},{zh:'雨伞',py:'yǔsǎn'}] },
+  { th:'ซุป 1 ถ้วย', cat:'mw', note:'碗 = ถ้วย/ชาม', tokens:[{zh:'一',py:'yì'},{zh:'碗',py:'wǎn'},{zh:'汤',py:'tāng'}] },
+  { th:'ชา 1 แก้ว', cat:'mw', note:'杯 = แก้ว', tokens:[{zh:'一',py:'yì'},{zh:'杯',py:'bēi'},{zh:'茶',py:'chá'}] },
+  { th:'กาแฟ 1 แก้ว', cat:'mw', tokens:[{zh:'一',py:'yì'},{zh:'杯',py:'bēi'},{zh:'咖啡',py:'kāfēi'}] },
+  { th:'รถ 2 คัน', cat:'mw', note:'辆 = ลักษณนามยานพาหนะ', tokens:[{zh:'两',py:'liǎng'},{zh:'辆',py:'liàng'},{zh:'车',py:'chē'}] },
+  { th:'จักรยาน 1 คัน', cat:'mw', tokens:[{zh:'一',py:'yí'},{zh:'辆',py:'liàng'},{zh:'自行车',py:'zìxíngchē'}] },
+
+  /* ===== 还是 (háishi) = คำถามให้เลือก — 20 ===== */
+  { th:'ชาหรือกาแฟ', cat:'or', note:'A 还是 B = A หรือ B (ให้เลือก)', tokens:[{zh:'茶',py:'chá'},{zh:'还是',py:'háishi'},{zh:'咖啡',py:'kāfēi'}] },
+  { th:'วันนี้หรือพรุ่งนี้', cat:'or', tokens:[{zh:'今天',py:'jīntiān'},{zh:'还是',py:'háishi'},{zh:'明天',py:'míngtiān'}] },
+  { th:'ยาจีนหรือยาแผนปัจจุบัน', cat:'or', tokens:[{zh:'中药',py:'zhōngyào'},{zh:'还是',py:'háishi'},{zh:'西药',py:'xīyào'}] },
+  { th:'อันนี้หรืออันนั้น', cat:'or', tokens:[{zh:'这个',py:'zhège'},{zh:'还是',py:'háishi'},{zh:'那个',py:'nàge'}] },
+  { th:'อันใหม่หรืออันเก่า', cat:'or', tokens:[{zh:'新',py:'xīn'},{zh:'的',py:'de'},{zh:'还是',py:'háishi'},{zh:'旧',py:'jiù'},{zh:'的',py:'de'}] },
+  { th:'อันแดงหรืออันสีน้ำเงิน', cat:'or', tokens:[{zh:'红',py:'hóng'},{zh:'的',py:'de'},{zh:'还是',py:'háishi'},{zh:'蓝',py:'lán'},{zh:'的',py:'de'}] },
+  { th:'ของเขาหรือของคุณ', cat:'or', tokens:[{zh:'他',py:'tā'},{zh:'的',py:'de'},{zh:'还是',py:'háishi'},{zh:'你',py:'nǐ'},{zh:'的',py:'de'}] },
+  { th:'คุณดื่มชาหรือกาแฟ', cat:'or', tokens:[{zh:'你',py:'nǐ'},{zh:'喝',py:'hē'},{zh:'茶',py:'chá'},{zh:'还是',py:'háishi'},{zh:'咖啡',py:'kāfēi'}] },
+  { th:'คุณดื่มเบียร์หรือชา', cat:'or', tokens:[{zh:'你',py:'nǐ'},{zh:'喝',py:'hē'},{zh:'啤酒',py:'píjiǔ'},{zh:'还是',py:'háishi'},{zh:'茶',py:'chá'}] },
+  { th:'คุณกินข้าวหรือบะหมี่', cat:'or', tokens:[{zh:'你',py:'nǐ'},{zh:'吃',py:'chī'},{zh:'米饭',py:'mǐfàn'},{zh:'还是',py:'háishi'},{zh:'面条儿',py:'miàntiáor'}] },
+  { th:'คุณซื้อแอปเปิลหรือส้ม', cat:'or', tokens:[{zh:'你',py:'nǐ'},{zh:'买',py:'mǎi'},{zh:'苹果',py:'píngguǒ'},{zh:'还是',py:'háishi'},{zh:'橘子',py:'júzi'}] },
+  { th:'คุณเรียนภาษาจีนหรือภาษาอังกฤษ', cat:'or', tokens:[{zh:'你',py:'nǐ'},{zh:'学习',py:'xuéxí'},{zh:'汉语',py:'Hànyǔ'},{zh:'还是',py:'háishi'},{zh:'英语',py:'Yīngyǔ'}] },
+  { th:'คุณไปหรือเขาไป', cat:'or', tokens:[{zh:'你',py:'nǐ'},{zh:'去',py:'qù'},{zh:'还是',py:'háishi'},{zh:'他',py:'tā'},{zh:'去',py:'qù'}] },
+  { th:'คุณไปไปรษณีย์หรือธนาคาร', cat:'or', tokens:[{zh:'你',py:'nǐ'},{zh:'去',py:'qù'},{zh:'邮局',py:'yóujú'},{zh:'还是',py:'háishi'},{zh:'银行',py:'yínháng'}] },
+  { th:'คันใหม่หรือคันเก่า', cat:'or', tokens:[{zh:'是',py:'shì'},{zh:'新',py:'xīn'},{zh:'的',py:'de'},{zh:'还是',py:'háishi'},{zh:'旧',py:'jiù'},{zh:'的',py:'de'}] },
+  { th:'อันแพงหรืออันถูก', cat:'or', tokens:[{zh:'是',py:'shì'},{zh:'贵',py:'guì'},{zh:'的',py:'de'},{zh:'还是',py:'háishi'},{zh:'便宜',py:'piányi'},{zh:'的',py:'de'}] },
+  { th:'เขาเป็นครูหรือนักเรียน', cat:'or', tokens:[{zh:'他',py:'tā'},{zh:'是',py:'shì'},{zh:'老师',py:'lǎoshī'},{zh:'还是',py:'háishi'},{zh:'学生',py:'xuésheng'}] },
+  { th:'คุณเอา 1 อันหรือ 2 อัน', cat:'or', tokens:[{zh:'你',py:'nǐ'},{zh:'要',py:'yào'},{zh:'一',py:'yí'},{zh:'个',py:'gè'},{zh:'还是',py:'háishi'},{zh:'两',py:'liǎng'},{zh:'个',py:'gè'}] },
+  { th:'คุณกลับบ้านหรือไปโรงเรียน', cat:'or', tokens:[{zh:'你',py:'nǐ'},{zh:'回',py:'huí'},{zh:'家',py:'jiā'},{zh:'还是',py:'háishi'},{zh:'去',py:'qù'},{zh:'学校',py:'xuéxiào'}] },
+  { th:'เขาเป็นคนจีนหรือคนเกาหลี', cat:'or', tokens:[{zh:'他',py:'tā'},{zh:'是',py:'shì'},{zh:'中国',py:'Zhōngguó'},{zh:'人',py:'rén'},{zh:'还是',py:'háishi'},{zh:'韩国',py:'Hánguó'},{zh:'人',py:'rén'}] },
+
+  /* ===== ซื้อของ / ราคา / แลกเงิน — 20 ===== */
+  { th:'เท่าไร (กี่บาท)', cat:'shop', tokens:[{zh:'多少',py:'duōshao'},{zh:'钱',py:'qián'}] },
+  { th:'ขายยังไง', cat:'shop', tokens:[{zh:'怎么',py:'zěnme'},{zh:'卖',py:'mài'}] },
+  { th:'6 หยวน', cat:'shop', note:'块 = หยวน (ภาษาพูด)', tokens:[{zh:'六',py:'liù'},{zh:'块',py:'kuài'},{zh:'钱',py:'qián'}] },
+  { th:'แพงเกินไป', cat:'shop', note:'太...了 = ...เกินไป', tokens:[{zh:'太',py:'tài'},{zh:'贵',py:'guì'},{zh:'了',py:'le'}] },
+  { th:'ถูกหน่อยนะ', cat:'shop', note:'吧 = น้ำเสียงขอร้อง/ชวน', tokens:[{zh:'便宜',py:'piányi'},{zh:'点儿',py:'diǎnr'},{zh:'吧',py:'ba'}] },
+  { th:'เอา 5 ลูกนะ', cat:'shop', note:'来 เชิงการค้า = เอา/ซื้อ', tokens:[{zh:'来',py:'lái'},{zh:'五',py:'wǔ'},{zh:'个',py:'gè'},{zh:'吧',py:'ba'}] },
+  { th:'ฉันซื้อผลไม้', cat:'shop', tokens:[{zh:'我',py:'wǒ'},{zh:'买',py:'mǎi'},{zh:'水果',py:'shuǐguǒ'}] },
+  { th:'คุณซื้ออะไร', cat:'shop', tokens:[{zh:'你',py:'nǐ'},{zh:'买',py:'mǎi'},{zh:'什么',py:'shénme'}] },
+  { th:'คุณเอาเท่าไร', cat:'shop', tokens:[{zh:'你',py:'nǐ'},{zh:'要',py:'yào'},{zh:'多少',py:'duōshao'}] },
+  { th:'ฉันเอา 1 กิโล (2 จิน)', cat:'shop', note:'斤 = ครึ่งกิโล', tokens:[{zh:'我',py:'wǒ'},{zh:'要',py:'yào'},{zh:'两',py:'liǎng'},{zh:'斤',py:'jīn'}] },
+  { th:'ทั้งหมดเท่าไร', cat:'shop', tokens:[{zh:'一共',py:'yígòng'},{zh:'多少',py:'duōshao'},{zh:'钱',py:'qián'}] },
+  { th:'อันนี้แพงเกินไป', cat:'shop', tokens:[{zh:'这个',py:'zhège'},{zh:'太',py:'tài'},{zh:'贵',py:'guì'},{zh:'了',py:'le'}] },
+  { th:'ส้มขายยังไง', cat:'shop', tokens:[{zh:'橘子',py:'júzi'},{zh:'怎么',py:'zěnme'},{zh:'卖',py:'mài'}] },
+  { th:'นี่เงินค่ะ', cat:'shop', tokens:[{zh:'给',py:'gěi'},{zh:'你',py:'nǐ'},{zh:'钱',py:'qián'}] },
+  { th:'ยังเอาอย่างอื่นอีกไหม', cat:'shop', tokens:[{zh:'还',py:'hái'},{zh:'要',py:'yào'},{zh:'别的',py:'bié de'},{zh:'吗',py:'ma'}] },
+  { th:'ฉันแลกเงินหยวน', cat:'shop', tokens:[{zh:'我',py:'wǒ'},{zh:'换',py:'huàn'},{zh:'人民币',py:'rénmínbì'}] },
+  { th:'ฉันแลกเงิน 100 ดอลลาร์', cat:'shop', tokens:[{zh:'我',py:'wǒ'},{zh:'换',py:'huàn'},{zh:'一',py:'yì'},{zh:'百',py:'bǎi'},{zh:'美元',py:'měiyuán'}] },
+  { th:'แอปเปิลครึ่งโลเท่าไร', cat:'shop', tokens:[{zh:'苹果',py:'píngguǒ'},{zh:'一',py:'yì'},{zh:'斤',py:'jīn'},{zh:'多少',py:'duōshao'},{zh:'钱',py:'qián'}] },
+  { th:'ทอนคุณ 29 หยวน', cat:'shop', tokens:[{zh:'找',py:'zhǎo'},{zh:'您',py:'nín'},{zh:'二十九',py:'èrshíjiǔ'},{zh:'块',py:'kuài'}] },
+  { th:'ฉันเอาซุปไข่ 1 ถ้วย', cat:'shop', tokens:[{zh:'我',py:'wǒ'},{zh:'要',py:'yào'},{zh:'一',py:'yì'},{zh:'碗',py:'wǎn'},{zh:'鸡蛋',py:'jīdàn'},{zh:'汤',py:'tāng'}] },
+
+  /* ===== ทั่วไป: ลำดับคำ + 也 都 在 比 只 全 — 20 ===== */
+  { th:'ฉันก็เช่นกัน', cat:'mix', note:'也 วางหลังประธาน', tokens:[{zh:'我',py:'wǒ'},{zh:'也',py:'yě'},{zh:'是',py:'shì'}] },
+  { th:'เขาก็ไปด้วย', cat:'mix', tokens:[{zh:'他',py:'tā'},{zh:'也',py:'yě'},{zh:'去',py:'qù'}] },
+  { th:'ฉันก็เรียนภาษาจีน', cat:'mix', tokens:[{zh:'我',py:'wǒ'},{zh:'也',py:'yě'},{zh:'学习',py:'xuéxí'},{zh:'汉语',py:'Hànyǔ'}] },
+  { th:'พวกเราล้วนเป็นนักเรียน', cat:'mix', note:'都 วางหน้ากริยา', tokens:[{zh:'我们',py:'wǒmen'},{zh:'都',py:'dōu'},{zh:'是',py:'shì'},{zh:'学生',py:'xuésheng'}] },
+  { th:'พวกเราล้วนเป็นนักเรียนต่างชาติ', cat:'mix', tokens:[{zh:'我们',py:'wǒmen'},{zh:'都',py:'dōu'},{zh:'是',py:'shì'},{zh:'留学生',py:'liúxuéshēng'}] },
+  { th:'ฉันเรียนอยู่ที่มหาวิทยาลัย', cat:'mix', note:'在 + สถานที่ + กริยา', tokens:[{zh:'我',py:'wǒ'},{zh:'在',py:'zài'},{zh:'大学',py:'dàxué'},{zh:'学习',py:'xuéxí'}] },
+  { th:'ฉันทำงานที่โรงพยาบาล', cat:'mix', tokens:[{zh:'我',py:'wǒ'},{zh:'在',py:'zài'},{zh:'医院',py:'yīyuàn'},{zh:'工作',py:'gōngzuò'}] },
+  { th:'แม่ฉันทำงานที่ร้านค้า', cat:'mix', tokens:[{zh:'我',py:'wǒ'},{zh:'妈妈',py:'māma'},{zh:'在',py:'zài'},{zh:'商店',py:'shāngdiàn'},{zh:'工作',py:'gōngzuò'}] },
+  { th:'ภาษาจีนยากกว่าภาษาอังกฤษ', cat:'mix', note:'A 比 B + คุณศัพท์', tokens:[{zh:'汉语',py:'Hànyǔ'},{zh:'比',py:'bǐ'},{zh:'英语',py:'Yīngyǔ'},{zh:'难',py:'nán'}] },
+  { th:'อันนี้แพงกว่าอันนั้น', cat:'mix', tokens:[{zh:'这个',py:'zhège'},{zh:'比',py:'bǐ'},{zh:'那个',py:'nàge'},{zh:'贵',py:'guì'}] },
+  { th:'วันนี้ฉันไปโรงอาหารกินข้าว', cat:'mix', note:'ลำดับ: เวลา + ประธาน + สถานที่ + กริยา', tokens:[{zh:'今天',py:'jīntiān'},{zh:'我',py:'wǒ'},{zh:'去',py:'qù'},{zh:'食堂',py:'shítáng'},{zh:'吃',py:'chī'},{zh:'饭',py:'fàn'}] },
+  { th:'พรุ่งนี้ฉันไปธนาคารถอนเงิน', cat:'mix', tokens:[{zh:'明天',py:'míngtiān'},{zh:'我',py:'wǒ'},{zh:'去',py:'qù'},{zh:'银行',py:'yínháng'},{zh:'取',py:'qǔ'},{zh:'钱',py:'qián'}] },
+  { th:'ครอบครัวฉันมี 5 คน', cat:'mix', tokens:[{zh:'我',py:'wǒ'},{zh:'家',py:'jiā'},{zh:'有',py:'yǒu'},{zh:'五',py:'wǔ'},{zh:'口',py:'kǒu'},{zh:'人',py:'rén'}] },
+  { th:'มีแค่น้องชาย 2 คน', cat:'mix', note:'只 = เพียง/แค่ วางหน้ากริยา', tokens:[{zh:'只',py:'zhǐ'},{zh:'有',py:'yǒu'},{zh:'两',py:'liǎng'},{zh:'个',py:'gè'},{zh:'弟弟',py:'dìdi'}] },
+  { th:'แม่ฉันเป็นหมอ', cat:'mix', tokens:[{zh:'我',py:'wǒ'},{zh:'妈妈',py:'māma'},{zh:'是',py:'shì'},{zh:'大夫',py:'dàifu'}] },
+  { th:'คุณชื่ออะไร', cat:'mix', note:'วาง 什么 ตรงตำแหน่งที่ถาม', tokens:[{zh:'你',py:'nǐ'},{zh:'叫',py:'jiào'},{zh:'什么',py:'shénme'},{zh:'名字',py:'míngzi'}] },
+  { th:'คุณทำงานอะไร', cat:'mix', tokens:[{zh:'你',py:'nǐ'},{zh:'做',py:'zuò'},{zh:'什么',py:'shénme'},{zh:'工作',py:'gōngzuò'}] },
+  { th:'คุณจะไปไหน', cat:'mix', tokens:[{zh:'你',py:'nǐ'},{zh:'去',py:'qù'},{zh:'哪儿',py:'nǎr'}] },
+  { th:'มีพนักงานกี่คน', cat:'mix', tokens:[{zh:'有',py:'yǒu'},{zh:'多少',py:'duōshao'},{zh:'员工',py:'yuángōng'}] },
+  { th:'ประมาณร้อยกว่าคน', cat:'mix', note:'多 หลังตัวเลข = ...กว่า', tokens:[{zh:'大概',py:'dàgài'},{zh:'有',py:'yǒu'},{zh:'一',py:'yì'},{zh:'百',py:'bǎi'},{zh:'多',py:'duō'},{zh:'个',py:'gè'},{zh:'员工',py:'yuángōng'}] },
+];
+const SB_CATS = [
+  { k:'all', label:'ทั้งหมด' },
+  { k:'de',  label:'的 (ของ)' },
+  { k:'ne',  label:'呢 (ล่ะ)' },
+  { k:'mei', label:'没有 (ไม่มี)' },
+  { k:'bu',  label:'不 (ไม่)' },
+  { k:'ask', label:'吗 (คำถาม)' },
+  { k:'mw',  label:'จำนวน+ลักษณนาม' },
+  { k:'or',  label:'还是 (หรือ)' },
+  { k:'shop',label:'ซื้อของ/ราคา' },
+  { k:'mix', label:'ทั่วไป' },
+];
+let sbPool = [], sbIdx = 0, sbCat = 'all', sbCur = null, sbOrder = [], sbPlaced = [], sbCatsBuilt = false;
+
+function sbBuildCats() {
+  if (sbCatsBuilt) return;
+  sbCatsBuilt = true;
+  const box = document.getElementById('sb-cats');
+  box.innerHTML = SB_CATS.map(c => `<button class="sb-cat${c.k === 'all' ? ' on' : ''}" data-k="${c.k}">${c.label}</button>`).join('');
+  box.querySelectorAll('.sb-cat').forEach(b => b.addEventListener('click', () => sbSetCat(b.dataset.k)));
+}
+function sbSetCat(k) {
+  sbCat = k;
+  document.querySelectorAll('#sb-cats .sb-cat').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+  sbStart();
+}
+function sbSource() { return sbCat === 'all' ? sbData : sbData.filter(s => s.cat === sbCat); }
+
+function sbStart() {
+  sbBuildCats();
+  sbPool = lsnShuffle(sbSource());
+  sbIdx = 0;
+  sbRender();
+}
+
+function sbRender() {
+  const body = document.getElementById('sb-body');
+  if (sbIdx >= sbPool.length) {
+    document.getElementById('sb-progress').textContent = '';
+    body.innerHTML = `<div class="sb-solved" style="padding:24px 10px">🎉 เรียงครบทุกประโยคแล้ว!<br><button class="quiz-restart-btn" style="margin-top:14px" onclick="sbStart()">🔁 เริ่มใหม่</button></div>`;
+    return;
+  }
+  sbCur = sbPool[sbIdx];
+  const toks = sbCur.tokens.map((t, i) => ({ zh: t.zh, py: t.py, id: i }));
+  do { sbOrder = lsnShuffle(toks); } while (toks.length > 1 && sbOrder.every((t, i) => t.id === i));
+  sbPlaced = [];
+  sbPaint();
+}
+
+function sbTileHtml(t) { return `<span class="sb-tile-zh">${t.zh}</span><span class="sb-tile-py">${t.py}</span>`; }
+
+function sbPaint() {
+  document.getElementById('sb-progress').textContent = `ประโยคที่ ${sbIdx + 1}/${sbPool.length}`;
+  const placedIds = new Set(sbPlaced.map(t => t.id));
+  const body = document.getElementById('sb-body');
+  body.innerHTML =
+    `<div class="sb-prompt"><div class="sb-prompt-th">${sbCur.th}</div>${sbCur.note ? `<div class="sb-note">💡 ${sbCur.note}</div>` : ''}</div>` +
+    `<div class="sb-answer" id="sb-answer">${sbPlaced.length ? '' : '<span class="sb-answer-hint">แตะคำด้านล่างมาเรียงตรงนี้</span>'}</div>` +
+    `<div class="sb-bank" id="sb-bank"></div>` +
+    `<div class="sb-actions">` +
+      `<button class="sb-btn" id="sb-clear">↺ ล้าง</button>` +
+      `<button class="sb-btn" id="sb-reveal">👁 เฉลย</button>` +
+    `</div>`;
+  const ansEl = document.getElementById('sb-answer');
+  sbPlaced.forEach(t => {
+    const el = document.createElement('button');
+    el.className = 'sb-tile';
+    el.innerHTML = sbTileHtml(t);
+    el.addEventListener('click', () => { sbPlaced = sbPlaced.filter(x => x.id !== t.id); sbPaint(); });
+    ansEl.appendChild(el);
+  });
+  const bankEl = document.getElementById('sb-bank');
+  // render ทุก tile เสมอ — ตัวที่วางแล้วแค่จางลง เพื่อให้ตำแหน่งปุ่มนิ่ง (ไม่ขยับตอนแตะ)
+  sbOrder.forEach(t => {
+    const el = document.createElement('button');
+    const used = placedIds.has(t.id);
+    el.className = 'sb-tile' + (used ? ' used' : '');
+    el.innerHTML = sbTileHtml(t);
+    if (!used) el.addEventListener('click', () => {
+      sbPlaced.push(t);
+      if (sbPlaced.length === sbCur.tokens.length) sbCheck();
+      else sbPaint();
+    });
+    bankEl.appendChild(el);
+  });
+  document.getElementById('sb-clear').addEventListener('click', () => { sbPlaced = []; sbPaint(); });
+  document.getElementById('sb-reveal').addEventListener('click', sbReveal);
+}
+
+function sbCheck() {
+  sbPaint();
+  const ok = sbPlaced.map(t => t.zh).join('') === sbCur.tokens.map(t => t.zh).join('');
+  const ansEl = document.getElementById('sb-answer');
+  if (ok) {
+    ansEl.classList.add('correct');
+    playSound(sbCur.tokens.map(t => t.zh).join(''));
+    const py = sbCur.tokens.map(t => t.py).join(' ');
+    ansEl.insertAdjacentHTML('afterend', `<div class="sb-solved">✓ ถูกต้อง!<br><span class="sb-solved-py">${py}</span></div>`);
+    document.querySelectorAll('#sb-answer .sb-tile, #sb-bank .sb-tile').forEach(b => b.disabled = true);
+    setTimeout(() => { sbIdx++; sbRender(); }, 1700);
+  } else {
+    ansEl.classList.add('wrong');
+    setTimeout(() => ansEl.classList.remove('wrong'), 350);
+  }
+}
+
+function sbReveal() {
+  sbPlaced = sbCur.tokens.map((t, i) => ({ zh: t.zh, py: t.py, id: i }));
+  sbPaint();
+  const ansEl = document.getElementById('sb-answer');
+  ansEl.classList.add('correct');
+  const py = sbCur.tokens.map(t => t.py).join(' ');
+  ansEl.insertAdjacentHTML('afterend', `<div class="sb-solved">เฉลย<br><span class="sb-solved-py">${py}</span></div>`);
+  playSound(sbCur.tokens.map(t => t.zh).join(''));
+  document.querySelectorAll('#sb-answer .sb-tile, #sb-bank .sb-tile').forEach(b => b.disabled = true);
+  setTimeout(() => { sbIdx++; sbRender(); }, 2000);
+}
+
 function lsnMode(el, mode) {
   el.parentElement.querySelectorAll('.lsn-mode').forEach(m => m.classList.remove('active'));
   el.classList.add('active');
@@ -2542,11 +3041,11 @@ function lsnBuildGrid(vocab) {
     d.className = 'voc-card';
     d.style.color = '#c62828';
     d.innerHTML =
-      `<div class="voc-zh" style="font-size:26px">${v.zh}</div>` +
       `<div class="voc-py">${v.py}</div>` +
+      `<div class="voc-zh">${v.zh}</div>` +
       (v.thr ? `<div class="voc-thr">${v.thr}</div>` : '') +
       `<div class="voc-th">${v.th}</div>` +
-      `<div class="voc-play">▶</div>`;
+      `<div class="voc-play">▶ ฟัง</div>`;
     d.addEventListener('click', () => playSound(v.zh, d));
     addStarTo(d, v.zh);
     grid.appendChild(d);
@@ -2744,40 +3243,92 @@ function lsnInit() {
 }
 lsnInit();
 
-function buildAllVocab() {
-  const grid = document.getElementById('all-vgrid');
-  if (grid.children.length) return;
-  const all = lsnAllLessons.flatMap(L => L.vocab);
-  document.getElementById('allvoc-title').textContent =
-    `ทบทวนทุกบท · ${all.length} คำ (สุ่มลำดับ)`;
-  lsnShuffle(all).forEach(v => {
-    const d = document.createElement('div');
-    d.className = 'voc-card';
-    d.style.color = '#c62828';
-    d.innerHTML =
-      `<div class="voc-zh" style="font-size:26px">${v.zh}</div>` +
-      `<div class="voc-py">${v.py}</div>` +
-      `<div class="voc-th">${v.th}</div>` +
-      `<div class="voc-play">▶</div>`;
-    d.addEventListener('click', () => playSound(v.zh, d));
-    addStarTo(d, v.zh);
-    grid.appendChild(d);
-  });
+
+/* ================= Navigation 2 ระดับ ================= */
+const NAV_GROUPS = [
+  { key: 'learn', ic: '📖', label: 'เรียน',   items: [{ t: 'lesson1',  label: '📖 บทเรียน' }] },
+  { key: 'drill', ic: '🎯', label: 'ฝึก',     items: [{ t: 'quiz',     label: '🎯 ควิซคำศัพท์' }, { t: 'sentence', label: '🧩 เรียงประโยค' }] },
+  { key: 'bank',  ic: '📚', label: 'คลังคำ',  items: [{ t: 'vocab',    label: '📚 คำศัพท์ทุกบท' }, { t: 'allnotes', label: '📝 สรุปไวยากรณ์' }] },
+  { key: 'base',  ic: '🔤', label: 'พื้นฐาน', items: [{ t: 'pinyin',   label: '🔤 พินอิน' }, { t: 'bu', label: '🎵 ผันเสียง' }] },
+];
+const NAV_KEY = 'xy-nav';
+const tabScroll = {};
+let curTab = null;
+
+function navLoad() { try { return JSON.parse(localStorage.getItem(NAV_KEY) || '{}'); } catch { return {}; } }
+function navSave(o) { try { localStorage.setItem(NAV_KEY, JSON.stringify({ ...navLoad(), ...o })); } catch {} }
+function navGroupOf(type) { return NAV_GROUPS.find(g => g.items.some(i => i.t === type)); }
+function navValid(type) { return !!navGroupOf(type); }
+
+function buildNav() {
+  const bn = document.getElementById('bnav');
+  bn.innerHTML = NAV_GROUPS.map(g =>
+    `<button type="button" data-g="${g.key}"><span class="bn-ic">${g.ic}</span>${g.label}</button>`).join('');
+  bn.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const g = NAV_GROUPS.find(x => x.key === b.dataset.g);
+    const last = navLoad().last || {};
+    goTab(last[g.key] && g.items.some(i => i.t === last[g.key]) ? last[g.key] : g.items[0].t);
+  }));
+  syncChrome();
 }
 
-function setTab(el, type) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+function paintNav(type) {
+  const g = navGroupOf(type);
+  document.querySelectorAll('#bnav button').forEach(b => b.classList.toggle('on', !!g && b.dataset.g === g.key));
+  const sn = document.getElementById('subnav');
+  if (!g || g.items.length < 2) { sn.classList.add('empty'); sn.innerHTML = ''; syncChrome(); return; }
+  sn.classList.remove('empty');
+  sn.innerHTML = g.items.map(i =>
+    `<button type="button" data-t="${i.t}"${i.t === type ? ' class="on"' : ''}>${i.label}</button>`).join('');
+  sn.querySelectorAll('button').forEach(b => b.addEventListener('click', () => goTab(b.dataset.t)));
+  syncChrome();
+}
+
+function goTab(type) {
+  if (!navValid(type)) type = 'lesson1';
+  if (curTab) tabScroll[curTab] = window.scrollY;
+  curTab = type;
   document.querySelectorAll('.section').forEach(s => {
     s.classList.toggle('hidden', s.dataset.type !== type);
   });
+  paintNav(type);
+  const g = navGroupOf(type);
+  const last = navLoad().last || {};
+  if (g) last[g.key] = type;
+  navSave({ tab: type, last });
   if (type === 'vocab') ensureVocabBuilt();
   if (type === 'lesson1') lsnInit();
-  if (type === 'allvocab') buildAllVocab();
   if (type === 'quiz') quizStart();
+  if (type === 'sentence') sbStart();
   if (type === 'allnotes') buildAllNotes();
   if (type === 'bu') buildT3Page();
+  window.scrollTo({ top: tabScroll[type] || 0, behavior: 'instant' });
 }
+function setTab(el, type) { goTab(type); }
+
+/* ปุ่มกลับขึ้นบน */
+(function initFab() {
+  const fab = document.getElementById('fabTop');
+  if (!fab) return;
+  fab.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'instant' }));
+  const upd = () => fab.classList.toggle('show', window.scrollY > 700);
+  window.addEventListener('scroll', upd, { passive: true });
+  upd();
+})();
+
+/* วัดความสูง chrome จริง แทน magic number
+   (topbar สูงไม่เท่ากัน: มือถือ/เดสก์ท็อป และมี/ไม่มี subnav) */
+function syncChrome() {
+  const hd = document.querySelector('header');
+  const tb = document.querySelector('.topbar');
+  if (!hd || !tb) return;
+  const s = document.documentElement.style;
+  s.setProperty('--hd-h', hd.offsetHeight + 'px');
+  s.setProperty('--top-h', tb.offsetHeight + 'px');
+}
+window.addEventListener('resize', syncChrome);
+window.addEventListener('orientationchange', () => setTimeout(syncChrome, 250));
+window.addEventListener('load', syncChrome);
 
 /* สรุปแบบครู — เรียบเรียงจากโน้ตทุกบท จัดหมวดหมู่ให้ทบทวนทีเดียวจบ */
 const lsnSummary = [
@@ -3122,6 +3673,14 @@ function pinFilter(el, kind) {
     b.classList.toggle('hidden', kind !== 'all' && b.dataset.pin !== kind);
   });
 }
+
+/* ---------------- เริ่มต้น navigation ---------------- */
+buildNav();
+(function bootNav() {
+  const fromHash = (location.hash || '').slice(1);
+  const saved = navLoad().tab;
+  goTab(navValid(fromHash) ? fromHash : (navValid(saved) ? saved : 'lesson1'));
+})();
 
 /* ---------------- PWA: Service Worker ---------------- */
 if ('serviceWorker' in navigator) {
