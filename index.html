@@ -819,20 +819,6 @@
     .lsn-reveal { display: block; visibility: hidden; }
     .lsn-reveal.show { visibility: visible; }
     .lsn-reveal b { color: var(--red-700); font-family: ui-monospace, monospace; }
-    /* ปุ่มข้อถัดไป: แถบติดล่างจอ (เดิมอยู่ที่ y≈764px = หลุดขอบจอ) */
-    .lsn-next {
-      display: none; width: 100%; min-height: 50px;
-      margin: 12px 0 0; padding: 14px;
-      background: var(--grad-red); color: white; font-family: inherit;
-      border: none; border-radius: var(--r-md); font-weight: 800; font-size: 14px;
-      cursor: pointer; box-shadow: var(--sh-red);
-    }
-    .lsn-next.show { display: block; }
-    .lsn-next-bar {
-      position: sticky; bottom: 0; z-index: 12;
-      margin: 0 -8px; padding: 0 8px calc(6px + var(--sab));
-      background: linear-gradient(to top, var(--bg) 62%, rgba(242,242,247,0));
-    }
     .lsn-prog { width: 100%; margin-top: 10px; }
     .lsn-prog-track { height: 3px; background: #e0e0e0; border-radius: 2px; overflow: hidden; }
     .lsn-prog-fill  { height: 100%; background: linear-gradient(90deg,#c62828,#ffb300); transition: width 0.4s; }
@@ -1046,13 +1032,10 @@
         <input class="lsn-input" id="ty-input" type="text" placeholder="พินอิน"
                autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"
                enterkeyhint="done" onkeydown="tyKey(event)" aria-label="พิมพ์พินอิน">
-        <div class="lsn-hint">กด Enter เพื่อตรวจ · ü พิมพ์เป็น v หรือ u:</div>
+        <div class="lsn-hint" id="ty-hint">กด Enter เพื่อตรวจ · ü พิมพ์เป็น v หรือ u:</div>
         <div class="lsn-fb" id="ty-fb"></div>
         <div class="lsn-reveal" id="ty-reveal">เฉลย: <b id="ty-ans"></b></div>
         <button type="button" class="ty-skip" id="ty-skip" onclick="tyRevealAns()">👁 ดูเฉลย</button>
-      </div>
-      <div class="lsn-next-bar">
-        <button class="lsn-next" id="ty-next" onclick="tyNext()">ข้อถัดไป →</button>
       </div>
       <div class="lsn-prog">
         <div class="lsn-prog-track"><div class="lsn-prog-fill" id="ty-prog"></div></div>
@@ -3366,7 +3349,7 @@ function lsnMode(el, mode) {
   el.classList.add('active');
   document.querySelectorAll('.lsn-view').forEach(v => v.classList.toggle('active', v.dataset.mode === mode));
   navSave({ mode });
-  if (mode === 'type') tyFocus();
+  if (mode === 'type') tyFocus(); else tyClearTimer();
   // เลื่อนกลับไปหัวโหมด — กันหน้าเปล่าเมื่อสลับจากโหมดยาวไปโหมดสั้น
   const bar = document.querySelector('.lsn-modes');
   const top = window.scrollY + bar.getBoundingClientRect().top
@@ -3544,7 +3527,7 @@ function pyDrillPool(L, src) {
 }
 
 /* ---- state ---- */
-let tyQueue = [], tyIdx = 0, tyC = 0, tyW = 0, tyT = 0, tyAnswered = false;
+let tyQueue = [], tyIdx = 0, tyC = 0, tyW = 0, tyT = 0, tyAnswered = false, tyTimer = null;
 let tySrc = 'vocab', tyNeedTone = false;
 const TY_KEY = 'xy-ty';
 
@@ -3560,6 +3543,8 @@ function tySavePrefs() {
 }
 
 function tyEl(id) { return document.getElementById(id); }
+/* ยกเลิกคิวไปข้อถัดไป — กันข้อเลื่อนเองตอนสลับบท/หมวด/โหมด */
+function tyClearTimer() { if (tyTimer) { clearTimeout(tyTimer); tyTimer = null; } }
 function tyScore() { tyEl('ty-c').textContent = tyC; tyEl('ty-w').textContent = tyW; tyEl('ty-t').textContent = tyT; }
 function tyUpdateCount() {
   const btn = document.querySelectorAll('.lsn-mode')[3];
@@ -3581,6 +3566,7 @@ function tyFocus() {
 }
 
 function tyRestart() {
+  tyClearTimer();
   tyQueue = lsnShuffle(pyDrillPool(lsnAllLessons[currentLsn], tySrc));
   tyIdx = 0; tyC = 0; tyW = 0; tyT = 0;
   tyPaintToolbar();
@@ -3614,8 +3600,8 @@ function tyLoad() {
   tyEl('ty-fb').textContent = '';
   tyEl('ty-fb').className = 'lsn-fb';
   tyEl('ty-reveal').classList.remove('show');
-  tyEl('ty-next').classList.remove('show');
   tyEl('ty-skip').style.display = '';
+  tyEl('ty-hint').textContent = 'กด Enter เพื่อตรวจ · ü พิมพ์เป็น v หรือ u:';
   tyEl('ty-prog').style.width = (tyIdx / tyQueue.length * 100) + '%';
   tyScore();
   tyFocus();
@@ -3633,12 +3619,15 @@ function tyFinish(ok, msg) {
   fb.className = 'lsn-fb ' + (ok ? 'ok' : 'bad');
   tyEl('ty-ans').textContent = v.py + (v.en ? ' · ' + v.en : '');
   tyEl('ty-reveal').classList.add('show');
-  tyEl('ty-next').classList.add('show');
-  tyEl('ty-skip').style.display = 'none';   // ตอบแล้วไม่ต้องมีปุ่มเฉลย (แถบข้อถัดไปทับอยู่)
+  tyEl('ty-skip').style.display = 'none';
+  tyEl('ty-hint').textContent = 'Enter = ข้ามไปเลย';
   // SRS + ดาว เฉพาะคำศัพท์ — วลีไม่อยู่ใน quizAllWords() จะเขียนไปก็ไม่โผล่ที่ไหน
   if (v.kind === 'vocab') { srsUpdate(v.zh, ok); if (!ok) addStar(v.zh); }
   tyScore();
   playSound(v.zh, tyEl('ty-card'));
+  // ไปข้อถัดไปเอง — ตอบถูกไปไว ตอบผิดหน่วงนานพอให้อ่านเฉลยทัน
+  tyClearTimer();
+  tyTimer = setTimeout(() => { tyTimer = null; tyNext(); }, ok ? 1100 : 2800);
 }
 
 function tySubmit() {
@@ -3651,7 +3640,7 @@ function tySubmit() {
     : '✗ ยังไม่ถูก');
 }
 function tyRevealAns() { if (!tyAnswered) tyFinish(false, '👁 เฉลย'); }
-function tyNext() { tyIdx++; tyLoad(); }
+function tyNext() { tyClearTimer(); tyIdx++; tyLoad(); }
 function tyPlay() { if (tyQueue.length) playSound(tyQueue[tyIdx].zh, tyEl('ty-card')); }
 function tyKey(e) {
   if (e.key !== 'Enter') return;
