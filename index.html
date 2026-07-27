@@ -748,7 +748,7 @@
       box-shadow: 0 3px 10px rgba(229,57,53,0.3);
     }
 
-    /* Mode 3+4: quiz */
+    /* โครงร่วมของแบบฝึกในบทเรียน (คะแนน / การ์ดคำถาม / ช่องพิมพ์ / ปุ่มข้อถัดไป) */
     .lsn-score {
       display: flex; gap: 12px; padding: 8px 14px; background: white;
       border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -785,20 +785,27 @@
     }
     .lsn-hint { font-size: 10px; color: #999; margin-top: 6px; }
 
-    .lsn-tones { display: grid; grid-template-columns: repeat(2,1fr); gap: 6px; }
-    .lsn-tone {
-      background: #f9f9f9; border: 2px solid #e0e0e0; border-radius: 10px;
-      padding: 12px 6px; cursor: pointer; transition: all 0.15s;
-      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    /* 🎯 ฝึก: แถบเลือกหมวด/ระดับ (ยืมภาษาเดียวกับ .quiz-mode-btn) */
+    .ty-toolbar { display: flex; gap: 6px; margin-bottom: 7px; }
+    .ty-btn {
+      flex: 1; min-width: 0; min-height: 38px; padding: 8px 4px; cursor: pointer;
+      font-family: inherit; font-size: 11.5px; font-weight: 700; color: var(--ink-3);
+      background: var(--surface); border: 1.5px solid var(--line);
+      border-radius: var(--r-sm); white-space: nowrap; transition: all 0.15s;
     }
-    .lsn-tone:active { transform: scale(0.95); }
-    .lsn-tone-mark { font-size: 22px; font-weight: 800; color: #c62828; font-family: ui-monospace, monospace; }
-    .lsn-tone-desc { font-size: 9.5px; color: #888; }
-    .lsn-tone.ok  { border-color: #2e7d32; background: #e8f5e9; }
-    .lsn-tone.ok .lsn-tone-mark { color: var(--ok); }
-    .lsn-tone.bad { border-color: var(--err); background: var(--err-bg); }
-    .lsn-tone.bad .lsn-tone-mark { color: var(--err); }
-    .lsn-tone:disabled { cursor: default; }
+    .ty-btn.on {
+      background: var(--grad-red); color: #fff; border-color: transparent;
+      box-shadow: var(--sh-red);
+    }
+    /* prompt ไทยเป็นตัวหลัก (ผู้เรียนอ่านพินอิน/ไทย ยังอ่านฮั่นจื่อไม่ได้) */
+    .lsn-q-th.big { font-size: 19px; font-weight: 800; color: var(--ink-1); margin: 2px 0 6px; line-height: 1.5; }
+    /* ฮั่นจื่อเป็นตัวรอง — ย่อลงเมื่อเป็นวลียาว ไม่ให้ 56px ล้นการ์ด */
+    .lsn-q-zh.sm { font-size: 26px; line-height: 1.35; }
+    .ty-skip {
+      margin-top: 10px; padding: 7px 16px; cursor: pointer; font-family: inherit;
+      font-size: 11px; font-weight: 700; color: var(--ink-3);
+      background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--r-pill);
+    }
 
     .lsn-fb { min-height: 24px; margin-top: 10px; font-size: 13px; font-weight: 700; text-align: center; }
     .lsn-fb.ok  { color: #2e7d32; }
@@ -939,7 +946,7 @@
       .voc-grid, .lsn-vgrid, .grid { grid-template-columns: repeat(6, 1fr) !important; }
       .ex-grid { grid-template-columns: repeat(6, 1fr); }
       .sp-grid { grid-template-columns: repeat(5, 1fr); }
-      .phrase-grid, .bu-grid, .lsn-tones { grid-template-columns: repeat(4, 1fr); }
+      .phrase-grid, .bu-grid { grid-template-columns: repeat(4, 1fr); }
       .quiz-choices { grid-template-columns: 1fr 1fr; }
       /* หน้าที่เป็นข้อความ/ฝึกทีละข้อ ไม่ควรยืดเต็มความกว้าง */
       .section[data-type="quiz"] { max-width: 620px; margin-inline: auto; }
@@ -952,8 +959,8 @@
       .dlg-row { max-width: 860px; }
       /* จอกว้างมีที่พอ ให้ตัวกรองขึ้นครบทุกตัวแทนการเลื่อนแนวนอน */
       .sb-cats, .lsn-lessons { flex-wrap: wrap; overflow-x: visible; }
-      /* ควิซวรรณยุกต์เป็นการ์ดทีละใบ ไม่ต้องยืดเต็มความกว้าง */
-      .lsn-view[data-mode="tone"] { max-width: 620px; margin-inline: auto; }
+      /* แบบฝึกพิมพ์พินอินเป็นการ์ดทีละใบ ไม่ต้องยืดเต็มความกว้าง */
+      .lsn-view[data-mode="type"] { max-width: 620px; margin-inline: auto; }
     }
     @media (min-width: 1280px) {
       :root { --wrap: 1160px; }
@@ -995,7 +1002,7 @@
       <div class="lsn-mode active" onclick="lsnMode(this,'vocab')">📋 ศัพท์</div>
       <div class="lsn-mode" onclick="lsnMode(this,'dlg')">💬 บทสนทนา</div>
       <div class="lsn-mode" onclick="lsnMode(this,'notes')">📝 โน้ต</div>
-      <div class="lsn-mode" onclick="lsnMode(this,'tone')">🎵 วรรณยุกต์</div>
+      <div class="lsn-mode" onclick="lsnMode(this,'type')">🎯 ฝึก</div>
     </div>
 
     <!-- ศัพท์ -->
@@ -1015,35 +1022,46 @@
       <div id="lsn-notes"></div>
     </div>
 
-    <!-- วรรณยุกต์ -->
-    <div class="lsn-view" data-mode="tone">
-      <div class="lsn-score">
-        <div class="lsn-s-item lsn-s-c"><div class="lsn-s-num" id="tn-c">0</div><div class="lsn-s-lbl">✓ ถูก</div></div>
-        <div class="lsn-s-item lsn-s-w"><div class="lsn-s-num" id="tn-w">0</div><div class="lsn-s-lbl">✗ ผิด</div></div>
-        <div class="lsn-s-item lsn-s-t"><div class="lsn-s-num" id="tn-t">0</div><div class="lsn-s-lbl">ข้อ</div></div>
+    <!-- 🎯 ฝึก: พิมพ์พินอิน -->
+    <div class="lsn-view" data-mode="type">
+      <div class="ty-toolbar" id="ty-src">
+        <button type="button" class="ty-btn on" data-v="vocab"  onclick="tySetSrc('vocab')">📋 ศัพท์</button>
+        <button type="button" class="ty-btn"    data-v="phrase" onclick="tySetSrc('phrase')">💬 วลี</button>
+        <button type="button" class="ty-btn"    data-v="all"    onclick="tySetSrc('all')">🔀 ทั้งหมด</button>
       </div>
-      <div class="lsn-qcard" id="tn-card">
-        <div class="lsn-q-num" id="tn-qnum">ข้อ 1 / 10</div>
-        <div class="lsn-q-zh" id="tn-zh">你</div>
-        <div class="lsn-q-th" id="tn-th">คุณ</div>
-        <button class="lsn-fc-btn spk" style="margin-bottom:14px" onclick="lsnTonePlay()">🔊</button>
-        <div style="height:8px"></div>
-        <div style="font-size:11px;color:#777;margin-bottom:10px">พินอินคือ <b id="tn-base" style="color:#c62828;font-family:ui-monospace,monospace">ni</b> — เลือกวรรณยุกต์</div>
-        <div class="lsn-tones" id="tn-tones"></div>
-        <div class="lsn-fb" id="tn-fb"></div>
-        <div class="lsn-reveal" id="tn-reveal">คำตอบ: <b id="tn-ans"></b></div>
+      <div class="ty-toolbar" id="ty-lvl">
+        <button type="button" class="ty-btn on" data-v="0" onclick="tySetLvl(0)">ไม่ใส่วรรณยุกต์</button>
+        <button type="button" class="ty-btn"    data-v="1" onclick="tySetLvl(1)">ใส่เลข 1-4</button>
+      </div>
+      <div class="lsn-score">
+        <div class="lsn-s-item lsn-s-c"><div class="lsn-s-num" id="ty-c">0</div><div class="lsn-s-lbl">✓ ถูก</div></div>
+        <div class="lsn-s-item lsn-s-w"><div class="lsn-s-num" id="ty-w">0</div><div class="lsn-s-lbl">✗ ผิด</div></div>
+        <div class="lsn-s-item lsn-s-t"><div class="lsn-s-num" id="ty-t">0</div><div class="lsn-s-lbl">ข้อ</div></div>
+      </div>
+      <div class="lsn-qcard" id="ty-card">
+        <div class="lsn-q-num" id="ty-qnum">ข้อ 1 / 1</div>
+        <div class="lsn-q-th big" id="ty-th">—</div>
+        <div class="lsn-q-zh" id="ty-zh">—</div>
+        <button class="lsn-fc-btn spk" style="margin:12px 0 14px" onclick="tyPlay()" aria-label="ฟังเสียง">🔊</button>
+        <input class="lsn-input" id="ty-input" type="text" placeholder="พินอิน"
+               autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"
+               enterkeyhint="done" onkeydown="tyKey(event)" aria-label="พิมพ์พินอิน">
+        <div class="lsn-hint">กด Enter เพื่อตรวจ · ü พิมพ์เป็น v หรือ u:</div>
+        <div class="lsn-fb" id="ty-fb"></div>
+        <div class="lsn-reveal" id="ty-reveal">เฉลย: <b id="ty-ans"></b></div>
+        <button type="button" class="ty-skip" id="ty-skip" onclick="tyRevealAns()">👁 ดูเฉลย</button>
       </div>
       <div class="lsn-next-bar">
-        <button class="lsn-next" id="tn-next" onclick="lsnToneNext()">ข้อถัดไป →</button>
+        <button class="lsn-next" id="ty-next" onclick="tyNext()">ข้อถัดไป →</button>
       </div>
       <div class="lsn-prog">
-        <div class="lsn-prog-track"><div class="lsn-prog-fill" id="tn-prog"></div></div>
+        <div class="lsn-prog-track"><div class="lsn-prog-fill" id="ty-prog"></div></div>
       </div>
-      <div class="lsn-complete" id="tn-complete">
+      <div class="lsn-complete" id="ty-complete">
         <div class="lsn-complete-ico">🎉</div>
         <div class="lsn-complete-ttl">เก่งมาก!</div>
-        <div class="lsn-complete-scr" id="tn-complete-scr"></div>
-        <button class="lsn-restart" onclick="lsnToneRestart()">เริ่มใหม่</button>
+        <div class="lsn-complete-scr" id="ty-complete-scr"></div>
+        <button class="lsn-restart" onclick="tyRestart()">เริ่มใหม่</button>
       </div>
     </div>
   </div>
@@ -2564,13 +2582,6 @@ function lsnBuildPhrases(phrases) {
   });
 }
 
-const lsnToneOpts = [
-  { num:1, mark:'ˉ', label:'สามัญ' },
-  { num:2, mark:'ˊ', label:'จัตวา' },
-  { num:3, mark:'ˇ', label:'ตรี' },
-  { num:4, mark:'ˋ', label:'โท' },
-];
-
 function lsnShuffle(a) {
   const b = [...a];
   for (let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
@@ -3355,6 +3366,7 @@ function lsnMode(el, mode) {
   el.classList.add('active');
   document.querySelectorAll('.lsn-view').forEach(v => v.classList.toggle('active', v.dataset.mode === mode));
   navSave({ mode });
+  if (mode === 'type') tyFocus();
   // เลื่อนกลับไปหัวโหมด — กันหน้าเปล่าเมื่อสลับจากโหมดยาวไปโหมดสั้น
   const bar = document.querySelector('.lsn-modes');
   const top = window.scrollY + bar.getBoundingClientRect().top
@@ -3455,111 +3467,203 @@ function lsnFlip() {
 function lsnFcNav(d) { lsnFcIdx = (lsnFcIdx + d + lsnFcDeck.length) % lsnFcDeck.length; lsnFcLoad(); }
 function lsnFcSpeak() { playSound(lsnFcDeck[lsnFcIdx].zh, document.getElementById('lsn-fc')); }
 
-// Mode 3: tone quiz
-let tnQueue = [], tnIdx = 0, tnC = 0, tnW = 0, tnT = 0, tnAns = false;
+/* ---------------- Mode 4: 🎯 ฝึก — พิมพ์พินอิน ---------------- */
+/* pyParse — แปลงพินอิน (เฉลย หรือที่ผู้ใช้พิมพ์) ให้เป็นรูปเทียบกันได้
+     letters : a-z ล้วน (ü/v/u: → v) ตัดวรรณยุกต์ ช่องว่าง วงเล็บ ' และเลข ออก
+     tones   : ยาว = จำนวนพยางค์ · 1-4 = วรรณยุกต์ · 0 = เสียงเบา · -1 = ใส่ขัดกันเอง
+   หลัก: ทุกพยางค์พินอินมี "กลุ่มสระ" ติดกันแค่กลุ่มเดียว (พยัญชนะอยู่หัวหรือท้ายเท่านั้น)
+   → นับกลุ่มสระ = ได้ index ของพยางค์มาฟรี ไม่ต้องตัดพยางค์เอง
+     gōngzuò = 1 token (ช่องว่าง) แต่ 2 กลุ่มสระ — ควิซวรรณยุกต์เดิมพลาดตรงนี้
+   เทียบวรรณยุกต์ "ตามตำแหน่งพยางค์" ไม่ใช่เรียงลำดับ ไม่งั้น baba4 จะผ่านเป็น bàba
+   ห้าม normalize+strip รวบเดียว: ̈ (U+0308) จะหลุดไปด้วย ทำให้ ǚ/ǜ กลายเป็น u */
+const PY_TONE_MARK = { '\u0304': 1, '\u0301': 2, '\u030C': 3, '\u0300': 4 };
+const PY_VOWEL = /[aeiouv]/;
 
-const _toneCharMap = {'ā':1,'ē':1,'ī':1,'ō':1,'ū':1,'ǖ':1,
-                      'á':2,'é':2,'í':2,'ó':2,'ú':2,'ǘ':2,
-                      'ǎ':3,'ě':3,'ǐ':3,'ǒ':3,'ǔ':3,'ǚ':3,
-                      'à':4,'è':4,'ì':4,'ò':4,'ù':4,'ǜ':4};
-function _detectTone(syl) {
-  for (const ch of syl) if (_toneCharMap[ch]) return _toneCharMap[ch];
-  return 0;
+function pyParse(s) {
+  const src = String(s == null ? '' : s).normalize('NFD').toLowerCase().replace(/u:/g, 'v');
+  let letters = '', inRun = false, run = -1;
+  const tones = [];
+  // วรรณยุกต์ตกที่ "กลุ่มสระล่าสุด" → เลขที่พิมพ์ท้ายพยางค์จึงเข้าพยางค์ที่ถูก
+  const put = d => { if (run >= 0) tones[run] = (tones[run] === 0 || tones[run] === d) ? d : -1; };
+  for (const ch of src) {
+    if (PY_TONE_MARK[ch]) { put(PY_TONE_MARK[ch]); continue; }
+    if (ch === '\u0308') { if (letters) letters = letters.slice(0, -1) + 'v'; continue; }
+    if (ch >= '0' && ch <= '9') { const d = +ch; if (d <= 5) put(d === 5 ? 0 : d); continue; }
+    const c = (ch === '\u00fc') ? 'v' : ch;
+    if (c < 'a' || c > 'z') continue;   // ช่องว่าง ' ( ) → ข้าม โดยไม่ตัดกลุ่มสระ
+    letters += c;
+    if (PY_VOWEL.test(c)) { if (!inRun) { run++; tones[run] = 0; } inRun = true; }
+    else inRun = false;
+  }
+  return { letters, tones };
 }
-function _stripTone(syl) { return syl.normalize('NFD').replace(/[̀-ͯ]/g,''); }
 
-function makePhraseQuizItems(phrases) {
-  const items = [];
-  phrases.forEach(p => {
-    const chars = [...p.zh];
-    const syls = p.py.split(' ');
-    syls.forEach((syl, i) => {
-      const tone = _detectTone(syl);
-      if (!tone || i >= chars.length) return;
-      const zhHtml = chars.map((c,j) =>
-        j===i ? `<span style="color:#c62828">${c}</span>`
-               : `<span style="color:#ccc">${c}</span>`
-      ).join('');
-      items.push({ zh:p.zh, zhHtml, py:syl, base:_stripTone(syl), tone, th:p.th });
-    });
+/* วงเล็บ = ส่วนที่ใส่หรือไม่ใส่ก็ได้ — 'yǒu(yì)diǎnr' รับทั้ง yǒuyìdiǎnr และ yǒudiǎnr */
+function pyVariants(py) {
+  if (!/[()]/.test(py)) return [py];
+  return [py.replace(/[()]/g, ''), py.replace(/\([^)]*\)/g, '')];
+}
+
+/* pyCheck — needTone=false: เทียบตัวอักษร · true: เทียบตัวอักษร + วรรณยุกต์รายพยางค์
+   why: 'empty' | 'letters' | 'umlaut' (พิมพ์ u ที่ต้องเป็น ü) | 'tone' (at = พยางค์ที่ผิด) */
+function pyCheck(input, answerPy, needTone) {
+  const u = pyParse(input);
+  if (!u.letters) return { ok: false, why: 'empty' };
+  let near = null;
+  for (const v of pyVariants(answerPy)) {
+    const a = pyParse(v);
+    if (u.letters !== a.letters) {
+      if (!near && u.letters.replace(/v/g, 'u') === a.letters.replace(/v/g, 'u'))
+        near = { ok: false, why: 'umlaut', want: a };
+      continue;
+    }
+    if (!needTone) return { ok: true, want: a, got: u };
+    if (u.tones.length !== a.tones.length) continue;  // กันไว้ — ปกติเป็นไปไม่ได้เมื่อ letters ตรง
+    let bad = -1;
+    for (let i = 0; i < a.tones.length; i++) if (u.tones[i] !== a.tones[i]) { bad = i; break; }
+    if (bad < 0) return { ok: true, want: a, got: u };
+    near = { ok: false, why: 'tone', at: bad, want: a, got: u };
+  }
+  return near || { ok: false, why: 'letters', got: u };
+}
+
+/* คลังข้อของบท — dedupe เพราะ 9 รายการซ้ำอยู่ทั้งใน vocab และ phrases ของบทเดียวกัน */
+function pyDrillPool(L, src) {
+  const rows = [];
+  if (src !== 'phrase') L.vocab.forEach(v => rows.push([v, 'vocab']));
+  if (src !== 'vocab') (L.phrases || []).forEach(v => rows.push([v, 'phrase']));
+  const seen = new Set(), out = [];
+  rows.forEach(([v, kind]) => {
+    if (!v || !v.py) return;
+    const k = v.zh + '\u0000' + v.py;
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push({ zh: v.zh, py: v.py, th: v.th, en: v.en || '', kind });
   });
-  return items;
+  return out;
 }
 
-function makeTnPool(lesson) {
-  return [
-    ...lesson.vocab.filter(v => v.tone > 0).map(v => ({...v, zhHtml: v.zh})),
-    ...makePhraseQuizItems(lesson.phrases || [])
-  ];
+/* ---- state ---- */
+let tyQueue = [], tyIdx = 0, tyC = 0, tyW = 0, tyT = 0, tyAnswered = false;
+let tySrc = 'vocab', tyNeedTone = false;
+const TY_KEY = 'xy-ty';
+
+function tyLoadPrefs() {
+  try {
+    const o = JSON.parse(localStorage.getItem(TY_KEY) || '{}');
+    if (o.src === 'vocab' || o.src === 'phrase' || o.src === 'all') tySrc = o.src;
+    tyNeedTone = !!o.tone;
+  } catch {}
+}
+function tySavePrefs() {
+  try { localStorage.setItem(TY_KEY, JSON.stringify({ src: tySrc, tone: tyNeedTone })); } catch {}
 }
 
-let tnPool = makeTnPool(lsnAllLessons[0]);
+function tyEl(id) { return document.getElementById(id); }
+function tyScore() { tyEl('ty-c').textContent = tyC; tyEl('ty-w').textContent = tyW; tyEl('ty-t').textContent = tyT; }
+function tyUpdateCount() {
+  const btn = document.querySelectorAll('.lsn-mode')[3];
+  if (btn) btn.innerHTML = `🎯 ฝึก <b style="opacity:.75">${tyQueue.length}</b>`;
+}
+function tyPaintToolbar() {
+  document.querySelectorAll('#ty-src .ty-btn').forEach(b => b.classList.toggle('on', b.dataset.v === tySrc));
+  document.querySelectorAll('#ty-lvl .ty-btn').forEach(b => b.classList.toggle('on', (b.dataset.v === '1') === tyNeedTone));
+}
+function tySetSrc(v) { tySrc = v; tySavePrefs(); tyRestart(); }
+function tySetLvl(v) { tyNeedTone = !!v; tySavePrefs(); tyRestart(); }
 
-function lsnToneRestart() {
-  tnQueue = lsnShuffle(tnPool); tnIdx = 0; tnC = 0; tnW = 0; tnT = 0;
-  document.getElementById('tn-card').style.display = '';
-  document.getElementById('tn-complete').classList.remove('show');
-  lsnToneLoad();
+/* โฟกัสช่องพิมพ์เฉพาะตอนที่โหมดนี้เปิดอยู่จริง — กันคีย์บอร์ดเด้งตอนโหลดหน้า */
+function tyFocus() {
+  const view = document.querySelector('.lsn-view[data-mode="type"]');
+  if (!view || !view.classList.contains('active')) return;
+  const inp = tyEl('ty-input');
+  if (inp && !inp.readOnly) inp.focus({ preventScroll: true });
 }
-function lsnToneScore() {
-  document.getElementById('tn-c').textContent = tnC;
-  document.getElementById('tn-w').textContent = tnW;
-  document.getElementById('tn-t').textContent = tnT;
+
+function tyRestart() {
+  tyQueue = lsnShuffle(pyDrillPool(lsnAllLessons[currentLsn], tySrc));
+  tyIdx = 0; tyC = 0; tyW = 0; tyT = 0;
+  tyPaintToolbar();
+  tyUpdateCount();
+  tyEl('ty-card').style.display = '';
+  tyEl('ty-complete').classList.remove('show');
+  tyScore();
+  tyLoad();
 }
-function lsnToneLoad() {
-  if (tnIdx >= tnQueue.length) { lsnToneDone(); return; }
-  tnAns = false;
-  const v = tnQueue[tnIdx];
-  document.getElementById('tn-qnum').textContent = `ข้อ ${tnIdx+1} / ${tnQueue.length}`;
-  document.getElementById('tn-zh').innerHTML = v.zhHtml || v.zh;
-  document.getElementById('tn-th').textContent = v.th;
-  document.getElementById('tn-base').textContent = v.base;
-  document.getElementById('tn-fb').textContent = '';
-  document.getElementById('tn-fb').className = 'lsn-fb';
-  document.getElementById('tn-reveal').classList.remove('show');
-  document.getElementById('tn-next').classList.remove('show');
-  document.getElementById('tn-prog').style.width = (tnIdx/tnQueue.length*100)+'%';
-  lsnBuildTones(v);
+
+function tyLoad() {
+  if (!tyQueue.length) {
+    tyEl('ty-card').style.display = 'none';
+    tyEl('ty-complete-scr').textContent = 'บทนี้ไม่มีข้อในหมวดที่เลือก';
+    tyEl('ty-complete').classList.add('show');
+    return;
+  }
+  if (tyIdx >= tyQueue.length) { tyDone(); return; }
+  tyAnswered = false;
+  const v = tyQueue[tyIdx];
+  tyEl('ty-qnum').textContent = `ข้อ ${tyIdx + 1} / ${tyQueue.length}`;
+  tyEl('ty-th').textContent = v.th;
+  const zh = tyEl('ty-zh');
+  zh.textContent = v.zh;
+  zh.className = 'lsn-q-zh' + ([...v.zh].length > 3 ? ' sm' : '');
+  const inp = tyEl('ty-input');
+  inp.value = '';
+  inp.className = 'lsn-input';
+  inp.readOnly = false;
+  inp.placeholder = tyNeedTone ? 'พินอิน + เลข 1-4' : 'พินอิน';
+  tyEl('ty-fb').textContent = '';
+  tyEl('ty-fb').className = 'lsn-fb';
+  tyEl('ty-reveal').classList.remove('show');
+  tyEl('ty-next').classList.remove('show');
+  tyEl('ty-skip').style.display = '';
+  tyEl('ty-prog').style.width = (tyIdx / tyQueue.length * 100) + '%';
+  tyScore();
+  tyFocus();
 }
-function lsnBuildTones(v) {
-  const grid = document.getElementById('tn-tones');
-  grid.innerHTML = '';
-  const opts = lsnShuffle(lsnToneOpts);
-  opts.forEach(opt => {
-    const b = document.createElement('button');
-    b.className = 'lsn-tone';
-    b.innerHTML = `<span class="lsn-tone-mark">${opt.mark}</span><span class="lsn-tone-desc">เสียง ${opt.num} (${opt.label})</span>`;
-    b.addEventListener('click', () => {
-      if (tnAns) return;
-      const ok = opt.num === v.tone;
-      tnAns = true; tnT++;
-      if (ok) tnC++; else tnW++;
-      lsnToneScore();
-      grid.querySelectorAll('.lsn-tone').forEach((btn, i) => {
-        btn.disabled = true;
-        if (opts[i].num === v.tone) btn.classList.add('ok');
-        else if (btn === b && !ok) btn.classList.add('bad');
-      });
-      const fb = document.getElementById('tn-fb');
-      fb.textContent = ok ? '✓ ถูกต้อง!' : '✗ ผิด';
-      fb.className = 'lsn-fb ' + (ok ? 'ok' : 'bad');
-      if (!ok) {
-        document.getElementById('tn-ans').textContent = v.py;
-        document.getElementById('tn-reveal').classList.add('show');
-      }
-      document.getElementById('tn-next').classList.add('show');
-    });
-    grid.appendChild(b);
-  });
+
+function tyFinish(ok, msg) {
+  const v = tyQueue[tyIdx];
+  tyAnswered = true; tyT++;
+  if (ok) tyC++; else tyW++;
+  const inp = tyEl('ty-input');
+  inp.className = 'lsn-input ' + (ok ? 'ok' : 'bad');
+  inp.readOnly = true;
+  const fb = tyEl('ty-fb');
+  fb.textContent = msg;
+  fb.className = 'lsn-fb ' + (ok ? 'ok' : 'bad');
+  tyEl('ty-ans').textContent = v.py + (v.en ? ' · ' + v.en : '');
+  tyEl('ty-reveal').classList.add('show');
+  tyEl('ty-next').classList.add('show');
+  tyEl('ty-skip').style.display = 'none';   // ตอบแล้วไม่ต้องมีปุ่มเฉลย (แถบข้อถัดไปทับอยู่)
+  // SRS + ดาว เฉพาะคำศัพท์ — วลีไม่อยู่ใน quizAllWords() จะเขียนไปก็ไม่โผล่ที่ไหน
+  if (v.kind === 'vocab') { srsUpdate(v.zh, ok); if (!ok) addStar(v.zh); }
+  tyScore();
+  playSound(v.zh, tyEl('ty-card'));
 }
-function lsnToneNext() { tnIdx++; lsnToneLoad(); }
-function lsnTonePlay() { playSound(tnQueue[tnIdx].zh, document.getElementById('tn-card')); }
-function lsnToneDone() {
-  document.getElementById('tn-card').style.display = 'none';
-  const pct = Math.round(tnC/tnT*100) || 0;
-  document.getElementById('tn-complete-scr').textContent = `ถูก ${tnC} / ${tnT} ข้อ (${pct}%)`;
-  document.getElementById('tn-complete').classList.add('show');
-  document.getElementById('tn-prog').style.width = '100%';
+
+function tySubmit() {
+  if (tyAnswered) return;
+  const r = pyCheck(tyEl('ty-input').value, tyQueue[tyIdx].py, tyNeedTone);
+  if (r.why === 'empty') return;
+  tyFinish(r.ok, r.ok ? '✓ ถูก!'
+    : r.why === 'tone'   ? `✗ พยางค์ที่ ${r.at + 1} วรรณยุกต์ผิด`
+    : r.why === 'umlaut' ? '✗ ü ต้องพิมพ์เป็น v หรือ u:'
+    : '✗ ยังไม่ถูก');
+}
+function tyRevealAns() { if (!tyAnswered) tyFinish(false, '👁 เฉลย'); }
+function tyNext() { tyIdx++; tyLoad(); }
+function tyPlay() { if (tyQueue.length) playSound(tyQueue[tyIdx].zh, tyEl('ty-card')); }
+function tyKey(e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  if (tyAnswered) tyNext(); else tySubmit();
+}
+function tyDone() {
+  tyEl('ty-card').style.display = 'none';
+  const pct = tyT ? Math.round(tyC / tyT * 100) : 0;
+  tyEl('ty-complete-scr').textContent = `ถูก ${tyC} / ${tyT} ข้อ (${pct}%)`;
+  tyEl('ty-complete').classList.add('show');
+  tyEl('ty-prog').style.width = '100%';
 }
 
 function lsnSwitch(idx) {
@@ -3579,13 +3683,11 @@ function lsnSwitch(idx) {
   ['📋 ศัพท์', '💬 สนทนา', '📝 โน้ต'].forEach((lbl, i) => {
     if (modes[i]) modes[i].innerHTML = `${lbl} <b style="opacity:.75">${counts[i]}</b>`;
   });
-  tnPool.length = 0;
-  makeTnPool(L).forEach(x => tnPool.push(x));
   lsnBuildGrid(L.vocab);
   lsnBuildPhrases(L.phrases || []);
   lsnBuildDlg(L.dialogue);
   lsnBuildNotes(L.notes);
-  lsnToneRestart();
+  tyRestart();
   // Reset to vocab mode
   document.querySelectorAll('.lsn-mode').forEach((m,i) => m.classList.toggle('active', i===0));
   document.querySelectorAll('.lsn-view').forEach(v => v.classList.toggle('active', v.dataset.mode==='vocab'));
@@ -3596,6 +3698,7 @@ const LSN_KEY = 'xy-lsn';
 function lsnInit() {
   if (lsnBuilt) return;
   lsnBuilt = true;
+  tyLoadPrefs();
   const picker = document.getElementById('lsn-picker');
   lsnAllLessons.forEach((L, i) => {
     const b = document.createElement('button');
