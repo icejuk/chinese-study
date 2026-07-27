@@ -3383,7 +3383,8 @@ function lsnMode(el, mode) {
   el.classList.add('active');
   document.querySelectorAll('.lsn-view').forEach(v => v.classList.toggle('active', v.dataset.mode === mode));
   navSave({ mode });
-  if (mode === 'type') tyDrill.focus(); else tyDrill.clearTimer();
+  // เข้าโหมดฝึก: อ่านคำที่ค้างอยู่ให้ด้วย (ข้อถูกโหลดไว้ตอน lsnSwitch ซึ่งยังไม่เห็นหน้า จึงยังไม่ได้อ่าน)
+  if (mode === 'type') { tyDrill.focus(); tyDrill.play(); } else tyDrill.clearTimer();
   // เลื่อนกลับไปหัวโหมด — กันหน้าเปล่าเมื่อสลับจากโหมดยาวไปโหมดสั้น
   const bar = document.querySelector('.lsn-modes');
   const top = window.scrollY + bar.getBoundingClientRect().top
@@ -3546,10 +3547,13 @@ function makeTypeDrill(prefix, getPool, opts) {
   const el = id => document.getElementById(prefix + id);
   const D = { s: S };
 
+  // หน้านี้เปิดอยู่จริงไหม — กันคีย์บอร์ดเด้งและกันเสียงดังเองตอนโหลดหน้า
+  const visible = () => !opts.isVisible || opts.isVisible();
+
   D.clearTimer = () => { if (S.timer) { clearTimeout(S.timer); S.timer = null; } };
   D.score = () => { el('c').textContent = S.c; el('w').textContent = S.w; el('t').textContent = S.t; };
   D.focus = () => {
-    if (opts.isVisible && !opts.isVisible()) return;   // กันคีย์บอร์ดเด้งตอนที่หน้านี้ไม่ได้เปิด
+    if (!visible()) return;
     const inp = el('input');
     if (inp && !inp.readOnly) inp.focus({ preventScroll: true });
   };
@@ -3593,6 +3597,8 @@ function makeTypeDrill(prefix, getPool, opts) {
     el('prog').style.width = (S.i / S.q.length * 100) + '%';
     D.score();
     D.focus();
+    // ขึ้นคำใหม่ = อ่านออกเสียงให้เลย (เฉพาะตอนหน้านี้เปิดอยู่)
+    if (visible()) playSound(v.zh, el('card'));
   };
 
   D.finish = (ok, msg) => {
@@ -3612,7 +3618,8 @@ function makeTypeDrill(prefix, getPool, opts) {
     // SRS + ดาว เฉพาะคำศัพท์ — วลีไม่อยู่ใน quizAllWords() จะเขียนไปก็ไม่โผล่ที่ไหน
     if (v.kind === 'vocab') { srsUpdate(v.zh, ok); if (!ok) addStar(v.zh); }
     D.score();
-    playSound(v.zh, el('card'));
+    // ตอบถูกไม่ต้องอ่านซ้ำ (เพิ่งอ่านตอนขึ้นคำ) — ตอบผิด/ดูเฉลย อ่านคำที่ถูกให้ฟัง
+    if (!ok) playSound(v.zh, el('card'));
     // ไปข้อถัดไปเอง — ตอบถูกไปไว ตอบผิดหน่วงนานพอให้อ่านเฉลยทัน
     D.clearTimer();
     S.timer = setTimeout(() => { S.timer = null; D.next(); }, ok ? 1100 : 2800);
@@ -3628,7 +3635,7 @@ function makeTypeDrill(prefix, getPool, opts) {
   };
   D.reveal = () => { if (!S.answered) D.finish(false, '👁 เฉลย'); };
   D.next   = () => { D.clearTimer(); S.i++; D.load(); };
-  D.play   = () => { if (S.q.length) playSound(S.q[S.i].zh, el('card')); };
+  D.play   = () => { const v = S.q[S.i]; if (v) playSound(v.zh, el('card')); };   // จบชุดแล้ว S.q[S.i] เป็น undefined
   D.key    = e => { if (e.key !== 'Enter') return; e.preventDefault(); if (S.answered) D.next(); else D.submit(); };
   D.done   = () => {
     el('card').style.display = 'none';
