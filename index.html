@@ -1015,10 +1015,6 @@
         <button type="button" class="ty-btn"    data-v="phrase" onclick="tySetSrc('phrase')">💬 วลี</button>
         <button type="button" class="ty-btn"    data-v="all"    onclick="tySetSrc('all')">🔀 ทั้งหมด</button>
       </div>
-      <div class="ty-toolbar" id="ty-lvl">
-        <button type="button" class="ty-btn on" data-v="0" onclick="tySetLvl(0)">ไม่ใส่วรรณยุกต์</button>
-        <button type="button" class="ty-btn"    data-v="1" onclick="tySetLvl(1)">ใส่เลข 1-4</button>
-      </div>
       <div class="lsn-score">
         <div class="lsn-s-item lsn-s-c"><div class="lsn-s-num" id="ty-c">0</div><div class="lsn-s-lbl">✓ ถูก</div></div>
         <div class="lsn-s-item lsn-s-w"><div class="lsn-s-num" id="ty-w">0</div><div class="lsn-s-lbl">✗ ผิด</div></div>
@@ -3451,34 +3447,20 @@ function lsnFcNav(d) { lsnFcIdx = (lsnFcIdx + d + lsnFcDeck.length) % lsnFcDeck.
 function lsnFcSpeak() { playSound(lsnFcDeck[lsnFcIdx].zh, document.getElementById('lsn-fc')); }
 
 /* ---------------- Mode 4: 🎯 ฝึก — พิมพ์พินอิน ---------------- */
-/* pyParse — แปลงพินอิน (เฉลย หรือที่ผู้ใช้พิมพ์) ให้เป็นรูปเทียบกันได้
-     letters : a-z ล้วน (ü/v/u: → v) ตัดวรรณยุกต์ ช่องว่าง วงเล็บ ' และเลข ออก
-     tones   : ยาว = จำนวนพยางค์ · 1-4 = วรรณยุกต์ · 0 = เสียงเบา · -1 = ใส่ขัดกันเอง
-   หลัก: ทุกพยางค์พินอินมี "กลุ่มสระ" ติดกันแค่กลุ่มเดียว (พยัญชนะอยู่หัวหรือท้ายเท่านั้น)
-   → นับกลุ่มสระ = ได้ index ของพยางค์มาฟรี ไม่ต้องตัดพยางค์เอง
-     gōngzuò = 1 token (ช่องว่าง) แต่ 2 กลุ่มสระ — ควิซวรรณยุกต์เดิมพลาดตรงนี้
-   เทียบวรรณยุกต์ "ตามตำแหน่งพยางค์" ไม่ใช่เรียงลำดับ ไม่งั้น baba4 จะผ่านเป็น bàba
-   ห้าม normalize+strip รวบเดียว: ̈ (U+0308) จะหลุดไปด้วย ทำให้ ǚ/ǜ กลายเป็น u */
-const PY_TONE_MARK = { '\u0304': 1, '\u0301': 2, '\u030C': 3, '\u0300': 4 };
-const PY_VOWEL = /[aeiouv]/;
-
-function pyParse(s) {
+/* pyNorm — ทำพินอินให้เป็นตัวอักษรล้วนเพื่อเทียบกัน (ไม่คิดวรรณยุกต์)
+   ทิ้งทุกอย่างที่ไม่ใช่ a-z: วรรณยุกต์ (ทั้ง ā และแบบเลข a1) ช่องว่าง วงเล็บ '
+   → พิมพ์ zuijin / zui4jin4 / zuìjìn ผ่านเหมือนกันหมด
+   ü / v / u: → v : ǚ ǜ ในข้อมูลเป็นอักขระประกอบ ต้องจับ U+0308 เอง
+   ห้าม strip [\u0300-\u036f] รวบเดียว เพราะจะกิน ̈ ไปด้วย ทำให้ nǚ กลายเป็น nu */
+function pyNorm(s) {
   const src = String(s == null ? '' : s).normalize('NFD').toLowerCase().replace(/u:/g, 'v');
-  let letters = '', inRun = false, run = -1;
-  const tones = [];
-  // วรรณยุกต์ตกที่ "กลุ่มสระล่าสุด" → เลขที่พิมพ์ท้ายพยางค์จึงเข้าพยางค์ที่ถูก
-  const put = d => { if (run >= 0) tones[run] = (tones[run] === 0 || tones[run] === d) ? d : -1; };
+  let out = '';
   for (const ch of src) {
-    if (PY_TONE_MARK[ch]) { put(PY_TONE_MARK[ch]); continue; }
-    if (ch === '\u0308') { if (letters) letters = letters.slice(0, -1) + 'v'; continue; }
-    if (ch >= '0' && ch <= '9') { const d = +ch; if (d <= 5) put(d === 5 ? 0 : d); continue; }
+    if (ch === '\u0308') { if (out) out = out.slice(0, -1) + 'v'; continue; }  // ǚ ǜ → v
     const c = (ch === '\u00fc') ? 'v' : ch;
-    if (c < 'a' || c > 'z') continue;   // ช่องว่าง ' ( ) → ข้าม โดยไม่ตัดกลุ่มสระ
-    letters += c;
-    if (PY_VOWEL.test(c)) { if (!inRun) { run++; tones[run] = 0; } inRun = true; }
-    else inRun = false;
+    if (c >= 'a' && c <= 'z') out += c;
   }
-  return { letters, tones };
+  return out;
 }
 
 /* วงเล็บ = ส่วนที่ใส่หรือไม่ใส่ก็ได้ — 'yǒu(yì)diǎnr' รับทั้ง yǒuyìdiǎnr และ yǒudiǎnr */
@@ -3487,27 +3469,17 @@ function pyVariants(py) {
   return [py.replace(/[()]/g, ''), py.replace(/\([^)]*\)/g, '')];
 }
 
-/* pyCheck — needTone=false: เทียบตัวอักษร · true: เทียบตัวอักษร + วรรณยุกต์รายพยางค์
-   why: 'empty' | 'letters' | 'umlaut' (พิมพ์ u ที่ต้องเป็น ü) | 'tone' (at = พยางค์ที่ผิด) */
-function pyCheck(input, answerPy, needTone) {
-  const u = pyParse(input);
-  if (!u.letters) return { ok: false, why: 'empty' };
+/* pyCheck — why: 'empty' | 'letters' | 'umlaut' (พิมพ์ u ตรงที่ต้องเป็น ü) */
+function pyCheck(input, answerPy) {
+  const u = pyNorm(input);
+  if (!u) return { ok: false, why: 'empty' };
   let near = null;
   for (const v of pyVariants(answerPy)) {
-    const a = pyParse(v);
-    if (u.letters !== a.letters) {
-      if (!near && u.letters.replace(/v/g, 'u') === a.letters.replace(/v/g, 'u'))
-        near = { ok: false, why: 'umlaut', want: a };
-      continue;
-    }
-    if (!needTone) return { ok: true, want: a, got: u };
-    if (u.tones.length !== a.tones.length) continue;  // กันไว้ — ปกติเป็นไปไม่ได้เมื่อ letters ตรง
-    let bad = -1;
-    for (let i = 0; i < a.tones.length; i++) if (u.tones[i] !== a.tones[i]) { bad = i; break; }
-    if (bad < 0) return { ok: true, want: a, got: u };
-    near = { ok: false, why: 'tone', at: bad, want: a, got: u };
+    const a = pyNorm(v);
+    if (u === a) return { ok: true };
+    if (!near && u.replace(/v/g, 'u') === a.replace(/v/g, 'u')) near = { ok: false, why: 'umlaut' };
   }
-  return near || { ok: false, why: 'letters', got: u };
+  return near || { ok: false, why: 'letters' };
 }
 
 /* คลังข้อของบท — dedupe เพราะ 9 รายการซ้ำอยู่ทั้งใน vocab และ phrases ของบทเดียวกัน */
@@ -3528,18 +3500,17 @@ function pyDrillPool(L, src) {
 
 /* ---- state ---- */
 let tyQueue = [], tyIdx = 0, tyC = 0, tyW = 0, tyT = 0, tyAnswered = false, tyTimer = null;
-let tySrc = 'vocab', tyNeedTone = false;
+let tySrc = 'vocab';
 const TY_KEY = 'xy-ty';
 
 function tyLoadPrefs() {
   try {
     const o = JSON.parse(localStorage.getItem(TY_KEY) || '{}');
     if (o.src === 'vocab' || o.src === 'phrase' || o.src === 'all') tySrc = o.src;
-    tyNeedTone = !!o.tone;
   } catch {}
 }
 function tySavePrefs() {
-  try { localStorage.setItem(TY_KEY, JSON.stringify({ src: tySrc, tone: tyNeedTone })); } catch {}
+  try { localStorage.setItem(TY_KEY, JSON.stringify({ src: tySrc })); } catch {}
 }
 
 function tyEl(id) { return document.getElementById(id); }
@@ -3552,10 +3523,8 @@ function tyUpdateCount() {
 }
 function tyPaintToolbar() {
   document.querySelectorAll('#ty-src .ty-btn').forEach(b => b.classList.toggle('on', b.dataset.v === tySrc));
-  document.querySelectorAll('#ty-lvl .ty-btn').forEach(b => b.classList.toggle('on', (b.dataset.v === '1') === tyNeedTone));
 }
 function tySetSrc(v) { tySrc = v; tySavePrefs(); tyRestart(); }
-function tySetLvl(v) { tyNeedTone = !!v; tySavePrefs(); tyRestart(); }
 
 /* โฟกัสช่องพิมพ์เฉพาะตอนที่โหมดนี้เปิดอยู่จริง — กันคีย์บอร์ดเด้งตอนโหลดหน้า */
 function tyFocus() {
@@ -3596,7 +3565,7 @@ function tyLoad() {
   inp.value = '';
   inp.className = 'lsn-input';
   inp.readOnly = false;
-  inp.placeholder = tyNeedTone ? 'พินอิน + เลข 1-4' : 'พินอิน';
+  inp.placeholder = 'พินอิน';
   tyEl('ty-fb').textContent = '';
   tyEl('ty-fb').className = 'lsn-fb';
   tyEl('ty-reveal').classList.remove('show');
@@ -3632,10 +3601,9 @@ function tyFinish(ok, msg) {
 
 function tySubmit() {
   if (tyAnswered) return;
-  const r = pyCheck(tyEl('ty-input').value, tyQueue[tyIdx].py, tyNeedTone);
+  const r = pyCheck(tyEl('ty-input').value, tyQueue[tyIdx].py);
   if (r.why === 'empty') return;
   tyFinish(r.ok, r.ok ? '✓ ถูก!'
-    : r.why === 'tone'   ? `✗ พยางค์ที่ ${r.at + 1} วรรณยุกต์ผิด`
     : r.why === 'umlaut' ? '✗ ü ต้องพิมพ์เป็น v หรือ u:'
     : '✗ ยังไม่ถูก');
 }
