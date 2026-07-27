@@ -3724,10 +3724,11 @@ function lsnSwitch(idx) {
   lsnBuildPhrases(L.phrases || []);
   lsnBuildDlg(L.dialogue);
   lsnBuildNotes(L.notes);
-  tyDrill.restart();
-  // Reset to vocab mode
+  // เด้งกลับโหมดศัพท์ "ก่อน" restart — ไม่งั้นตอน restart ยังเห็นว่าโหมดฝึกเปิดอยู่ (จากบทก่อน)
+  // แล้วจะอ่านออกเสียงทั้งที่ผู้ใช้ยังไม่ได้กดฝึกในบทใหม่
   document.querySelectorAll('.lsn-mode').forEach((m,i) => m.classList.toggle('active', i===0));
   document.querySelectorAll('.lsn-view').forEach(v => v.classList.toggle('active', v.dataset.mode==='vocab'));
+  tyDrill.restart();
 }
 
 let lsnBuilt = false;

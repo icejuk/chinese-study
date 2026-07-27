@@ -1,5 +1,5 @@
 /* Service Worker for 鑫越 Chinese Study PWA */
-const CACHE_VERSION = 'v24-2026-07-27';
+const CACHE_VERSION = 'v25-2026-07-27';
 const CACHE_NAME = `xinyue-zh-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
