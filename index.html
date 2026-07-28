@@ -526,6 +526,14 @@
       padding: 9px 16px; border: 1.5px solid #e0e0e0; background: #fff;
       border-radius: 10px; font-size: 13px; font-weight: 700; color: #666; cursor: pointer;
     }
+    /* ปุ่มไปข้อถัดไปหลังดูเฉลย — วางแยกแถว ห่างจากแถวปุ่มเดิม กันนิ้วแตะซ้ำแล้วข้ามข้อไปเลย */
+    .sb-next {
+      display: block; width: 100%; max-width: 280px; margin: 14px auto 0;
+      min-height: 48px; border: none; border-radius: 12px; background: var(--grad-red);
+      color: #fff; font-family: inherit; font-size: 15px; font-weight: 800;
+      box-shadow: var(--sh-red); cursor: pointer;
+    }
+    .sb-next:active { transform: scale(0.97); }
     .sb-solved { text-align: center; font-size: 14px; color: #2e7d32; font-weight: 700; margin-bottom: 12px; line-height: 1.7; }
     .sb-solved-py { color: #c62828; font-size: 15px; }
     .quiz-q {
@@ -3371,11 +3379,17 @@ function sbReveal() {
   sbPaint();
   const ansEl = document.getElementById('sb-answer');
   ansEl.classList.add('correct');
+  const zh = sbCur.tokens.map(t => t.zh).join('');
   const py = sbCur.tokens.map(t => t.py).join(' ');
   ansEl.insertAdjacentHTML('afterend', `<div class="sb-solved">เฉลย<br><span class="sb-solved-py">${py}</span></div>`);
-  playSound(sbCur.tokens.map(t => t.zh).join(''));
+  playSound(zh);
   document.querySelectorAll('#sb-answer .sb-tile, #sb-bank .sb-tile').forEach(b => b.disabled = true);
-  setTimeout(() => { sbIdx++; sbRender(); }, 2000);
+  // ดูเฉลยแล้ว "ห้าม" เด้งข้อถัดไปเอง — ออโต้ 2 วิ เร็วเกินกว่าจะทวนเฉลยทัน ต้องให้กดไปเอง
+  const act = document.querySelector('.sb-actions');
+  act.innerHTML = `<button class="sb-btn" id="sb-replay">🔊 ฟังอีกครั้ง</button>`;
+  act.insertAdjacentHTML('afterend', `<button class="sb-next" id="sb-next">ข้อถัดไป →</button>`);
+  document.getElementById('sb-replay').addEventListener('click', () => playSound(zh));
+  document.getElementById('sb-next').addEventListener('click', () => { sbIdx++; sbRender(); });
 }
 
 function lsnMode(el, mode) {
