@@ -536,6 +536,30 @@
     .sb-next:active { transform: scale(0.97); }
     .sb-solved { text-align: center; font-size: 14px; color: #2e7d32; font-weight: 700; margin-bottom: 12px; line-height: 1.7; }
     .sb-solved-py { color: #c62828; font-size: 15px; }
+
+    /* 👂 ฟังประโยค → พิมพ์คำแปลไทย */
+    /* จองที่พินอินไว้ตั้งแต่แรก ปุ่มจะไม่ขยับตอนกดใบ้ */
+    .ln-py { min-height: 22px; margin: 8px 0 4px; font-size: 15px; font-weight: 800; color: var(--red-700); }
+    /* ช่องพิมพ์ไทย: ทับ mono + letter-spacing ของ .lsn-input ไม่งั้นสระ/วรรณยุกต์ไทยลอยเพี้ยน */
+    .lsn-input.ln-input { font-family: inherit; letter-spacing: 0; font-size: 17px; font-weight: 600; }
+    .ln-ans { display: none; margin-top: 10px; padding: 10px 12px; background: var(--ok-bg); border-radius: 10px; }
+    .ln-ans.show { display: block; }
+    .ln-ans-th { font-size: 17px; font-weight: 800; color: #2e7d32; line-height: 1.45; }
+    .ln-ans-py { margin-top: 4px; font-size: 14px; font-weight: 800; color: var(--red-700); }
+    .ln-ans-zh { margin-top: 2px; font-size: 18px; font-weight: 700; color: var(--ink-2); }
+    .ln-ans-note { margin-top: 6px; font-size: 12px; color: #888; }
+    .ln-acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+    /* ✓/✗ ตัดสินเอง — แถวเดียว 2 ปุ่มเท่ากัน อันที่ระบบเดาไว้จะทึบ */
+    .ln-judge {
+      flex: 1 1 0; min-width: 0; min-height: 48px; padding: 8px 6px; cursor: pointer;
+      font-family: inherit; font-size: 14px; font-weight: 800; background: #fff;
+      border: 2px solid; border-radius: 12px; white-space: nowrap;
+    }
+    .ln-judge.ok  { color: #2e7d32; border-color: #a5d6a7; }
+    .ln-judge.bad { color: #c62828; border-color: #ef9a9a; }
+    .ln-judge.suggest.ok  { background: #2e7d32; color: #fff; border-color: transparent; }
+    .ln-judge.suggest.bad { background: #c62828; color: #fff; border-color: transparent; }
+    .ln-judge:active { transform: scale(0.97); }
     .quiz-q {
       background: #fff; border-radius: 14px; padding: 24px 14px; text-align: center;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 12px; border: 2px solid #c62828;
@@ -946,6 +970,7 @@
       .section[data-type="quiz"] { max-width: 620px; margin-inline: auto; }
       .section[data-type="sentence"] { max-width: 780px; margin-inline: auto; }
       .section[data-type="typing"] { max-width: 620px; margin-inline: auto; }
+      .section[data-type="listen"] { max-width: 620px; margin-inline: auto; }
       .section[data-type="allnotes"] { max-width: 840px; margin-inline: auto; }
       .sum-b, .sum-ex, .note-b, .sum-intro { max-width: none; }
       /* ปุ่มโหมด/ตัวเลือกบท ไม่ต้องยืดเต็มแถว */
@@ -1117,6 +1142,43 @@
       <div class="lsn-complete-ttl">เก่งมาก!</div>
       <div class="lsn-complete-scr" id="tg-complete-scr"></div>
       <button class="lsn-restart" onclick="tgDrill.restart()">เริ่มใหม่</button>
+    </div>
+  </div>
+
+  <!-- 👂 ฟังประโยค → พิมพ์คำแปลไทย -->
+  <div class="section hidden" data-type="listen">
+    <div class="sec-title">ฟังประโยค · พิมพ์คำแปลไทย (<b id="ln-total">0</b> ประโยค)</div>
+    <div class="quiz-toolbar">
+      <button type="button" class="quiz-mode-btn on" id="lnsrc-all" onclick="lnSetSrc('all')">ทั้งหมด</button>
+      <button type="button" class="quiz-mode-btn"    id="lnsrc-sb"  onclick="lnSetSrc('sb')">🧩 ประโยค</button>
+      <button type="button" class="quiz-mode-btn"    id="lnsrc-dlg" onclick="lnSetSrc('dlg')">💬 สนทนา</button>
+      <button type="button" class="quiz-mode-btn"    id="lnsrc-ph"  onclick="lnSetSrc('ph')">🔤 วลี</button>
+    </div>
+    <div class="lsn-score">
+      <div class="lsn-s-item lsn-s-c"><div class="lsn-s-num" id="ln-c">0</div><div class="lsn-s-lbl">✓ ถูก</div></div>
+      <div class="lsn-s-item lsn-s-w"><div class="lsn-s-num" id="ln-w">0</div><div class="lsn-s-lbl">✗ ผิด</div></div>
+      <div class="lsn-s-item lsn-s-t"><div class="lsn-s-num" id="ln-t">0</div><div class="lsn-s-lbl">ข้อ</div></div>
+    </div>
+    <div class="lsn-qcard" id="ln-card">
+      <div class="lsn-q-num" id="ln-qnum">ข้อ 1 / 1</div>
+      <div class="quiz-listen" id="ln-play" role="button" tabindex="0" onclick="lnPlay()" aria-label="ฟังเสียงประโยค">🔊</div>
+      <div class="quiz-hint">แตะเพื่อฟังอีกครั้ง · ฟังกี่รอบก็ได้</div>
+      <div class="ln-py" id="ln-py"></div>
+      <input class="lsn-input ln-input" id="ln-input" type="text" placeholder="พิมพ์คำแปลไทย…"
+             autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false"
+             enterkeyhint="done" onkeydown="lnKey(event)" aria-label="พิมพ์คำแปลไทย">
+      <div class="lsn-fb" id="ln-fb"></div>
+      <div class="ln-ans" id="ln-ans"></div>
+      <div class="ln-acts" id="ln-acts"></div>
+    </div>
+    <div class="lsn-prog">
+      <div class="lsn-prog-track"><div class="lsn-prog-fill" id="ln-prog"></div></div>
+    </div>
+    <div class="lsn-complete" id="ln-complete">
+      <div class="lsn-complete-ico">🎉</div>
+      <div class="lsn-complete-ttl">เก่งมาก!</div>
+      <div class="lsn-complete-scr" id="ln-complete-scr"></div>
+      <button class="lsn-restart" onclick="lnStart()">เริ่มใหม่</button>
     </div>
   </div>
 
@@ -3266,6 +3328,91 @@ const sbData = [
     tokens:[{zh:'请',py:'qǐng'},{zh:'等',py:'děng'},{zh:'一会儿，',py:'yíhuìr,'},{zh:'我',py:'wǒ'},{zh:'找',py:'zhǎo'},{zh:'秘书',py:'mìshū'}] },
   { th:'ฉันอยากดื่มกาแฟสักแก้ว คุณล่ะ', cat:'life',
     tokens:[{zh:'我',py:'wǒ'},{zh:'要',py:'yào'},{zh:'一',py:'yì'},{zh:'杯',py:'bēi'},{zh:'咖啡，',py:'kāfēi,'},{zh:'你',py:'nǐ'},{zh:'呢',py:'ne'}] },
+
+  /* ===== ครอบคำศัพท์ที่ยังไม่เคยโผล่ในประโยคไหนเลย — 20 =====
+     สี 10 คำ · สกุลเงิน+หน่วยเงิน 6 คำ · 男 七 昨天 天安门 发音 馒头 那些 营业员 数 门 校长 语言 有点儿
+     (เขียนเพิ่มเพราะแบบฝึกฟังแปลดึงประโยคจากที่นี่ ถ้าคำไหนไม่มีในประโยค ก็ไม่เคยได้ฟังเลย) */
+  { th:'รถของฉันเป็นสีฟ้า รถของเขาเป็นสีเทา', cat:'de',
+    tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'车',py:'chē'},{zh:'是',py:'shì'},{zh:'浅蓝色',py:'qiǎnlánsè'},{zh:'的，',py:'de,'},{zh:'他',py:'tā'},{zh:'的',py:'de'},{zh:'车',py:'chē'},{zh:'是',py:'shì'},{zh:'灰色',py:'huīsè'},{zh:'的',py:'de'}] },
+  { th:'เสื้อตัวนี้เป็นสีชมพู ตัวนั้นเป็นสีม่วง', cat:'de',
+    tokens:[{zh:'这',py:'zhè'},{zh:'件',py:'jiàn'},{zh:'衣服',py:'yīfu'},{zh:'是',py:'shì'},{zh:'粉红色',py:'fěnhóngsè'},{zh:'的，',py:'de,'},{zh:'那',py:'nà'},{zh:'件',py:'jiàn'},{zh:'是',py:'shì'},{zh:'紫色',py:'zǐsè'},{zh:'的',py:'de'}] },
+  { th:'ร่มของฉันเป็นสีเหลือง ร่มของคุณเป็นสีเขียว', cat:'de',
+    tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'雨伞',py:'yǔsǎn'},{zh:'是',py:'shì'},{zh:'黄色',py:'huángsè'},{zh:'的，',py:'de,'},{zh:'你',py:'nǐ'},{zh:'的',py:'de'},{zh:'雨伞',py:'yǔsǎn'},{zh:'是',py:'shì'},{zh:'绿色',py:'lǜsè'},{zh:'的',py:'de'}] },
+  { th:'กระเป๋าใบนี้เป็นสีน้ำตาล ใบนั้นเป็นสีส้ม', cat:'de',
+    tokens:[{zh:'这个',py:'zhège'},{zh:'箱子',py:'xiāngzi'},{zh:'是',py:'shì'},{zh:'棕色',py:'zōngsè'},{zh:'的，',py:'de,'},{zh:'那个',py:'nàge'},{zh:'是',py:'shì'},{zh:'橙色',py:'chéngsè'},{zh:'的',py:'de'}] },
+  { th:'จักรยานของฉันเป็นสีขาว ไม่ใช่สีน้ำเงิน', cat:'bu',
+    tokens:[{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'自行车',py:'zìxíngchē'},{zh:'是',py:'shì'},{zh:'白色',py:'báisè'},{zh:'的，',py:'de,'},{zh:'不',py:'bú'},{zh:'是',py:'shì'},{zh:'蓝色',py:'lánsè'},{zh:'的',py:'de'}] },
+  { th:'คุณเอาสีดำหรือสีขาว', cat:'or',
+    tokens:[{zh:'你',py:'nǐ'},{zh:'要',py:'yào'},{zh:'黑色',py:'hēisè'},{zh:'的',py:'de'},{zh:'还是',py:'háishi'},{zh:'白色',py:'báisè'},{zh:'的',py:'de'}] },
+  { th:'นักเรียนชายคนนั้นเป็นเพื่อนร่วมชั้นของฉัน', cat:'mix',
+    tokens:[{zh:'那个',py:'nàge'},{zh:'男',py:'nán'},{zh:'学生',py:'xuésheng'},{zh:'是',py:'shì'},{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'同学',py:'tóngxué'}] },
+  { th:'เมื่อวานวันที่ 7 วันนี้วันที่ 8', cat:'life',
+    tokens:[{zh:'昨天',py:'zuótiān'},{zh:'是',py:'shì'},{zh:'七',py:'qī'},{zh:'号，',py:'hào,'},{zh:'今天',py:'jīntiān'},{zh:'是',py:'shì'},{zh:'八',py:'bā'},{zh:'号',py:'hào'}] },
+  { th:'พรุ่งนี้เช้าฉันจะไปเทียนอันเหมิน', cat:'life',
+    tokens:[{zh:'明天',py:'míngtiān'},{zh:'上午',py:'shàngwǔ'},{zh:'我',py:'wǒ'},{zh:'要',py:'yào'},{zh:'去',py:'qù'},{zh:'天安门',py:"Tiān'ān Mén"}] },
+  { th:'ฉันเรียนภาษาจีนอยู่ที่มหาวิทยาลัยภาษา', cat:'life',
+    tokens:[{zh:'我',py:'wǒ'},{zh:'在',py:'zài'},{zh:'语言',py:'yǔyán'},{zh:'大学',py:'dàxué'},{zh:'学习',py:'xuéxí'},{zh:'汉语',py:'Hànyǔ'}] },
+  { th:'การออกเสียงของเขาดีมาก การออกเสียงของฉันไม่ค่อยดี', cat:'de',
+    tokens:[{zh:'他',py:'tā'},{zh:'的',py:'de'},{zh:'发音',py:'fāyīn'},{zh:'很',py:'hěn'},{zh:'好，',py:'hǎo,'},{zh:'我',py:'wǒ'},{zh:'的',py:'de'},{zh:'发音',py:'fāyīn'},{zh:'不',py:'bú'},{zh:'太',py:'tài'},{zh:'好',py:'hǎo'}] },
+  { th:'พวกนั้นไม่ใช่หมั่นโถว เป็นซาลาเปา', cat:'bu', note:'那些 = เหล่านั้น (พหูพจน์ของ 那)',
+    tokens:[{zh:'那些',py:'nàxiē'},{zh:'不',py:'bú'},{zh:'是',py:'shì'},{zh:'馒头，',py:'mántou,'},{zh:'是',py:'shì'},{zh:'包子',py:'bāozi'}] },
+  { th:'รถยนต์คันนี้ทั้งหมดหนึ่งหมื่นสองพันหยวน', cat:'shop', note:'ลำดับตัวเลข: หมื่น → พัน → ร้อย',
+    tokens:[{zh:'这',py:'zhè'},{zh:'辆',py:'liàng'},{zh:'汽车',py:'qìchē'},{zh:'一共',py:'yígòng'},{zh:'一',py:'yí'},{zh:'万',py:'wàn'},{zh:'两',py:'liǎng'},{zh:'千',py:'qiān'},{zh:'块',py:'kuài'},{zh:'钱',py:'qián'}] },
+  { th:'ทั้งหมดสามหยวนห้าเหมาแปดเฟิน', cat:'shop', note:'块 = หยวน · 毛 = 1/10 · 分 = 1/100',
+    tokens:[{zh:'一共',py:'yígòng'},{zh:'三',py:'sān'},{zh:'块',py:'kuài'},{zh:'五',py:'wǔ'},{zh:'毛',py:'máo'},{zh:'八',py:'bā'},{zh:'分',py:'fēn'}] },
+  { th:'พนักงานกำลังนับเงินอยู่', cat:'ne',
+    tokens:[{zh:'营业员',py:'yíngyèyuán'},{zh:'在',py:'zài'},{zh:'数',py:'shǔ'},{zh:'钱',py:'qián'},{zh:'呢',py:'ne'}] },
+  { th:'ฉันจะแลกดอลลาร์ฮ่องกง ไม่แลกเยนญี่ปุ่น', cat:'bu',
+    tokens:[{zh:'我',py:'wǒ'},{zh:'要',py:'yào'},{zh:'换',py:'huàn'},{zh:'港币，',py:'gǎngbì,'},{zh:'不',py:'bú'},{zh:'换',py:'huàn'},{zh:'日元',py:'rìyuán'}] },
+  { th:'คุณจะแลกยูโรหรือแลกวอนเกาหลี', cat:'or',
+    tokens:[{zh:'你',py:'nǐ'},{zh:'换',py:'huàn'},{zh:'欧元',py:'ōuyuán'},{zh:'还是',py:'háishi'},{zh:'换',py:'huàn'},{zh:'韩元',py:'hányuán'}] },
+  { th:'ครูครับ กรุณาเปิดประตูด้วย', cat:'life',
+    tokens:[{zh:'老师，',py:'lǎoshī,'},{zh:'请',py:'qǐng'},{zh:'开',py:'kāi'},{zh:'门',py:'mén'}] },
+  { th:'ท่านนั้นคืออธิการบดีมหาวิทยาลัยของเรา', cat:'de', note:'位 = ลักษณนามคนแบบยกย่อง',
+    tokens:[{zh:'那',py:'nà'},{zh:'位',py:'wèi'},{zh:'是',py:'shì'},{zh:'我们',py:'wǒmen'},{zh:'大学',py:'dàxué'},{zh:'的',py:'de'},{zh:'校长',py:'xiàozhǎng'}] },
+  { th:'ช่วงนี้ฉันยุ่งนิดหน่อย', cat:'life', note:'有点儿 + คุณศัพท์ = ...นิดหน่อย (มักใช้กับเรื่องไม่ดี)',
+    tokens:[{zh:'最近',py:'zuìjìn'},{zh:'我',py:'wǒ'},{zh:'有点儿',py:'yǒudiǎnr'},{zh:'忙',py:'máng'}] },
+
+  /* ===== ซื้อของ-ขายของ + ประโยคที่ได้ยินบ่อยในซีรีส์ — 19 =====
+     ใช้เฉพาะคำศัพท์ในบท 1-15 เท่านั้น (ห้ามโผล่คำที่ยังไม่ได้เรียน) */
+  { th:'แอปเปิลพวกนี้ขายยังไง (ราคาเท่าไร)', cat:'shop', note:'怎么卖 = ขายยังไง — ใช้ถามราคาในตลาด',
+    tokens:[{zh:'这些',py:'zhèxiē'},{zh:'苹果',py:'píngguǒ'},{zh:'怎么',py:'zěnme'},{zh:'卖',py:'mài'}] },
+  { th:'ห้าหยวนต่อครึ่งกิโล คุณเอากี่ครึ่งกิโล', cat:'shop',
+    tokens:[{zh:'五',py:'wǔ'},{zh:'块',py:'kuài'},{zh:'一',py:'yì'},{zh:'斤，',py:'jīn,'},{zh:'您',py:'nín'},{zh:'要',py:'yào'},{zh:'几',py:'jǐ'},{zh:'斤',py:'jīn'}] },
+  { th:'แพงเกินไป ลดหน่อยได้ไหม', cat:'shop', note:'太…了 = ...เกินไป · 吧 = ขอร้องนุ่มนวล',
+    tokens:[{zh:'太',py:'tài'},{zh:'贵',py:'guì'},{zh:'了，',py:'le,'},{zh:'便宜',py:'piányi'},{zh:'一点儿',py:'yìdiǎnr'},{zh:'吧',py:'ba'}] },
+  { th:'ฉันเอาส้มหนึ่งกิโล แล้วเอาผลไม้อีกหน่อย', cat:'shop', note:'两斤 = 1 กิโล (1 斤 = ครึ่งกิโล)',
+    tokens:[{zh:'我',py:'wǒ'},{zh:'要',py:'yào'},{zh:'两',py:'liǎng'},{zh:'斤',py:'jīn'},{zh:'橘子，',py:'júzi,'},{zh:'还',py:'hái'},{zh:'要',py:'yào'},{zh:'一些',py:'yìxiē'},{zh:'水果',py:'shuǐguǒ'}] },
+  { th:'เอาอย่างอื่นอีกไหม — ไม่เอาแล้ว ขอบคุณ', cat:'shop',
+    tokens:[{zh:'还',py:'hái'},{zh:'要',py:'yào'},{zh:'别的',py:'bié de'},{zh:'吗？',py:'ma?'},{zh:'不',py:'bú'},{zh:'要',py:'yào'},{zh:'了，',py:'le,'},{zh:'谢谢',py:'xièxie'}] },
+  { th:'นี่หนึ่งร้อยหยวน ทอนเงินด้วยค่ะ', cat:'shop',
+    tokens:[{zh:'给',py:'gěi'},{zh:'你',py:'nǐ'},{zh:'一',py:'yì'},{zh:'百',py:'bǎi'},{zh:'块，',py:'kuài,'},{zh:'请',py:'qǐng'},{zh:'找',py:'zhǎo'},{zh:'钱',py:'qián'}] },
+  { th:'ร้านนี้ของใช้ประจำวันถูกมาก', cat:'shop',
+    tokens:[{zh:'这个',py:'zhège'},{zh:'商店',py:'shāngdiàn'},{zh:'的',py:'de'},{zh:'日用品',py:'rìyòngpǐn'},{zh:'很',py:'hěn'},{zh:'便宜',py:'piányi'}] },
+  { th:'คุณพูดอะไรนะ', cat:'life',
+    tokens:[{zh:'你',py:'nǐ'},{zh:'说',py:'shuō'},{zh:'什么',py:'shénme'}] },
+  { th:'ฉันไม่รู้', cat:'life',
+    tokens:[{zh:'我',py:'wǒ'},{zh:'不',py:'bù'},{zh:'知道',py:'zhīdào'}] },
+  { th:'ฉันรู้แล้ว', cat:'life', note:'了 ท้ายประโยค = เกิดขึ้น/เปลี่ยนสภาพแล้ว',
+    tokens:[{zh:'我',py:'wǒ'},{zh:'知道',py:'zhīdào'},{zh:'了',py:'le'}] },
+  { th:'คุณเป็นอะไรไป', cat:'life', note:'怎么了 = เป็นอะไรไป (ถามเมื่อเห็นท่าทางไม่ปกติ)',
+    tokens:[{zh:'你',py:'nǐ'},{zh:'怎么',py:'zěnme'},{zh:'了',py:'le'}] },
+  { th:'ไม่เจอกันนานเลย เป็นอย่างไรบ้าง', cat:'life',
+    tokens:[{zh:'好久',py:'hǎojiǔ'},{zh:'不',py:'bú'},{zh:'见，',py:'jiàn,'},{zh:'你',py:'nǐ'},{zh:'怎么样',py:'zěnmeyàng'}] },
+  { th:'งั้นๆ ช่วงนี้ยุ่งนิดหน่อย', cat:'life',
+    tokens:[{zh:'马马虎虎，',py:'mǎmǎhūhū,'},{zh:'最近',py:'zuìjìn'},{zh:'有点儿',py:'yǒudiǎnr'},{zh:'忙',py:'máng'}] },
+  { th:'ใครน่ะ — ฉันเอง', cat:'life', note:'啊 ท้ายคำถาม = น้ำเสียงอ่อนลง',
+    tokens:[{zh:'谁',py:'shéi'},{zh:'啊？',py:'a?'},{zh:'是',py:'shì'},{zh:'我',py:'wǒ'}] },
+  { th:'คุณอยู่ไหน — ฉันอยู่บ้านนะ', cat:'life',
+    tokens:[{zh:'你',py:'nǐ'},{zh:'在',py:'zài'},{zh:'哪儿？',py:'nǎr?'},{zh:'我',py:'wǒ'},{zh:'在',py:'zài'},{zh:'家',py:'jiā'},{zh:'呢',py:'ne'}] },
+  { th:'ขอโทษ ฉันไม่รู้ — ไม่เป็นไร', cat:'life',
+    tokens:[{zh:'对不起，',py:'duìbuqǐ,'},{zh:'我',py:'wǒ'},{zh:'不',py:'bù'},{zh:'知道。',py:'zhīdào.'},{zh:'没关系',py:'méi guānxi'}] },
+  { th:'ฉันไปห้องทำงานก่อน คุณรอฉันอยู่ที่นี่', cat:'life',
+    tokens:[{zh:'我',py:'wǒ'},{zh:'先',py:'xiān'},{zh:'去',py:'qù'},{zh:'办公室，',py:'bàngōngshì,'},{zh:'你',py:'nǐ'},{zh:'在',py:'zài'},{zh:'这儿',py:'zhèr'},{zh:'等',py:'děng'},{zh:'我',py:'wǒ'}] },
+  { th:'พวกเรากลับบ้านกันเถอะ', cat:'life',
+    tokens:[{zh:'我们',py:'wǒmen'},{zh:'回',py:'huí'},{zh:'家',py:'jiā'},{zh:'吧',py:'ba'}] },
+  { th:'เชิญนั่ง ดื่มชาสักแก้วสิ', cat:'life',
+    tokens:[{zh:'请',py:'qǐng'},{zh:'坐，',py:'zuò,'},{zh:'喝',py:'hē'},{zh:'一',py:'yì'},{zh:'杯',py:'bēi'},{zh:'茶',py:'chá'},{zh:'吧',py:'ba'}] },
 ];
 const SB_CATS = [
   { k:'all', label:'ทั้งหมด' },
@@ -3390,6 +3537,260 @@ function sbReveal() {
   act.insertAdjacentHTML('afterend', `<button class="sb-next" id="sb-next">ข้อถัดไป →</button>`);
   document.getElementById('sb-replay').addEventListener('click', () => playSound(zh));
   document.getElementById('sb-next').addEventListener('click', () => { sbIdx++; sbRender(); });
+}
+
+/* ---------------- 👂 ฟังประโยค → พิมพ์คำแปลไทย ----------------
+   คำแปลไทยประโยคเดียวเขียนได้หลายแบบ (ฉัน/ผม, สลับลำดับคำขยาย) เทียบ string ตรงๆ
+   จะตัดสินผิดทั้งที่แปลถูก → ตรวจแค่ "คำหลัก" แล้วให้ผู้ใช้ตัดสินสุดท้ายเอง       */
+const LN_KEY = 'xy-ln';
+let lnSrc = 'all';
+let lnQ = [], lnIdx = 0, lnC = 0, lnW = 0, lnState = 'ask', lnPrefLoaded = false;
+let lnZhTh = null, lnZhMax = 0;
+
+/* ห้ามตัดสระ/วรรณยุกต์ไทย (เป็นอักขระประกอบเหมือน ǚ ในกับดักพินอิน) — ตัดแค่ช่องว่าง+วรรคตอน */
+const LN_PUNC = /[\s,.!?;:()[\]{}"'/\\|·…—–\-，。！？、；：（）]/g;
+function thNorm(s) { return (s || '').normalize('NFC').replace(LN_PUNC, ''); }
+
+/* แม็ป คำจีน → คำแปลไทย จาก vocab+วลีทุกบท — ใช้ทั้งตัดคำและหาคำหลัก (สร้างครั้งเดียว) */
+function lnMap() {
+  if (lnZhTh) return lnZhTh;
+  lnZhTh = new Map();
+  lsnAllLessons.forEach(L => [...L.vocab, ...L.phrases].forEach(w => {
+    if (!lnZhTh.has(w.zh)) lnZhTh.set(w.zh, w.th);
+  }));
+  lnZhTh.forEach((_, k) => { if (k.length > lnZhMax) lnZhMax = k.length; });
+  return lnZhTh;
+}
+
+/* คำไวยากรณ์ที่ภาษาไทยละได้ — ไม่เอามาเป็นคำหลัก ไม่งั้นขึ้น "ตกคำ" ทั้งที่แปลถูก
+   (เช่น 我妈妈的公司 แปลว่า "บริษัทแม่ผม" ก็ถูก ไม่ต้องมี "ของ") */
+const LN_STOP = ['ของ', 'ก็', 'ที่', 'และ', 'แล้ว', 'จะ', 'ได้', 'ด้วย', 'ให้', 'เป็น', 'คือ', 'ใช่', 'อยู่',
+  'เชิญ', 'กรุณา'];   // 请 คนไทยแปลข้ามได้ตามปกติ ("请坐" = "นั่งสิ")
+
+/* คำหลักของประโยค = คำแปลของคำจีนในประโยค "ที่ปรากฏอยู่ในคำแปลเฉลยจริง" เท่านั้น
+   (ถ้าไม่เช็คว่าปรากฏจริง จะไปบังคับคำที่เฉลยไม่ได้ใช้ เช่น 是 = ใช่ ในประโยคที่แปลว่า "คือ") */
+function lnKeywords(it) {
+  if (it._kw) return it._kw;
+  const th = thNorm(it.th), m = lnMap(), s = (it.zh || '').replace(LN_PUNC, ''), cand = new Set();
+  // ไล่ทุกช่วงตัวอักษร ไม่ใช่ตัดคำแบบยาวสุด — เพราะ 我的爸爸 มีในคลังเป็นวลีเดียว ('พ่อของฉัน')
+  // ถ้าเอาวลีทั้งก้อนมาเป็นคำหลัก การตรวจจะกลายเป็นเทียบทั้งประโยคแบบตรงตัว
+  for (let i = 0; i < s.length; i++) {
+    for (let L = 1; L <= Math.min(lnZhMax, s.length - i); L++) {
+      const t = s.slice(i, i + L);
+      if (!m.has(t)) continue;
+      // คำเดียวมีได้หลายคำแปล ('ดี / โอเค') และมีคำอธิบายในวงเล็บ ('เขา (ชาย)') → แตกก่อน
+      m.get(t).replace(/\([^)]*\)/g, '').split('/').forEach(v => {
+        const k = thNorm(v);
+        if (k.length >= 2 && th.includes(k)) cand.add(k);
+      });
+    }
+  }
+  const ks = [...cand];
+  // เก็บแต่หน่วยย่อยสุด (ตัดคำที่ครอบคำอื่นอยู่) — ยืดหยุ่นกับการเรียงคำแปลที่ต่างกัน
+  it._kw = ks.filter(k => !LN_STOP.includes(k) && !ks.some(o => o !== k && k.includes(o)));
+  return it._kw;
+}
+
+/* คำพ้องที่แปลต่างจากเฉลยได้โดยไม่ผิด — เน้นคำที่โผล่เป็นคำหลักบ่อยสุดในคลัง
+   (ฉัน 150 · คุณ 103 · เขา 59 · นี้ 44 ครั้ง) ถ้าไม่ยอมรับคำพ้อง จะขึ้น "ตกคำ" ทั้งที่แปลถูก */
+const LN_ALIAS = [
+  ['ฉัน', 'ผม', 'ดิฉัน', 'หนู', 'เรา'],
+  ['คุณ', 'เธอ', 'นาย', 'ท่าน', 'แก'],
+  ['เขา', 'เค้า', 'หล่อน', 'เธอ'],
+  ['นี้', 'นี่'],
+  ['นั้น', 'นั่น'],
+  ['ไหม', 'มั้ย', 'หรือเปล่า', 'รึเปล่า'],
+  ['ล่ะ', 'ละ', 'เหรอ', 'หรอ'],
+  ['ก็', 'ก้อ'],
+  // เลขอาราบิกกับคำอ่านไทยต้องเท่ากัน — คนพิมพ์ "3 หยวน" บ่อยกว่า "สามหยวน"
+  ['ศูนย์', '0'], ['หนึ่ง', '1'], ['สอง', '2'], ['สาม', '3'], ['สี่', '4'], ['ห้า', '5'],
+  ['หก', '6'], ['เจ็ด', '7'], ['แปด', '8'], ['เก้า', '9'], ['สิบ', '10'],
+  ['ร้อย', '100'], ['พัน', '1000'], ['หมื่น', '10000'],
+  ['พวกเรา', 'เรา'], ['พวกคุณ', 'คุณ'], ['พวกเขา', 'เขา'],
+  ['ทั้งหมด', 'รวม', 'ทั้งสิ้น'],
+  ['เกินไป', 'เกิน', 'ไป'],
+  ['นิดหน่อย', 'หน่อย', 'เล็กน้อย'],
+];
+let lnAliasMap = null;
+function lnAlias(k) {
+  if (!lnAliasMap) {
+    lnAliasMap = new Map();
+    LN_ALIAS.forEach(g => g.forEach(w => { if (!lnAliasMap.has(w)) lnAliasMap.set(w, g); }));
+  }
+  return lnAliasMap.get(k) || [k];
+}
+
+function lnGrade(input, it) {
+  const got = thNorm(input), kw = lnKeywords(it);
+  const miss = kw.filter(k => !lnAlias(k).some(v => got.includes(v)));
+  return { kw, miss, full: !!got && !miss.length, auto: kw.length > 0 };
+}
+
+function lnPool() {
+  const out = [], seen = new Set();
+  const add = o => { if (o.zh && o.th && !seen.has(o.zh)) { seen.add(o.zh); out.push(o); } };
+  const want = k => lnSrc === 'all' || lnSrc === k;
+  // sbData เก็บเป็น token → join เหมือนที่ sbCheck ทำ (เครื่องหมายวรรคตอนติดมาใน token ด้วย)
+  if (want('sb')) sbData.forEach(s => add({
+    zh: s.tokens.map(t => t.zh).join(''), py: s.tokens.map(t => t.py).join(' '),
+    th: s.th, note: s.note, src: 'sb',
+  }));
+  if (want('dlg')) lsnAllLessons.forEach(L => L.dialogue.forEach(d => add({ zh: d.zh, py: d.py, th: d.th, src: 'dlg' })));
+  if (want('ph')) lsnAllLessons.forEach(L => L.phrases.forEach(p => add({ zh: p.zh, py: p.py, th: p.th, src: 'ph' })));
+  return out;
+}
+
+function lnSetSrc(k) {
+  lnSrc = k;
+  try { localStorage.setItem(LN_KEY, k); } catch {}
+  lnStart();
+}
+
+function lnStart() {
+  if (!lnPrefLoaded) {   // คืนแหล่งข้อที่เลือกไว้ครั้งก่อน (อ่านตอนใช้จริง ไม่ใช่ตอนบูต)
+    lnPrefLoaded = true;
+    try {
+      const k = localStorage.getItem(LN_KEY);
+      if (['all', 'sb', 'dlg', 'ph'].includes(k)) lnSrc = k;
+    } catch {}
+  }
+  ['all', 'sb', 'dlg', 'ph'].forEach(k =>
+    document.getElementById('lnsrc-' + k).classList.toggle('on', k === lnSrc));
+  lnQ = lsnShuffle(lnPool());
+  lnIdx = 0; lnC = 0; lnW = 0;
+  document.getElementById('ln-total').textContent = lnQ.length;
+  document.getElementById('ln-complete').classList.remove('show');
+  document.getElementById('ln-card').style.display = '';
+  lnLoad();
+}
+
+function lnCur() { return lnQ[lnIdx]; }
+
+function lnLoad() {
+  if (lnIdx >= lnQ.length) return lnDone();
+  lnState = 'ask';
+  const it = lnCur();
+  document.getElementById('ln-qnum').textContent = `ข้อ ${lnIdx + 1} / ${lnQ.length}`;
+  document.getElementById('ln-py').textContent = '';
+  document.getElementById('ln-fb').textContent = '';
+  document.getElementById('ln-fb').className = 'lsn-fb';
+  const ans = document.getElementById('ln-ans');
+  ans.className = 'ln-ans'; ans.innerHTML = '';
+  const inp = document.getElementById('ln-input');
+  inp.value = ''; inp.readOnly = false; inp.className = 'lsn-input ln-input';
+  lnScore();
+  lnActs();
+  if (curTab === 'listen') playSound(it.zh, document.getElementById('ln-play'));
+}
+
+function lnScore() {
+  document.getElementById('ln-c').textContent = lnC;
+  document.getElementById('ln-w').textContent = lnW;
+  document.getElementById('ln-t').textContent = lnC + lnW;
+  document.getElementById('ln-prog').style.width = (lnIdx / lnQ.length * 100) + '%';
+}
+
+/* ปุ่มเปลี่ยนตามสถานะ — ทุกสถานะต้อง "กดเอง" ไม่มี auto-advance เลย
+   (เคยพลาดในเรียงประโยค: เด้งข้อถัดไปเองเร็วเกินกว่าจะทวนเฉลยทัน) */
+function lnActs() {
+  const box = document.getElementById('ln-acts');
+  if (lnState === 'ask') {
+    box.innerHTML =
+      `<button type="button" class="sb-btn" onclick="lnHint()">💡 ใบ้พินอิน</button>` +
+      `<button type="button" class="sb-btn" onclick="lnReveal()">👁 เฉลย</button>` +
+      `<button type="button" class="sb-next" onclick="lnSubmit()">ตรวจคำแปล</button>`;
+  } else if (lnState === 'judge') {
+    const g = lnGrade(document.getElementById('ln-input').value, lnCur());
+    // ข้อที่หาคำหลักไม่ได้ ระบบไม่รู้ว่าถูกไหม → ไม่ทึบปุ่มไหนเลย ไม่ชี้นำผู้ใช้ผิด
+    const sg = k => (g.auto && (k === 'ok') === g.full) ? ' suggest' : '';
+    box.innerHTML =
+      `<button type="button" class="sb-btn" onclick="lnPlay()">🔊 ฟังอีกครั้ง</button>` +
+      `<div style="flex:1 1 100%;display:flex;gap:8px">` +
+        `<button type="button" class="ln-judge ok${sg('ok')}" onclick="lnJudge(true)">✓ ฉันแปลถูก</button>` +
+        `<button type="button" class="ln-judge bad${sg('bad')}" onclick="lnJudge(false)">✗ ยังไม่ถูก</button>` +
+      `</div>`;
+  } else {
+    box.innerHTML =
+      `<button type="button" class="sb-btn" onclick="lnPlay()">🔊 ฟังอีกครั้ง</button>` +
+      `<button type="button" class="sb-next" onclick="lnNext()">ข้อถัดไป →</button>`;
+  }
+}
+
+function lnPlay() { const it = lnCur(); if (it) playSound(it.zh, document.getElementById('ln-play')); }
+
+function lnHint() {
+  const it = lnCur();
+  if (it) document.getElementById('ln-py').textContent = it.py;
+}
+
+function lnShowAns() {
+  const it = lnCur();
+  document.getElementById('ln-py').textContent = it.py;
+  const ans = document.getElementById('ln-ans');
+  ans.innerHTML =
+    `<div class="ln-ans-th">${it.th}</div>` +
+    `<div class="ln-ans-py">${it.py}</div>` +
+    `<div class="ln-ans-zh">${it.zh}</div>` +
+    (it.note ? `<div class="ln-ans-note">💡 ${it.note}</div>` : '');
+  ans.classList.add('show');
+  document.getElementById('ln-input').readOnly = true;
+}
+
+function lnSubmit() {
+  if (lnState !== 'ask') return;
+  const inp = document.getElementById('ln-input');
+  if (!inp.value.trim()) { inp.focus(); return; }
+  const g = lnGrade(inp.value, lnCur());
+  const fb = document.getElementById('ln-fb');
+  if (!g.auto) {                       // หาคำหลักไม่ได้ (~1.5% เช่น "พรุ่งนี้เจอกัน!") → ให้ตัดสินเองล้วน
+    fb.className = 'lsn-fb';
+    fb.textContent = 'ประโยคนี้ตรวจอัตโนมัติไม่ได้ — เทียบกับเฉลยแล้วตัดสินเอง';
+  } else if (g.full) {
+    fb.className = 'lsn-fb ok';
+    fb.textContent = `✓ คำหลักครบทุกคำ (${g.kw.join(' · ')})`;
+  } else {
+    fb.className = 'lsn-fb bad';
+    fb.textContent = `ตกคำว่า: ${g.miss.join(' · ')}`;
+  }
+  inp.classList.add(g.auto && g.full ? 'ok' : 'bad');
+  lnShowAns();
+  lnState = 'judge';
+  lnActs();
+}
+
+function lnReveal() {
+  if (lnState !== 'ask') return;
+  const fb = document.getElementById('ln-fb');
+  fb.className = 'lsn-fb bad';
+  fb.textContent = '👁 ดูเฉลย — นับเป็นข้อที่ยังไม่ได้';
+  lnShowAns();
+  lnW++; lnState = 'done'; lnScore(); lnActs();
+}
+
+/* ผู้ใช้ตัดสินเอง: 1 แตะ = ให้คะแนน + ไปข้อถัดไป (ทวนได้นานเท่าที่อยากก่อนกด) */
+function lnJudge(ok) {
+  if (lnState !== 'judge') return;
+  if (ok) lnC++; else lnW++;
+  lnState = 'done';
+  lnNext();
+}
+
+function lnNext() { lnIdx++; lnLoad(); }
+
+function lnKey(e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  if (lnState === 'ask') lnSubmit();   // หลังตรวจแล้วไม่ให้ Enter ข้ามข้อ ต้องกด ✓/✗ เอง
+}
+
+function lnDone() {
+  document.getElementById('ln-card').style.display = 'none';
+  document.getElementById('ln-prog').style.width = '100%';
+  const t = lnC + lnW;
+  document.getElementById('ln-complete-scr').textContent =
+    `ถูก ${lnC} / ${t} ข้อ` + (t ? ` (${Math.round(lnC / t * 100)}%)` : '');
+  document.getElementById('ln-complete').classList.add('show');
+  lnScore();
 }
 
 function lsnMode(el, mode) {
@@ -3770,7 +4171,8 @@ lsnInit();
 /* ================= Navigation 2 ระดับ ================= */
 const NAV_GROUPS = [
   { key: 'learn', ic: '📖', label: 'เรียน',   items: [{ t: 'lesson1',  label: '📖 บทเรียน' }] },
-  { key: 'drill', ic: '🎯', label: 'ฝึก',     items: [{ t: 'quiz',     label: '🎯 ควิซคำศัพท์' }, { t: 'sentence', label: '🧩 เรียงประโยค' }, { t: 'typing', label: '⌨️ พิมพ์พินอิน' }] },
+  // label สั้นเพราะ subnav เป็น flex:1 + nowrap — 4 ปุ่มด้วยชื่อเต็มจะล้นที่ 375px
+  { key: 'drill', ic: '🎯', label: 'ฝึก',     items: [{ t: 'quiz',     label: '🎯 ควิซ' }, { t: 'sentence', label: '🧩 เรียงคำ' }, { t: 'typing', label: '⌨️ พินอิน' }, { t: 'listen', label: '👂 ฟังแปล' }] },
   { key: 'bank',  ic: '📚', label: 'คลังคำ',  items: [{ t: 'vocab',    label: '📚 คำศัพท์ทุกบท' }, { t: 'allnotes', label: '📝 สรุปไวยากรณ์' }] },
   { key: 'base',  ic: '🔤', label: 'พื้นฐาน', items: [{ t: 'pinyin',   label: '🔤 พินอิน' }, { t: 'bu', label: '🎵 ผันเสียง' }] },
 ];
@@ -3824,6 +4226,7 @@ function goTab(type) {
   if (type === 'quiz') quizStart();
   if (type === 'sentence') sbStart();
   if (type === 'typing') tgDrill.restart();
+  if (type === 'listen') lnStart();
   if (type === 'allnotes') buildAllNotes();
   if (type === 'bu') buildT3Page();
   window.scrollTo({ top: tabScroll[type] || 0, behavior: 'instant' });
