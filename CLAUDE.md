@@ -3,8 +3,11 @@
 PWA เรียนภาษาจีนสำหรับ **ผู้เรียนชาวไทย** ทำตามหนังสือ 汉语教程 第3版 第一册 上 (บทที่ 1–15)
 
 - repo: `git@github.com:icejuk/chinese-study.git`
-- deploy: **Vercel auto-deploy เมื่อ push ขึ้น main** → https://chinese.icejuk.dev
+- deploy: **Vercel auto-deploy เมื่อ push ขึ้น main** → https://chinese.icejuk.dev (build ด้วย `vercel.json`: `npm run build` → เสิร์ฟ `dist/`)
 - dev preview: `preview_start {name:'chinese-study'}` → port 3458 (config อยู่ที่ `../.claude/launch.json` ระดับโฟลเดอร์ `Icejuk`) — **ห้ามรัน dev server ด้วย Bash**
+- build ที่แปลงแล้ว (สำหรับเช็ค PWA/offline จริง): `preview_start {name:'chinese-study-build'}` → port 3461 (ต้อง `npm run build` ใหม่ก่อนถึงจะเห็นการแก้ล่าสุด)
+
+**สถานะ 2026-08-01**: เพิ่งย้ายจากไฟล์ `index.html` เดี่ยว 4,640 บรรทัดมาเป็น **Vite + React + TypeScript** ทั้งหมด — ประวัติ v1 (โครง inline HTML/CSS/JS เดิม) อยู่ใน git log ก่อน commit ที่ย้าย ถ้าต้องอ้างอิงพฤติกรรมเดิมดูที่ git history
 
 ---
 
@@ -29,95 +32,116 @@ PWA เรียนภาษาจีนสำหรับ **ผู้เรี�
 
 ### 3. ห้ามใส่ไฟล์/asset ภายนอก
 
-ต้องทำงาน **offline** ได้ → ห้าม CDN, ห้าม external font/script/image ทุกอย่าง inline ในไฟล์เดียว
-(ยกเว้น Google Translate TTS ที่เป็น fallback ของเสียง ซึ่ง sw.js แคชไว้)
+ต้องทำงาน **offline** ได้ → ห้าม CDN, ห้าม external font/script/image (ฟอนต์ใช้ระบบล้วนผ่าน `--font`/`--font-zh` ใน `src/styles/tokens.css`)
+ยกเว้น Google Translate TTS ที่เป็น fallback ของเสียง ซึ่ง `vite-plugin-pwa` แคชรันไทม์ไว้ให้ (ดู `runtimeCaching` ใน `vite.config.ts`)
 
-### 4. ห้ามลืม bump `CACHE_VERSION` ใน `sw.js`
+### 4. ห้ามเล่นเสียงเองในหน้า "ฟังแปล" และ "พิมพ์พินอิน"
 
-แก้ `index.html` แล้วไม่ bump = **PWA ที่ติดตั้งแล้วจะไม่เห็นของใหม่เลย** (service worker เป็น cache-first)
-ตอนนี้อยู่ที่ `v25-2026-07-27` — รูปแบบ `vNN-YYYY-MM-DD`
+ผู้ใช้ขอให้เอาออโต้เสียงออกจาก 2 หน้านี้ (2026-07-31) — ต้องกดปุ่มฟังเองเท่านั้น ทั้ง 2 จุด:
+- ขึ้นข้อ/คำใหม่ ห้าม `playSound` ทันที
+- ตอบผิดในแบบฝึกพิมพ์พินอินก็ห้ามอ่านคำที่ถูกให้ฟังเอง (ต่างจาก v1 เดิม)
 
-### 5. ห้ามใส่ `Co-Authored-By` ท้าย commit message
+โหมด **ควิซ → 🔊 ฟังเสียง** ยังเล่นเองได้ตอนขึ้นข้อ (ตกลงกับผู้ใช้ไว้แล้วว่าโหมดนี้ไม่มีอะไรให้อ่านก่อนฟัง)
+
+### 5. ห้ามมี auto-advance ไปข้อถัดไปเมื่อ "ตอบผิด" หรือ "ดูเฉลย"
+
+ผู้ใช้เคยขอแก้เพราะออโต้เร็วเกินจะทวนเฉลยทัน (2026-07-31, เดิมเป็นปัญหาในเรียงประโยค) หลักที่ยึดทั้งแอปตอนนี้:
+- **ตอบถูก** → เด้งข้อถัดไปเองได้ (สั้นๆ พอ ~0.9–1.2s)
+- **ตอบผิด / ดูเฉลย / ตัดสินเองในฟังแปล** → **ต้องกดปุ่มไปข้อถัดไปเอง** ไม่มี timeout ใดๆ
+
+### 6. ห้ามใส่ `Co-Authored-By` ท้าย commit message
 
 ---
 
 ## โครงสร้าง
 
-ไฟล์ทั้งหมด (ไม่มี build step, ไม่มี npm, ไม่มี dependency):
+```
+package.json / vite.config.ts / tsconfig.json   ← build ด้วย Vite (React + TS)
+vercel.json                                       ← บอก Vercel ให้ build ก่อนเสิร์ฟ (buildCommand/outputDirectory)
+index.html                                        ← โครงเปล่า (Vite entry) ไม่ใช่ตัวแอปเหมือน v1 เดิม
+public/                                            ← icon.svg, icon-maskable.svg (PWA)
+src/
+  main.tsx, App.tsx                                ← bootstrap + nav 2 ระดับ (sidebar บนจอกว้าง / tab bar ล่างมือถือ)
+  nav.ts                                            ← NAV_GROUPS, จำแท็บ/โหมดล่าสุดใน localStorage (xy-nav)
+  data/                                             ← ข้อมูลล้วน (บทเรียน/ประโยค/พินอิน/หมวดคำ) ไม่มี logic
+  lib/                                               ← thai.ts, pinyin.ts, srs.ts, tts.ts, pools.ts, storage.ts
+  components/                                        ← TypeDrill, SpeakButton/TapToSpeak, ui.tsx (Chips/ScoreBar/…)
+  screens/                                           ← 1 ไฟล์ต่อแท็บ (LessonScreen, QuizScreen, SentenceScreen, TypingScreen, ListenScreen, VocabScreen, NotesScreen, PinyinScreen, TonesScreen)
+  styles/                                            ← tokens.css (ดีไซน์โทเคน + dark mode) / base.css / layout.css / screens.css
+```
 
-| ไฟล์ | หน้าที่ |
+**ไม่มี build step ที่ต้องรันมือ** — `npm run dev` (Vite dev server + HMR), `npm run build` (typecheck + bundle + gen service worker), `npm test` (Vitest)
+
+### แท็บ (`NAV_GROUPS` ใน `src/nav.ts`)
+
+| กลุ่ม | แท็บ |
 |---|---|
-| `index.html` | **ทุกอย่าง** — 4,200+ บรรทัด, CSS + JS inline (`<script>` บล็อกเดียว) |
-| `sw.js` | service worker, cache-first + bump `CACHE_VERSION` |
-| `manifest.webmanifest`, `icon.svg`, `icon-maskable.svg` | PWA |
-| `.nojekyll` | — |
-
-### แท็บ (`NAV_GROUPS`) — nav อยู่ **บนสุดเหมือนกันทุกขนาดจอ**
-
-| กลุ่ม | แท็บ (`data-type`) |
-|---|---|
-| 📖 เรียน | `lesson1` (มี 4 โหมด: ศัพท์ / สนทนา / โน้ต / 🎯 ฝึก) |
-| 🎯 ฝึก | `quiz` · `sentence` · `typing` |
-| 📚 คลังคำ | `vocab` · `allnotes` |
+| 📖 เรียน | `lesson1` (มี 4 โหมด: คำศัพท์ / บทสนทนา / โน้ต / ฝึกพิมพ์) |
+| 🎯 ฝึก | `quiz` · `sentence` · `typing` · `listen` (ฟัง→แปลไทย) |
+| 📚 คลังคำ | `vocab` (ดูได้ 2 มุมมอง: ตามบท / ตามหมวดการใช้งาน) · `allnotes` |
 | 🔤 พื้นฐาน | `pinyin` · `bu` (ผันเสียง) |
 
-### ข้อมูล (ตัวเลขจริง ณ 2026-07-27)
+### ข้อมูล (ตัวเลขจริง ณ 2026-07-31, `src/data/`)
 
-| ตัวแปร | ปริมาณ |
+| ไฟล์ | ปริมาณ |
 |---|---|
-| `lsnAllLessons` | 15 บท · 285 คำศัพท์ · 117 วลี · 102 บรรทัดสนทนา · 87 โน้ต |
-| `sbData` | 382 ประโยคเรียงคำ · 11 หมวด (`SB_CATS`) — เขียนมือทั้งหมด ไม่ได้ derive จากบท |
-| `tgPool()` | 283 คำ (285 dedupe ตาม `zh` — 给/找 ซ้ำ 2 บท) |
+| `lessons.ts` | 15 บท · 285 คำศัพท์ · 117 วลี · 108 บรรทัดสนทนา · 87 โน้ต |
+| `sentences.ts` | 421 ประโยคเรียงคำ · 11 หมวด (`sentenceCats`) — เขียนมือทั้งหมด ไม่ได้ derive จากบท |
+| `wordCats.ts` | 17 หมวดตามการใช้งาน (วันเวลา/ที่ทำงาน/โรงเรียน/…) ครอบคำศัพท์ทุกคำ — มีเทสคุมใน `wordCats.test.ts` |
+| `pinyin.ts`, `tones.ts`, `summary.ts` | ข้อมูลหน้าพินอิน/ผันเสียง/สรุปไวยากรณ์ |
 
-รูปคำศัพท์: `{ zh, py, base, tone, thr, th, en }` — `thr` = คำอ่านไทย · `base`/`tone` เป็น **dead data** (เหลือจากควิซวรรณยุกต์ที่ลบไป) ห้ามเอามาใช้เป็นแหล่งความจริง
-รูปวลี: `{ zh, py, th, en }`
+รูปคำศัพท์ (`types.ts` → `Word`): `{ zh, py, base, tone, thr, th, en }` — `thr` = คำอ่านไทย · `base`/`tone` เป็น **dead data** (เหลือจาก v1 เดิม) ห้ามเอามาใช้เป็นแหล่งความจริง
 
-### localStorage
+### localStorage (`src/lib/storage.ts` → `KEYS`) — **ห้ามเปลี่ยนชื่อคีย์**
 
-`xy-lsn` (บทที่เปิด) · `xy-nav` (แท็บ+โหมด) · `xy-srs` (SRS) · `xy-star-words` (⭐ ยังไม่แม่น) · `xy-ty` (หมวดของแบบฝึกพิมพ์พินอิน)
+`xy-lsn` (บทที่เปิด) · `xy-nav` (แท็บ+โหมด) · `xy-srs` (SRS) · `xy-star-words` (⭐ ยังไม่แม่น) · `xy-ty` (ชุดคำของแบบฝึกพิมพ์พินอิน) · `xy-ln` (แหล่งข้อของแบบฝึกฟังแปล)
 
-### แบบฝึกพิมพ์พินอิน — `makeTypeDrill(prefix, getPool, opts)`
+คีย์เหล่านี้มาจาก v1 เดิม เปลี่ยนชื่อ = ผู้ใช้ที่เคยเล่น v1 เสียความคืบหน้าทั้งหมดตอนย้ายมา v2
 
-ฟังก์ชันเดียว สร้าง 2 instance ใช้โค้ดร่วมกัน: `tyDrill` (ในบท, id `ty-*`) และ `tgDrill` (รวมทุกบท, id `tg-*`)
-**แก้ที่ factory ทีเดียวได้ทั้งคู่ — ห้ามก็อปโค้ดไปวางซ้ำ**
+### แบบฝึกพิมพ์พินอิน — `<TypeDrill pool={...} resetKey={...} />` (`src/components/TypeDrill.tsx`)
 
-การให้คะแนน: `pyNorm()` → ตัวอักษร a-z ล้วน + `pyCheck()` เทียบตัวอักษร (ไม่คิดวรรณยุกต์)
+component เดียว ใช้ทั้งในบท (`LessonScreen`, pool จาก `lessonDrillPool`) และแท็บพิมพ์พินอินรวมทุกบท (`TypingScreen`, pool จาก `allWordsPool`)
+**แก้ที่ component เดียวได้ทั้งคู่ — ห้ามก็อปโค้ดไปวางซ้ำเป็นไฟล์ใหม่**
+
+การให้คะแนน: `pyNorm()` (`src/lib/pinyin.ts`) → ตัวอักษร a-z ล้วน + `pyCheck()` เทียบตัวอักษร (ไม่คิดวรรณยุกต์)
 `zuijin` / `zui4jin4` / `zuìjìn` / `ZUIJIN` ผ่านเหมือนกันหมด
+
+### แบบฝึกฟังแปล — `src/lib/thai.ts`
+
+`gradeThai(input, item)` ดึง "คำหลัก" จากคำแปลเฉลยจริง (join คำศัพท์ที่ประกอบเป็นประโยค) แล้วเช็คว่าคำที่พิมพ์มีคำหลักครบไหม — **ไม่ตัดสินถูก/ผิดเด็ดขาด** ผู้ใช้กด ✓/✗ ตัดสินเองเสมอ (ระบบแค่ทึบปุ่มที่เดาไว้ให้)
+มี `ALIAS`/`STOP` คำพ้อง/คำที่ไทยละได้ ต้องเพิ่มเข้าไปเรื่อยๆ ถ้าเจอ false negative ใหม่ (ดูรูปแบบใน `grade.test.ts`)
 
 ---
 
 ## กับดักที่เคยทำพังมาแล้ว (อย่าทำซ้ำ)
 
-1. **ห้าม strip `[̀-ͯ]` รวบเดียวเพื่อตัดวรรณยุกต์** — จะกิน U+0308 (¨) ไปด้วย ทำให้ `nǚ` → `nu`, `lǜshī` → `lushi`
-   ในข้อมูลไม่มี `ü` เดี่ยว (U+00FC) มีแต่ `ǚ`/`ǜ` แบบอักขระประกอบ → ต้องจับ `̈` แยกเอง
-2. **ห้ามสมมติว่า 1 token ที่คั่นด้วยช่องว่าง = 1 พยางค์** — `gōngzuò` เป็น token เดียวแต่ 2 พยางค์
-   ควิซวรรณยุกต์เดิมพังเพราะแม็ป index พยางค์ → index ตัวอักษรจีนแบบ 1:1 (在医院工作 ไฮไลต์ผิดตัว) ถ้าต้องนับพยางค์ ให้**นับกลุ่มสระ** (ตรงกับจำนวนพยางค์ 402/402 รายการ)
-3. **ห้ามเขียน SRS/ดาว ด้วย key ที่เป็นวลี** — `quizShowStats()`/`srsDueWords()` join กับ `quizAllWords()` ซึ่งมีแต่คำศัพท์ → key วลีจะโป่งใน localStorage แล้วไม่โผล่ที่ไหน (เช็ค `kind === 'vocab'` ก่อนเขียน)
-4. **ลำดับใน `lsnSwitch()` สำคัญ** — ต้องรีเซ็ตกลับโหมดศัพท์ **ก่อน** `tyDrill.restart()` ไม่งั้น restart จะยังเห็นว่าโหมดฝึกเปิดอยู่จากบทเดิม → เล่นเสียงเองทั้งที่ผู้ใช้ยังไม่ได้กดฝึก
-5. **`content-visibility: auto` บนการ์ดศัพท์ทำ grid ล้น** — เคยลองแล้วพัง (การ์ด 137px แทน 116px, scrollWidth 429 > 375) เอาออกไปแล้ว อย่าใส่กลับ
-6. **`.lsn-mode` relabel ด้วย index** — เพิ่มปุ่มโหมดให้ **ต่อท้าย** ห้ามแทรกกลาง
-7. **`<input>` ต้อง `font-size` ≥ 16px** — viewport ไม่มี `maximum-scale` → iOS จะซูมเอง และต้องมี `autocapitalize="none" autocorrect="off" spellcheck="false"` ไม่งั้น iOS แก้ `zhe` → `the`
+1. **ห้าม strip `[̀-ͯ]` รวบเดียวเพื่อตัดวรรณยุกต์พินอิน** — จะกิน U+0308 (¨) ไปด้วย ทำให้ `nǚ` → `nu`, `lǜshī` → `lushi`
+   ในข้อมูลไม่มี `ü` เดี่ยว (U+00FC) มีแต่ `ǚ`/`ǜ` แบบอักขระประกอบ → ต้องจับ `̈` แยกเอง (ดู `pyNorm` ใน `src/lib/pinyin.ts`)
+2. **ห้ามตัดสระ/วรรณยุกต์ไทยทิ้งตอน normalize คำแปล** — คนละเรื่องกับการตัดวรรคตอน `thNorm()` (`src/lib/thai.ts`) ตัดแค่ `[\s,.!?;:()…]` เท่านั้น
+3. **ห้ามสมมติว่า 1 token ที่คั่นด้วยช่องว่างในพินอิน = 1 พยางค์** — `gōngzuò` เป็น token เดียวแต่ 2 พยางค์
+4. **ห้ามเขียน SRS/ดาว ด้วย key ที่เป็นวลี/ประโยค** — `srsUpdate`/`addStar` (`src/lib/srs.ts`) รับแค่ `zh` ของ**คำศัพท์เดี่ยว** เท่านั้น (`allWords()` = คำศัพท์ ไม่รวมวลี/ประโยค) ข้อมูลจากแบบฝึกฟังแปล/เรียงประโยคต้อง **ไม่เขียน SRS/ดาว** เด็ดขาด
+5. **`content-visibility: auto` บนการ์ดศัพท์ทำ grid ล้น** — เคยลองแล้วพัง (การ์ดใหญ่ผิดขนาด, scrollWidth > 375) อย่าใส่
+6. **`<input>` ต้อง `font-size` ≥ 16px** — viewport ไม่ล็อก `maximum-scale` → iOS จะซูมเอง และต้องมี `autoCapitalize="none" autoCorrect="off" spellCheck={false}` ไม่งั้น iOS แก้คำ
+7. **คำแปลไทยประโยคเดียวเขียนได้หลายแบบ** — ห้ามเทียบ string ตรงๆ ในแบบฝึกฟังแปล (ดูข้อ "แบบฝึกฟังแปล" ด้านบน)
+8. **`vercel.json` ต้องมี `buildCommand`/`outputDirectory`** — โปรเจกต์นี้เดิมเป็น static site (v1) ถ้า dashboard ยัง cache การตั้งค่าเก่าไว้ว่า "ไม่ต้อง build" ต้องพึ่ง `vercel.json` บังคับให้ build เสมอ
 
-### โค้ดตายที่ยังค้างอยู่ (รู้แล้ว ไม่ใช่บั๊กใหม่)
+### โค้ด/CSS ที่ไม่ได้ยกมาจาก v1 (ตั้งใจตัดทิ้ง ไม่ใช่บั๊ก)
 
-- **flashcard** — CSS `.lsn-fc-*` + 4 ฟังก์ชัน (`lsnFcLoad`/`lsnFlip`/`lsnFcNav`/`lsnFcSpeak`) เขียนครบแต่**ไม่มี HTML** จึงไม่เคยทำงาน ต่อให้ใช้ได้ด้วยการเพิ่ม markup + `lsnFcDeck = [...]` (เป็นโหมดที่ถูกกที่สุดถ้าจะเพิ่มแบบฝึก)
-- `.voc-filter` / `.voc-pill` / `.voc-en` / `.phrase-tag` — CSS ที่ไม่มีใครใช้
-- `base` / `tone` บนคำศัพท์ทุกตัว — เหลือจากควิซวรรณยุกต์
+- flashcard mode (เคยเป็นโค้ดตายใน v1 ไม่มี markup ก็ไม่เคยทำงาน) — ยังไม่มีใน v2
+- `base`/`tone` ในคำศัพท์ยังอยู่ในโครงสร้างข้อมูล (เพื่อไม่ต้องแก้ 285 รายการ) แต่ไม่มีที่ไหนอ่านใช้งาน
 
 ---
 
 ## ต้องทำอะไรก่อนบอกว่าเสร็จ
 
-1. **syntax check** — ดึง `<script>` ออกมาแล้ว `node --check` (ไฟล์เดียว ไม่มี linter)
-   ```bash
-   python3 -c "import re;s=open('index.html',encoding='utf-8').read();open('/tmp/_c.js','w',encoding='utf-8').write(re.findall(r'<script>(.*?)</script>',s,re.S)[0])" && node --check /tmp/_c.js
-   ```
-2. **ทดสอบในเบราว์เซอร์จริง** — `preview_start` แล้ว unregister service worker + `caches.delete()` ก่อนรีโหลด ไม่งั้นจะเห็นของเก่า
-3. **กวาด overflow ที่ 375px** — ทุกแท็บ + 15 บท × 4 โหมด `document.documentElement.scrollWidth > innerWidth` ต้องเป็น false หมด
-4. **console ต้องไม่มี error**
-5. **ถ้าแตะโค้ดให้คะแนน** ต้อง auto-test กับข้อมูลจริงทั้ง 402 รายการ (285 คำ + 117 วลี) ไม่ใช่เทสต์แค่ 2-3 เคส
-6. **bump `CACHE_VERSION`**
-7. **แสดงผลให้ผู้ใช้ดู แล้วรอสั่ง push**
+1. **`npx tsc --noEmit`** — ต้องไม่มี error
+2. **`npm test`** (Vitest) — ต้องผ่านหมด **ถ้าแตะโค้ดให้คะแนน (`pinyin.ts`/`thai.ts`) หรือข้อมูล ต้องรันเทสที่ทดสอบกับ "ข้อมูลจริงทั้งคลัง"** (`grade.test.ts`, `wordCats.test.ts`) ไม่ใช่เทสแค่ 2-3 เคส
+3. **`npm run build`** ต้องผ่าน (bundle + gen service worker)
+4. **ทดสอบในเบราว์เซอร์จริง** — `preview_start {name:'chinese-study-build'}` (port 3461) แล้ว unregister service worker + `caches.delete()` ก่อนรีโหลด ถ้าจะเช็ค PWA/offline
+5. **กวาด overflow ที่ 375px** — ทุกแท็บ + 15 บท × 4 โหมด `document.documentElement.scrollWidth > innerWidth` ต้องเป็น false หมด
+6. **console ต้องไม่มี error**
+7. **เช็คว่าไม่มีเสียงเด้งเองในหน้าฟังแปล/พิมพ์พินอิน** (ข้อห้าม #4) และไม่มี auto-advance ตอนตอบผิด/ดูเฉลย (ข้อห้าม #5)
+8. **แสดงผลให้ผู้ใช้ดู แล้วรอสั่ง push**
 
 ---
 

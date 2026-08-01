@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { DrillItem } from '../lib/pools'
 import { shuffle } from '../lib/pools'
 import { pyCheck } from '../lib/pinyin'

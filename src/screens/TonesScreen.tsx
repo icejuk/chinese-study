@@ -13,7 +13,7 @@ export function TonesScreen() {
   const plain = (groups: ToneGroup[], prefix: string) =>
     groups.map((g) => (
       <section key={prefix + g.label} className="stack">
-        <div className={`tone-hd ${g.special ? 'special' : ''}`}>
+        <div className={`tone-hd ${g.special || g.danger ? 'special' : ''}`}>
           <b>{g.label}</b>
           <span>{g.note}</span>
         </div>
@@ -55,7 +55,7 @@ export function TonesScreen() {
       {view === 't3' &&
         t3Groups.map((g) => (
           <section key={g.label} className="stack">
-            <div className={`tone-hd ${g.special ? 'special' : ''}`}>
+            <div className={`tone-hd ${g.special || g.danger ? 'special' : ''}`}>
               <b>{g.label}</b>
               <span>{g.note}</span>
             </div>

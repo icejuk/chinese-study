@@ -156,12 +156,20 @@ function VocabGrid({ words, phrases }: { words: typeof lessons[number]['vocab'];
 
 function Dialogue({ lines }: { lines: typeof lessons[number]['dialogue'] }) {
   const { playingKey, speak } = useSpeak()
-  // ตัวละครแต่ละคนได้สีต่างกัน — ไล่ตามลำดับที่โผล่ในบท
-  const speakers = [...new Set(lines.map((l) => l.sp))]
+  // ตัวละครแต่ละคนได้สีต่างกัน — ไล่ตามลำดับที่โผล่ในบท (ข้ามหัวข้อคั่นฉากที่ไม่มี sp)
+  const speakers = [...new Set(lines.flatMap((l) => ('sec' in l ? [] : [l.sp])))]
 
   return (
     <div className="stack">
       {lines.map((l, i) => {
+        // บทสนทนายาวบางบทแบ่งเป็นหลายฉาก (เช่น "ที่สนามบิน" / "ที่ด่านศุลกากร") — โชว์เป็นหัวข้อคั่น ไม่ใช่บรรทัดพูด
+        if ('sec' in l) {
+          return (
+            <div key={i} className="dlg-sec">
+              {l.sec}
+            </div>
+          )
+        }
         const ci = speakers.indexOf(l.sp) % 4
         const th = speakerTh[l.sp] ?? l.sp
         const isCode = /^[A-Z]$/.test(l.sp)
@@ -200,6 +208,7 @@ function Notes({ notes }: { notes: typeof lessons[number]['notes'] }) {
             <b>{n.t}</b>
           </div>
           <div className="note-b">{n.b}</div>
+          {n.ex && <div className="note-ex">📝 {n.ex}</div>}
         </div>
       ))}
     </div>

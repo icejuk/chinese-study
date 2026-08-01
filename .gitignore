@@ -1,3 +1,10 @@
 .vercel
 .DS_Store
 Photos-3-001/
+
+# v2 (Vite + React)
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.tsbuildinfo

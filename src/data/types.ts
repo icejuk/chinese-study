@@ -14,9 +14,10 @@ export type Word = {
 
 export type Phrase = { zh: string; py: string; th: string; en: string }
 
-export type DialogueLine = { sp: string; zh: string; py: string; th: string }
+/** บรรทัดสนทนาปกติ หรือ หัวข้อคั่นฉาก (มีแค่ sec เมื่อบทสนทนาแบ่งเป็นหลายฉาก เช่น "ที่สนามบิน") */
+export type DialogueLine = { sp: string; zh: string; py: string; th: string } | { sec: string }
 
-export type Note = { ic: string; t: string; b: string }
+export type Note = { ic: string; t: string; b: string; ex?: string }
 
 export type Lesson = {
   title: string
@@ -69,6 +70,8 @@ export type ToneGroup = {
   label: string
   note: string
   special: boolean
+  /** เคสอันตราย (ผันเสียงพลาดบ่อย) — โชว์สไตล์เดียวกับ special */
+  danger?: boolean
   items: ToneItem[]
 }
 /** กลุ่มเสียง 3 + เสียง 3 มีทั้งคำที่ "เขียน" และ "อ่าน" */

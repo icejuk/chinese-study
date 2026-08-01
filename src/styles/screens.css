@@ -494,6 +494,16 @@
   font-size: 13px;
 }
 
+/* หัวข้อคั่นฉากในบทสนทนายาว (เช่น "ที่สนามบิน" / "ที่ด่านศุลกากร") */
+.dlg-sec {
+  margin-top: 6px;
+  padding: 6px 4px;
+  color: var(--ink-3);
+  font-size: 12.5px;
+  font-weight: 800;
+  border-bottom: 1px dashed var(--line-strong);
+}
+
 /* โน้ต / สรุป */
 .note-hd {
   display: flex;
