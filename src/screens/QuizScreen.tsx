@@ -39,12 +39,9 @@ export function QuizScreen() {
   const [wrong, setWrong] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const timer = useRef<number | null>(null)
-  /** ธงว่า "ข้อถัดไปให้อ่านให้ฟังเอง" — ตั้งเมื่อตอบถูก */
-  const playNext = useRef(false)
 
   const restart = () => {
     if (timer.current) window.clearTimeout(timer.current)
-    playNext.current = false
     setIdx(0)
     setRight(0)
     setWrong(0)
@@ -52,9 +49,8 @@ export function QuizScreen() {
     setNonce((n) => n + 1)
   }
 
-  // เปลี่ยนชุด/ทิศทาง = เริ่มใหม่ (ล้างธงเสียงด้วย ไม่งั้นสลับโหมดแล้วมีเสียงเด้งค้างมา)
+  // เปลี่ยนชุด/ทิศทาง = เริ่มใหม่
   useEffect(() => {
-    playNext.current = false
     setIdx(0)
     setRight(0)
     setWrong(0)
@@ -75,14 +71,9 @@ export function QuizScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, field, dir])
 
-  /* อ่านให้ฟังเองเมื่อขึ้นข้อใหม่ ใน 2 กรณี
-     · โหมดฟัง — เสียงคือตัวโจทย์
-     · ตอบถูกแล้วไปข้อถัดไป (โหมดจีน→ไทย) — ตอบถูกไม่ต้องฟังคำเดิมซ้ำ เอาเวลาไปฟังคำใหม่เลย
-     ห้ามทำในโหมดไทย→พินอิน เพราะเสียงคือคำตอบ จะเฉลยให้ฟรี */
+  // โหมดฟัง: เสียงคือตัวโจทย์ ต้องอ่านให้ทุกข้อ
   useEffect(() => {
-    if (!q) return
-    if (dir === 'listen' || (playNext.current && dir === 'zh2th')) playSound(q.zh)
-    playNext.current = false
+    if (q && dir === 'listen') playSound(q.zh)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, dir, pool])
 
@@ -149,9 +140,15 @@ export function QuizScreen() {
       addStar(q!.zh)
     }
     srsUpdate(q!.zh, ok)
-    // ตอบผิด: อ่านคำที่ถูกให้ฟังทันที · ตอบถูก: ข้ามไปอ่านคำของข้อถัดไปแทน (ตั้งธงไว้)
-    if (ok) playNext.current = true
-    else playSound(q!.zh)
+    /* ⚠️ ต้องเรียก playSound ตรงนี้ (ใน handler ของการแตะ) ห้ามย้ายไปใน setTimeout/useEffect
+       iOS ยอมให้เล่นเสียงเฉพาะที่เริ่มจาก user gesture — ถ้าเรียกหลังหน่วงเวลา
+       เดสก์ท็อปดังปกติแต่ iPhone เงียบสนิทโดยไม่มี error (เคยพลาดมาแล้ว)
+
+       ตอบผิด → อ่านคำที่ถูกให้ฟัง · ตอบถูก → ข้ามการอ่านซ้ำ ไปอ่านคำของข้อถัดไปเลย
+       (ยกเว้นโหมดไทย→พินอิน เพราะเสียงคือคำตอบ จะเฉลยให้ฟรี) */
+    const next = pool[idx + 1]
+    if (!ok) playSound(q!.zh)
+    else if (dir === 'zh2th' && next) playSound(next.zh)
     timer.current = window.setTimeout(() => {
       setPicked(null)
       setIdx((i) => i + 1)
