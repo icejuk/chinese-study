@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Word } from '../data/types'
 import { allWords, addStar, dueWords, srsUpdate, starsGet, weakWords } from '../lib/srs'
 import { shuffle } from '../lib/pools'
+import { pickDistractors } from '../lib/quiz'
 import { playSound } from '../lib/tts'
 import { Chips, DoneCard, EmptyNote, Progress, ScoreBar } from '../components/ui'
 import { SpeakButton, TapToSpeak } from '../components/SpeakButton'
@@ -63,20 +64,12 @@ export function QuizScreen() {
 
   const choices = useMemo(() => {
     if (!q) return []
-    const correct = q[field]
-    const seen = new Set([correct])
-    const out: string[] = []
-    for (const v of shuffle(allWords())) {
-      const val = v[field]
-      if (!seen.has(val)) {
-        seen.add(val)
-        out.push(val)
-      }
-      if (out.length === 3) break
-    }
-    return shuffle([correct, ...out])
+    // ตัวเลือกลวงต้องใกล้เคียงคำตอบ ไม่งั้นเดาได้โดยไม่ต้องรู้คำศัพท์
+    // โหมดฟัง: ตัวเลือกเป็นไทย แต่ต้องเลือกจากคำที่ "เสียงใกล้กัน" เพื่อวัดว่าฟังแยกออกจริง
+    const by = dir === 'zh2th' ? 'meaning' : 'sound'
+    return shuffle([q[field], ...pickDistractors(q, allWords(), field, by)])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, field])
+  }, [q, field, dir])
 
   // โหมดฟัง: อ่านให้ทันทีที่ขึ้นข้อใหม่
   useEffect(() => {

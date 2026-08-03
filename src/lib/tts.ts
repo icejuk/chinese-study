@@ -9,7 +9,16 @@ const VOICE_PREFER = [
   'huihui',                  // Windows
 ]
 
-const RATE = 0.6   // ช้ากว่าปกติ ผู้เรียนตามทัน
+/* ความเร็วอ่าน — ยิ่งยาวยิ่งต้องช้า
+   คำเดี่ยวที่ 0.6 ฟังทันสบาย แต่ประโยคยาวที่ความเร็วเดียวกันไล่ตามไม่ทัน
+   (ตัวเลขนับ "ตัวอักษรจีน" ไม่นับวรรคตอน เพราะ 1 ตัว = 1 พยางค์) */
+function rateFor(zh: string): number {
+  const syllables = (zh.match(/[一-鿿]/g) ?? []).length
+  if (syllables <= 3) return 0.6   // คำเดี่ยว / วลีสั้น
+  if (syllables <= 6) return 0.5   // วลียาว
+  if (syllables <= 10) return 0.44 // ประโยคสั้น
+  return 0.38                      // ประโยคยาว / 2 ประโยคต่อกัน
+}
 
 let activeAudio: HTMLAudioElement | null = null
 let onEndCb: (() => void) | null = null
@@ -38,7 +47,7 @@ export function warmVoices() {
 }
 
 export function ttsUrl(zh: string) {
-  return `https://translate.googleapis.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(zh)}&tl=zh-CN&client=gtx&ttsspeed=${RATE}`
+  return `https://translate.googleapis.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(zh)}&tl=zh-CN&client=gtx&ttsspeed=${rateFor(zh)}`
 }
 
 export function stopSound() {
@@ -73,7 +82,7 @@ export function playSound(zh: string, onEnd?: () => void) {
     const u = new SpeechSynthesisUtterance(zh)
     u.voice = voice
     u.lang = voice.lang || 'zh-CN'
-    u.rate = RATE
+    u.rate = rateFor(zh)
     u.pitch = 1
     u.onend = done
     u.onerror = done
