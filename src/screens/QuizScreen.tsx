@@ -39,9 +39,12 @@ export function QuizScreen() {
   const [wrong, setWrong] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
   const timer = useRef<number | null>(null)
+  /** ธงว่า "ข้อถัดไปให้อ่านให้ฟังเอง" — ตั้งเมื่อตอบถูก */
+  const playNext = useRef(false)
 
   const restart = () => {
     if (timer.current) window.clearTimeout(timer.current)
+    playNext.current = false
     setIdx(0)
     setRight(0)
     setWrong(0)
@@ -49,8 +52,9 @@ export function QuizScreen() {
     setNonce((n) => n + 1)
   }
 
-  // เปลี่ยนชุด/ทิศทาง = เริ่มใหม่
+  // เปลี่ยนชุด/ทิศทาง = เริ่มใหม่ (ล้างธงเสียงด้วย ไม่งั้นสลับโหมดแล้วมีเสียงเด้งค้างมา)
   useEffect(() => {
+    playNext.current = false
     setIdx(0)
     setRight(0)
     setWrong(0)
@@ -71,9 +75,14 @@ export function QuizScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, field, dir])
 
-  // โหมดฟัง: อ่านให้ทันทีที่ขึ้นข้อใหม่
+  /* อ่านให้ฟังเองเมื่อขึ้นข้อใหม่ ใน 2 กรณี
+     · โหมดฟัง — เสียงคือตัวโจทย์
+     · ตอบถูกแล้วไปข้อถัดไป (โหมดจีน→ไทย) — ตอบถูกไม่ต้องฟังคำเดิมซ้ำ เอาเวลาไปฟังคำใหม่เลย
+     ห้ามทำในโหมดไทย→พินอิน เพราะเสียงคือคำตอบ จะเฉลยให้ฟรี */
   useEffect(() => {
-    if (q && dir === 'listen') playSound(q.zh)
+    if (!q) return
+    if (dir === 'listen' || (playNext.current && dir === 'zh2th')) playSound(q.zh)
+    playNext.current = false
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, dir, pool])
 
@@ -140,7 +149,9 @@ export function QuizScreen() {
       addStar(q!.zh)
     }
     srsUpdate(q!.zh, ok)
-    playSound(q!.zh)
+    // ตอบผิด: อ่านคำที่ถูกให้ฟังทันที · ตอบถูก: ข้ามไปอ่านคำของข้อถัดไปแทน (ตั้งธงไว้)
+    if (ok) playNext.current = true
+    else playSound(q!.zh)
     timer.current = window.setTimeout(() => {
       setPicked(null)
       setIdx((i) => i + 1)
