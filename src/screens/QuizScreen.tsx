@@ -3,8 +3,9 @@ import type { Word } from '../data/types'
 import { allWords, addStar, dueWords, srsUpdate, starsGet, weakWords } from '../lib/srs'
 import { shuffle } from '../lib/pools'
 import { pickDistractors } from '../lib/quiz'
+import { ROUND_WORDS, buildRound, clearWrong, markWrong, wrongCountIn } from '../lib/session'
 import { playSound } from '../lib/tts'
-import { Chips, DoneCard, EmptyNote, Progress, ScoreBar } from '../components/ui'
+import { Chips, DoneCard, EmptyNote, Progress, RoundNote, ScoreBar } from '../components/ui'
 import { SpeakButton, TapToSpeak } from '../components/SpeakButton'
 
 type Dir = 'zh2th' | 'th2py' | 'listen'
@@ -27,12 +28,16 @@ export function QuizScreen() {
   const [set, setSet] = useState<Set_>('all')
   const [nonce, setNonce] = useState(0)
 
-  const pool = useMemo(() => {
+  /** คลังทั้งหมดของชุดที่เลือก (ยังไม่ตัดรอบ) — ใช้บอกจำนวนรวมและนับข้อที่เคยผิด */
+  const source = useMemo(() => {
     const stars = starsGet()
-    const src = set === 'star' ? allWords().filter((w) => stars.has(w.zh)) : set === 'due' ? dueWords() : allWords()
-    return shuffle(src)
+    return set === 'star' ? allWords().filter((w) => stars.has(w.zh)) : set === 'due' ? dueWords() : allWords()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [set, nonce])
+
+  // ตัดเป็นรอบละ 50 คำ — ทำทีเดียว 330 คำมันยาวเกินจะนั่งจบ
+  const pool = useMemo(() => buildRound(source, ROUND_WORDS, (w) => w.zh), [source])
+  const wrongInSource = useMemo(() => wrongCountIn(source, (w) => w.zh), [source])
 
   const [idx, setIdx] = useState(0)
   const [right, setRight] = useState(0)
@@ -140,6 +145,9 @@ export function QuizScreen() {
       addStar(q!.zh)
     }
     srsUpdate(q!.zh, ok)
+    // จดไว้ว่าคำนี้ยังไม่ผ่าน → รอบหน้าเอากลับมาถาม · ตอบถูกแล้วลบทิ้ง
+    if (ok) clearWrong(q!.zh)
+    else markWrong(q!.zh)
     /* ⚠️ ต้องเรียก playSound ตรงนี้ (ใน handler ของการแตะ) ห้ามย้ายไปใน setTimeout/useEffect
        iOS ยอมให้เล่นเสียงเฉพาะที่เริ่มจาก user gesture — ถ้าเรียกหลังหน่วงเวลา
        เดสก์ท็อปดังปกติแต่ iPhone เงียบสนิทโดยไม่มี error (เคยพลาดมาแล้ว)
@@ -159,6 +167,7 @@ export function QuizScreen() {
     <div className="stack">
       <Chips label="ทิศทาง" items={DIRS} value={dir} onChange={setDir} />
       <Chips label="ชุดคำ" items={SETS} value={set} onChange={setSet} />
+      <RoundNote size={pool.length} total={source.length} wrong={wrongInSource} />
       <ScoreBar right={right} wrong={wrong} />
 
       <div className="card card-pad drill">

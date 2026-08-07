@@ -2,6 +2,7 @@
    คำแปลไทยประโยคเดียวเขียนได้หลายแบบ (ฉัน/ผม, สลับลำดับคำขยาย) เทียบ string ตรงๆ
    จะตัดสินผิดทั้งที่แปลถูก → ตรวจแค่ "คำหลัก" แล้วให้ผู้ใช้ตัดสินสุดท้ายเอง */
 import { lessons } from '../data/lessons'
+import { hsk1Extra } from '../data/hsk1'
 
 /** ⚠️ ตัดแค่ช่องว่าง/วรรคตอน ห้ามแตะสระ-วรรณยุกต์ไทย (เป็นอักขระประกอบเหมือน ǚ ในพินอิน) */
 const PUNC = /[\s,.!?;:()[\]{}"'/\\|·…—–\-，。！？、；：（）]/g
@@ -55,6 +56,8 @@ function dict() {
   for (const L of lessons) {
     for (const w of [...L.vocab, ...L.phrases]) if (!zhToTh.has(w.zh)) zhToTh.set(w.zh, w.th)
   }
+  // คำ HSK 1 ที่หนังสือไม่มี — ไม่ใส่ด้วยแล้วประโยคที่ใช้คำพวกนี้จะดึงคำหลักไม่ได้
+  for (const w of hsk1Extra) if (!zhToTh.has(w.zh)) zhToTh.set(w.zh, w.th)
   for (const k of zhToTh.keys()) maxKeyLen = Math.max(maxKeyLen, k.length)
   return zhToTh
 }

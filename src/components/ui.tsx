@@ -31,6 +31,16 @@ export function Chips<T extends string>({
   )
 }
 
+/** บอกว่ารอบนี้เอามากี่ข้อจากทั้งคลัง และมีข้อที่เคยตอบผิดปนมาด้วยกี่ข้อ */
+export function RoundNote({ size, total, wrong }: { size: number; total: number; wrong: number }) {
+  return (
+    <div className="muted">
+      รอบนี้ {size} จาก {total} ข้อ
+      {wrong > 0 && <> · เอาข้อที่เคยผิด {wrong} ข้อกลับมาถามด้วย</>}
+    </div>
+  )
+}
+
 export function ScoreBar({ right, wrong }: { right: number; wrong: number }) {
   return (
     <div className="card score">

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { listenPool, shuffle, type ListenItem, type ListenSrc } from '../lib/pools'
+import { listenPool, type ListenItem, type ListenSrc } from '../lib/pools'
 import { gradeThai } from '../lib/thai'
+import { ROUND_SENTENCES, buildRound, clearWrong, markWrong, wrongCountIn } from '../lib/session'
 import { playSound } from '../lib/tts'
 import { KEYS, readRaw, writeRaw } from '../lib/storage'
-import { Chips, DoneCard, Progress, ScoreBar } from '../components/ui'
+import { Chips, DoneCard, Progress, RoundNote, ScoreBar } from '../components/ui'
 import { SpeakButton } from '../components/SpeakButton'
 
 const SRCS: { v: ListenSrc; label: string }[] = [
@@ -25,7 +26,10 @@ export function ListenScreen() {
   const [nonce, setNonce] = useState(0)
   useEffect(() => writeRaw(KEYS.listen, src), [src])
 
-  const queue = useMemo(() => shuffle(listenPool(src)), [src, nonce])
+  const source = useMemo(() => listenPool(src), [src])
+  // รอบละ 20 ประโยค + เอาประโยคที่เคยตัดสินว่า "ยังไม่ถูก" กลับมาถามอีก
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const queue = useMemo(() => buildRound(source, ROUND_SENTENCES, (x) => x.zh), [source, nonce])
 
   const [idx, setIdx] = useState(0)
   const [right, setRight] = useState(0)
@@ -80,8 +84,13 @@ export function ListenScreen() {
 
   /** ผู้ใช้ตัดสินเอง: 1 แตะ = ให้คะแนน + ไปข้อถัดไป (ทวนได้นานเท่าที่อยากก่อนกด) */
   const judge = (ok: boolean) => {
-    if (ok) setRight((n) => n + 1)
-    else setWrong((n) => n + 1)
+    if (ok) {
+      setRight((n) => n + 1)
+      clearWrong(item!.zh)
+    } else {
+      setWrong((n) => n + 1)
+      markWrong(item!.zh)
+    }
     setIdx((i) => i + 1)
   }
 
@@ -89,12 +98,14 @@ export function ListenScreen() {
     setPhase('done')
     setShowPy(true)
     setWrong((n) => n + 1)
+    markWrong(item!.zh)
   }
 
   return (
     <div className="stack">
       <div className="section-title">ฟังประโยคแล้วพิมพ์คำแปลไทย ({queue.length} ประโยค)</div>
       <Chips label="แหล่งข้อ" items={SRCS} value={src} onChange={setSrc} />
+      <RoundNote size={queue.length} total={source.length} wrong={wrongCountIn(source, (x) => x.zh)} />
       <ScoreBar right={right} wrong={wrong} />
 
       <div className="card card-pad drill">

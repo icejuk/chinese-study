@@ -4,6 +4,7 @@
    ข้อมูลจะโป่งใน localStorage แล้วไม่โผล่ที่ไหนเลย */
 import { KEYS, readJson, writeJson } from './storage'
 import { lessons } from '../data/lessons'
+import { hsk1Extra } from '../data/hsk1'
 import type { Word } from '../data/types'
 
 const INTERVALS = [0, 1, 2, 4, 7, 15, 30] // จำนวนวันจนถึงรอบทวนถัดไป (index = box)
@@ -54,8 +55,10 @@ export function addStar(zh: string) {
   }
 }
 
-/* ---- คลังคำศัพท์ (แหล่งความจริงของ SRS/ดาว) ---- */
-export const allWords = (): Word[] => lessons.flatMap((L) => L.vocab)
+/* ---- คลังคำศัพท์ (แหล่งความจริงของ SRS/ดาว) ----
+   = คำในหนังสือ 15 บท + คำ HSK 1 ที่หนังสือไม่มี
+   ควิซ / พิมพ์พินอิน / ดาว / SRS ใช้ชุดนี้ทั้งหมด (แบบฝึกในบทใช้แค่ vocab ของบทนั้น) */
+export const allWords = (): Word[] => [...lessons.flatMap((L) => L.vocab), ...hsk1Extra]
 
 export function dueWords(): Word[] {
   const o = srsGet()

@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { sentenceCats, sentences } from '../data/sentences'
+import { sentenceCats } from '../data/sentences'
 import type { Sentence } from '../data/types'
-import { shuffle } from '../lib/pools'
+import { allSentences, shuffle } from '../lib/pools'
+import { ROUND_SENTENCES, buildRound, clearWrong, markWrong, wrongCountIn } from '../lib/session'
 import { playSound } from '../lib/tts'
-import { Chips, DoneCard, Progress, ScoreBar } from '../components/ui'
+import { Chips, DoneCard, Progress, RoundNote, ScoreBar } from '../components/ui'
+
+/** คีย์ของประโยค = ตัวจีนที่ต่อกันแล้ว (ใช้จำว่าประโยคไหนเคยเรียงผิด) */
+const sentenceKey = (s: Sentence) => s.tokens.map((t) => t.zh).join('')
 
 type Tile = { zh: string; py: string; id: number }
 type Phase = 'build' | 'solved' | 'revealed'
@@ -12,10 +16,16 @@ export function SentenceScreen() {
   const [cat, setCat] = useState('all')
   const [nonce, setNonce] = useState(0)
 
+  const source = useMemo(
+    () => (cat === 'all' ? allSentences : allSentences.filter((s) => s.cat === cat)),
+    [cat],
+  )
+
+  // รอบละ 20 ประโยค (เรียงคำใช้เวลากว่าตอบคำเดี่ยว) + เอาประโยคที่เคยผิดกลับมาถาม
   const queue = useMemo(
-    () => shuffle(cat === 'all' ? sentences : sentences.filter((s) => s.cat === cat)),
+    () => buildRound(source, ROUND_SENTENCES, sentenceKey),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cat, nonce],
+    [source, nonce],
   )
 
   const [idx, setIdx] = useState(0)
@@ -73,11 +83,14 @@ export function SentenceScreen() {
     const ok = next.map((x) => x.zh).join('') === zhFull
     if (ok) {
       setPhase('solved')
-      if (!missed) setRight((n) => n + 1)
-      else setWrong((n) => n + 1)
+      if (!missed) {
+        setRight((n) => n + 1)
+        clearWrong(zhFull) // เรียงถูกตั้งแต่ครั้งแรก = ผ่านจริง ลบออกจากรายการถามซ้ำ
+      } else setWrong((n) => n + 1)
       playSound(zhFull)
     } else {
       setMissed(true)
+      markWrong(zhFull)
       setShake(true)
       window.setTimeout(() => setShake(false), 320)
     }
@@ -92,6 +105,7 @@ export function SentenceScreen() {
     setPlaced(cur!.tokens.map((t, i) => ({ zh: t.zh, py: t.py, id: i })))
     setPhase('revealed')
     setWrong((n) => n + 1)
+    markWrong(zhFull)
     playSound(zhFull)
   }
 
@@ -102,6 +116,7 @@ export function SentenceScreen() {
   return (
     <div className="stack">
       <Chips label="หมวด" items={sentenceCats.map((c) => ({ v: c.k, label: c.label }))} value={cat} onChange={setCat} />
+      <RoundNote size={queue.length} total={source.length} wrong={wrongCountIn(source, sentenceKey)} />
       <ScoreBar right={right} wrong={wrong} />
 
       <div className="card card-pad drill">

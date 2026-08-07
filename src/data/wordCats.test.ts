@@ -1,9 +1,10 @@
 /* คุมความถูกต้องของการจัดหมวด — ถ้าเพิ่มคำศัพท์ใหม่แล้วลืมจัดหมวด เทสนี้จะฟ้อง */
 import { describe, expect, it } from 'vitest'
 import { WORD_CATS, catOf } from './wordCats'
-import { lessons } from './lessons'
+import { allWords } from '../lib/srs'
 
-const vocabZh = [...new Set(lessons.flatMap((L) => L.vocab.map((w) => w.zh)))]
+/** ต้องครอบ "ทุกคำที่ใช้ในควิซ/พิมพ์พินอิน" = คำในบท + คำ HSK 1 ที่เพิ่มเข้ามา */
+const vocabZh = [...new Set(allWords().map((w) => w.zh))]
 
 describe('หมวดหมู่คำศัพท์', () => {
   it('คำศัพท์ทุกคำต้องมีหมวด', () => {

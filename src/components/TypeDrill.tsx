@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { DrillItem } from '../lib/pools'
-import { shuffle } from '../lib/pools'
 import { pyCheck } from '../lib/pinyin'
 import { addStar, srsUpdate } from '../lib/srs'
-import { DoneCard, Progress, ScoreBar } from './ui'
+import { ROUND_WORDS, buildRound, clearWrong, markWrong, wrongCountIn } from '../lib/session'
+import { DoneCard, Progress, RoundNote, ScoreBar } from './ui'
 import { TapToSpeak } from './SpeakButton'
 
 type Phase = 'ask' | 'right' | 'wrong'
@@ -19,7 +19,7 @@ export function TypeDrill({
   /** เปลี่ยนค่านี้ = เริ่มชุดใหม่ (เช่นสลับบท/สลับชุดคำ) */
   resetKey?: string | number
 }) {
-  const [queue, setQueue] = useState<DrillItem[]>(() => shuffle(pool))
+  const [queue, setQueue] = useState<DrillItem[]>(() => buildRound(pool, ROUND_WORDS, (w) => w.zh))
   const [idx, setIdx] = useState(0)
   const [right, setRight] = useState(0)
   const [wrong, setWrong] = useState(0)
@@ -34,7 +34,7 @@ export function TypeDrill({
 
   const restart = () => {
     if (timer.current) window.clearTimeout(timer.current)
-    setQueue(shuffle(pool))
+    setQueue(buildRound(pool, ROUND_WORDS, (w) => w.zh))
     setIdx(0)
     setRight(0)
     setWrong(0)
@@ -73,6 +73,9 @@ export function TypeDrill({
       srsUpdate(item.zh, ok)
       if (!ok) addStar(item.zh)
     }
+    // รายการข้อที่ต้องถามซ้ำ (ใช้กับวลีด้วยได้ ไม่ผูกกับคลังคำเหมือน SRS)
+    if (ok) clearWrong(item.zh)
+    else markWrong(item.zh)
     // ตอบถูกไปต่อเองไว / ตอบผิดหยุดรอให้กดเอง เพราะต้องมีเวลาอ่านเฉลย
     // (ตอบผิดก็ไม่อ่านเสียงให้เอง — อยากฟังกดปุ่มฟังเสียงได้)
     if (ok) timer.current = window.setTimeout(next, 1200)
@@ -104,6 +107,7 @@ export function TypeDrill({
 
   return (
     <div className="stack">
+      <RoundNote size={total} total={pool.length} wrong={wrongCountIn(pool, (w) => w.zh)} />
       <ScoreBar right={right} wrong={wrong} />
 
       <div className="card card-pad drill">

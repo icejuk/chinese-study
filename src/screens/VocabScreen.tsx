@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { lessons } from '../data/lessons'
+import { hsk1Extra } from '../data/hsk1'
 import { WORD_CATS, catOf } from '../data/wordCats'
 import type { Word } from '../data/types'
 import { starsGet, toggleStar } from '../lib/srs'
@@ -24,8 +25,12 @@ export function VocabScreen() {
 
   useEffect(() => setStars(starsGet()), [])
 
+  // lesson 0 = คำ HSK 1 ที่หนังสือไม่มี (โชว์เป็นกลุ่มท้ายสุด)
   const all: Row[] = useMemo(
-    () => lessons.flatMap((L, i) => L.vocab.map((w) => ({ ...w, lesson: i + 1 }))),
+    () => [
+      ...lessons.flatMap((L, i) => L.vocab.map((w) => ({ ...w, lesson: i + 1 }))),
+      ...hsk1Extra.map((w) => ({ ...w, lesson: 0 })),
+    ],
     [],
   )
 
@@ -54,13 +59,14 @@ export function VocabScreen() {
         items: rows.filter((w) => catOf(w.zh)?.k === c.k),
       })).filter((g) => g.items.length > 0)
     }
-    return lessons
-      .map((L, i) => ({
+    return [
+      ...lessons.map((L, i) => ({
         key: 'L' + i,
         title: `บทที่ ${i + 1} · ${L.thTitle}`,
         items: rows.filter((w) => w.lesson === i + 1),
-      }))
-      .filter((g) => g.items.length > 0)
+      })),
+      { key: 'hsk1', title: '🅰 HSK 1 · คำที่หนังสือไม่มี', items: rows.filter((w) => w.lesson === 0) },
+    ].filter((g) => g.items.length > 0)
   }, [rows, groupBy])
 
   const toggle = (zh: string) => {
@@ -106,7 +112,11 @@ export function VocabScreen() {
         <Chips
           label="เลือกบท"
           variant="num"
-          items={[{ v: 'all', label: 'ทุกบท' }, ...lessons.map((_, i) => ({ v: String(i + 1), label: String(i + 1) }))]}
+          items={[
+            { v: 'all', label: 'ทุกบท' },
+            ...lessons.map((_, i) => ({ v: String(i + 1), label: String(i + 1) })),
+            { v: '0', label: 'HSK 1' },
+          ]}
           value={lesson === 'all' ? 'all' : String(lesson)}
           onChange={(v) => setLesson(v === 'all' ? 'all' : Number(v))}
         />
@@ -152,7 +162,7 @@ export function VocabScreen() {
                 </button>
                 {/* ดูตามหมวดแล้วยังต้องรู้ว่าอยู่บทไหน / ดูตามบทแล้วอยากรู้ว่าหมวดอะไร */}
                 <div className="word-lesson">
-                  {groupBy === 'cat' ? `บท ${w.lesson}` : catOf(w.zh)?.icon}
+                  {groupBy === 'cat' ? (w.lesson === 0 ? 'HSK 1' : `บท ${w.lesson}`) : catOf(w.zh)?.icon}
                 </div>
                 <div className="word-py py">{w.py}</div>
                 <div className="word-zh zh">{w.zh}</div>

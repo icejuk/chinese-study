@@ -8,6 +8,7 @@ export const KEYS = {
   stars: 'xy-star-words',  // [zh, ...]
   typing: 'xy-ty',         // { src }
   listen: 'xy-ln',         // แหล่งข้อของแบบฝึกฟังแปล
+  wrong: 'xy-wrong',       // { [zh]: จำนวนครั้งที่ตอบผิด } — ล้างทิ้งเมื่อตอบถูก
 } as const
 
 export function readJson<T>(key: string, fallback: T): T {

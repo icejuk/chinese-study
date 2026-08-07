@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { pyCheck, pyNorm } from './pinyin'
 import { gradeThai, keywordsOf, thNorm } from './thai'
 import { listenPool } from './pools'
+import { allWords } from './srs'
 import { lessons } from '../data/lessons'
 
 const allItems = [...lessons.flatMap((L) => L.vocab), ...lessons.flatMap((L) => L.phrases)]
@@ -91,13 +92,13 @@ describe('คำแปลไทย', () => {
 })
 
 describe('คลังข้อ', () => {
-  it('คำศัพท์ทุกคำในบทต้องมีอยู่ในประโยคของแบบฝึกฟังแปล', () => {
+  it('คำศัพท์ทุกคำ (รวม HSK 1 ที่เพิ่มมา) ต้องมีอยู่ในประโยคของแบบฝึกฟังแปล/เรียงประโยค', () => {
     const text = listenPool('all')
       .map((x) => x.zh)
       .join('|')
-    const missing = lessons
-      .flatMap((L, i) => L.vocab.map((w) => ({ ...w, lesson: i + 1 })))
-      .filter((w) => !text.includes(w.zh) && !text.includes(w.zh.replace(/[()一]/g, '')))
-    expect(missing.map((w) => `บท${w.lesson} ${w.zh}`)).toEqual([])
+    const missing = allWords().filter(
+      (w) => !text.includes(w.zh) && !text.includes(w.zh.replace(/[()一]/g, '')),
+    )
+    expect(missing.map((w) => w.zh)).toEqual([])
   })
 })
