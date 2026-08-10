@@ -1,55 +1,77 @@
+import { lessons } from './lessons'
 import type { Word } from './types'
 
 /* คำศัพท์ HSK 1 ที่ "ไม่มี" ในหนังสือ 汉语教程 15 บท — 45 คำ
    ที่มา: ลิสต์ HSK 1 Vocabulary (150 คำ) ที่ผู้ใช้ทำแบบทดสอบมา (2026-08-01)
    คำที่ซ้ำกับในบทแล้วไม่เอามาใส่ซ้ำ (เทสคุมไว้ที่ hsk1.test.ts)
 
-   ⚠️ ยังไม่มี `thr` (คำอ่านไทย) เพราะไม่อยากเดาสำเนียงให้ต่างจากที่ครูสอน
-   ถ้าอยากได้ค่อยเติมทีหลัง — การ์ดจะไม่โชว์ป้ายคำอ่านไทยสำหรับคำกลุ่มนี้ */
+   `thr` ใช้รูปแบบคำอ่านไทยเดียวกับคำศัพท์ในบทเรียน เพื่อให้การ์ด HSK 1 แสดงครบทุกคำ */
 export const hsk1Extra: Word[] = [
-  { zh: '爱', py: 'ài', th: 'รัก', en: 'to love' },
-  { zh: '杯子', py: 'bēizi', th: 'แก้ว / ถ้วย', en: 'cup' },
-  { zh: '菜', py: 'cài', th: 'ผัก / กับข้าว', en: 'dish, vegetable' },
-  { zh: '打电话', py: 'dǎ diànhuà', th: 'โทรศัพท์ (ไปหา)', en: 'to make a phone call' },
-  { zh: '点', py: 'diǎn', th: 'โมง (บอกเวลา)', en: "o'clock" },
-  { zh: '电脑', py: 'diànnǎo', th: 'คอมพิวเตอร์', en: 'computer' },
-  { zh: '电视', py: 'diànshì', th: 'ทีวี', en: 'TV' },
-  { zh: '电影', py: 'diànyǐng', th: 'หนัง / ภาพยนตร์', en: 'movie' },
-  { zh: '东西', py: 'dōngxi', th: 'ของ / สิ่งของ', en: 'thing' },
-  { zh: '儿子', py: 'érzi', th: 'ลูกชาย', en: 'son' },
-  { zh: '饭馆', py: 'fànguǎn', th: 'ร้านอาหาร', en: 'restaurant' },
-  { zh: '飞机', py: 'fēijī', th: 'เครื่องบิน', en: 'airplane' },
-  { zh: '分钟', py: 'fēnzhōng', th: 'นาที', en: 'minute' },
-  { zh: '狗', py: 'gǒu', th: 'หมา', en: 'dog' },
-  { zh: '后面', py: 'hòumiàn', th: 'ด้านหลัง', en: 'behind' },
-  { zh: '会', py: 'huì', th: 'ทำได้ (เพราะเรียนมา)', en: 'can, know how to' },
-  { zh: '看见', py: 'kànjiàn', th: 'มองเห็น', en: 'to see' },
-  { zh: '了', py: 'le', th: 'แล้ว (เกิดขึ้นแล้ว)', en: 'particle: completed' },
-  { zh: '冷', py: 'lěng', th: 'หนาว / เย็น', en: 'cold' },
-  { zh: '猫', py: 'māo', th: 'แมว', en: 'cat' },
-  { zh: '能', py: 'néng', th: 'สามารถ (มีเงื่อนไขให้ทำได้)', en: 'can, be able to' },
-  { zh: '年', py: 'nián', th: 'ปี', en: 'year' },
-  { zh: '女儿', py: "nǚ'ér", th: 'ลูกสาว', en: 'daughter' },
-  { zh: '漂亮', py: 'piàoliang', th: 'สวย', en: 'pretty' },
-  { zh: '前面', py: 'qiánmiàn', th: 'ด้านหน้า', en: 'in front' },
-  { zh: '热', py: 'rè', th: 'ร้อน', en: 'hot' },
-  { zh: '上', py: 'shàng', th: 'บน / ขึ้น', en: 'up, on' },
-  { zh: '少', py: 'shǎo', th: 'น้อย', en: 'few, little' },
-  { zh: '时候', py: 'shíhou', th: 'ตอน / เวลา', en: 'time, moment' },
-  { zh: '水', py: 'shuǐ', th: 'น้ำ', en: 'water' },
-  { zh: '睡觉', py: 'shuìjiào', th: 'นอนหลับ', en: 'to sleep' },
-  { zh: '岁', py: 'suì', th: 'ขวบ / ปี (อายุ)', en: 'years old' },
-  { zh: '天气', py: 'tiānqì', th: 'อากาศ', en: 'weather' },
-  { zh: '喂', py: 'wèi', th: 'ฮัลโหล (รับโทรศัพท์)', en: 'hello (on phone)' },
-  { zh: '喜欢', py: 'xǐhuan', th: 'ชอบ', en: 'to like' },
-  { zh: '下', py: 'xià', th: 'ล่าง / ลง', en: 'down, below' },
-  { zh: '下雨', py: 'xiàyǔ', th: 'ฝนตก', en: 'to rain' },
-  { zh: '现在', py: 'xiànzài', th: 'ตอนนี้ / เดี๋ยวนี้', en: 'now' },
-  { zh: '想', py: 'xiǎng', th: 'อยาก / คิดถึง', en: 'to want, to think' },
-  { zh: '医生', py: 'yīshēng', th: 'หมอ', en: 'doctor' },
-  { zh: '椅子', py: 'yǐzi', th: 'เก้าอี้', en: 'chair' },
-  { zh: '月', py: 'yuè', th: 'เดือน', en: 'month' },
-  { zh: '中国', py: 'Zhōngguó', th: 'ประเทศจีน', en: 'China' },
-  { zh: '桌子', py: 'zhuōzi', th: 'โต๊ะ', en: 'table' },
-  { zh: '字', py: 'zì', th: 'ตัวอักษร', en: 'character' },
+  { zh: '爱', py: 'ài', thr: 'อ้าย', th: 'รัก', en: 'to love' },
+  { zh: '杯子', py: 'bēizi', thr: 'เปยจึ', th: 'แก้ว / ถ้วย', en: 'cup' },
+  { zh: '菜', py: 'cài', thr: 'ไช่', th: 'ผัก / กับข้าว', en: 'dish, vegetable' },
+  { zh: '打电话', py: 'dǎ diànhuà', thr: 'ต่าเตี้ยนฮว่า', th: 'โทรศัพท์ (ไปหา)', en: 'to make a phone call' },
+  { zh: '点', py: 'diǎn', thr: 'เตี่ยน', th: 'โมง (บอกเวลา)', en: "o'clock" },
+  { zh: '电脑', py: 'diànnǎo', thr: 'เตี้ยนหน่าว', th: 'คอมพิวเตอร์', en: 'computer' },
+  { zh: '电视', py: 'diànshì', thr: 'เตี้ยนซื่อ', th: 'ทีวี', en: 'TV' },
+  { zh: '电影', py: 'diànyǐng', thr: 'เตี้ยนอิ่ง', th: 'หนัง / ภาพยนตร์', en: 'movie' },
+  { zh: '东西', py: 'dōngxi', thr: 'ตงซี', th: 'ของ / สิ่งของ', en: 'thing' },
+  { zh: '儿子', py: 'érzi', thr: 'เอ๋อร์จึ', th: 'ลูกชาย', en: 'son' },
+  { zh: '饭馆', py: 'fànguǎn', thr: 'ฟ่านกว่าน', th: 'ร้านอาหาร', en: 'restaurant' },
+  { zh: '飞机', py: 'fēijī', thr: 'เฟยจี', th: 'เครื่องบิน', en: 'airplane' },
+  { zh: '分钟', py: 'fēnzhōng', thr: 'เฟินจง', th: 'นาที', en: 'minute' },
+  { zh: '狗', py: 'gǒu', thr: 'โก่ว', th: 'หมา', en: 'dog' },
+  { zh: '后面', py: 'hòumiàn', thr: 'โฮ่วเมี่ยน', th: 'ด้านหลัง', en: 'behind' },
+  { zh: '会', py: 'huì', thr: 'ฮุ่ย', th: 'ทำได้ (เพราะเรียนมา)', en: 'can, know how to' },
+  { zh: '看见', py: 'kànjiàn', thr: 'ค่านเจี้ยน', th: 'มองเห็น', en: 'to see' },
+  { zh: '了', py: 'le', thr: 'เลอ', th: 'แล้ว (เกิดขึ้นแล้ว)', en: 'particle: completed' },
+  { zh: '冷', py: 'lěng', thr: 'เหลิ่ง', th: 'หนาว / เย็น', en: 'cold' },
+  { zh: '猫', py: 'māo', thr: 'เมา', th: 'แมว', en: 'cat' },
+  { zh: '能', py: 'néng', thr: 'เหนิง', th: 'สามารถ (มีเงื่อนไขให้ทำได้)', en: 'can, be able to' },
+  { zh: '年', py: 'nián', thr: 'เหนียน', th: 'ปี', en: 'year' },
+  { zh: '女儿', py: "nǚ'ér", thr: 'หนี่ว์เอ๋อร์', th: 'ลูกสาว', en: 'daughter' },
+  { zh: '漂亮', py: 'piàoliang', thr: 'เพี้ยวเลี่ยง', th: 'สวย', en: 'pretty' },
+  { zh: '前面', py: 'qiánmiàn', thr: 'เฉีย๋นเมี่ยน', th: 'ด้านหน้า', en: 'in front' },
+  { zh: '热', py: 'rè', thr: 'เร่อ', th: 'ร้อน', en: 'hot' },
+  { zh: '上', py: 'shàng', thr: 'ซ่าง', th: 'บน / ขึ้น', en: 'up, on' },
+  { zh: '少', py: 'shǎo', thr: 'เส่า', th: 'น้อย', en: 'few, little' },
+  { zh: '时候', py: 'shíhou', thr: 'สือ๋โฮ่ว', th: 'ตอน / เวลา', en: 'time, moment' },
+  { zh: '水', py: 'shuǐ', thr: 'ชุ่ย', th: 'น้ำ', en: 'water' },
+  { zh: '睡觉', py: 'shuìjiào', thr: 'ซุ่ยเจี้ยว', th: 'นอนหลับ', en: 'to sleep' },
+  { zh: '岁', py: 'suì', thr: 'ซุ่ย', th: 'ขวบ / ปี (อายุ)', en: 'years old' },
+  { zh: '天气', py: 'tiānqì', thr: 'เทียนชี่', th: 'อากาศ', en: 'weather' },
+  { zh: '喂', py: 'wèi', thr: 'เว่ย', th: 'ฮัลโหล (รับโทรศัพท์)', en: 'hello (on phone)' },
+  { zh: '喜欢', py: 'xǐhuan', thr: 'สี่ฮวน', th: 'ชอบ', en: 'to like' },
+  { zh: '下', py: 'xià', thr: 'เซี่ย', th: 'ล่าง / ลง', en: 'down, below' },
+  { zh: '下雨', py: 'xiàyǔ', thr: 'เซี่ยยหวี่', th: 'ฝนตก', en: 'to rain' },
+  { zh: '现在', py: 'xiànzài', thr: 'เซี่ยนไจ้', th: 'ตอนนี้ / เดี๋ยวนี้', en: 'now' },
+  { zh: '想', py: 'xiǎng', thr: 'เสี่ยง', th: 'อยาก / คิด', en: 'to want, to think' },
+  { zh: '医生', py: 'yīshēng', thr: 'อีเซิง', th: 'หมอ', en: 'doctor' },
+  { zh: '椅子', py: 'yǐzi', thr: 'อี่จึ', th: 'เก้าอี้', en: 'chair' },
+  { zh: '月', py: 'yuè', thr: 'เยว่', th: 'เดือน', en: 'month' },
+  { zh: '中国', py: 'Zhōngguó', thr: 'จงกั๋ว', th: 'ประเทศจีน', en: 'China' },
+  { zh: '桌子', py: 'zhuōzi', thr: 'จัวจึ', th: 'โต๊ะ', en: 'table' },
+  { zh: '字', py: 'zì', thr: 'จื้อ', th: 'ตัวอักษร', en: 'character' },
 ]
+
+/** ลำดับคำศัพท์ HSK 1 ตามชีตที่ผู้เรียนส่งมา
+    103 คำอยู่ในบทเรียน 1–15 อยู่แล้ว และอีก 45 คำคือ hsk1Extra ด้านบน
+    รวมเป็นชุดเดียวเพื่อให้เปิดท่อง HSK 1 แยกจากการเรียนตามบทได้ */
+const HSK1_ORDER = [
+  '爱', '八', '爸爸', '杯子', '北京', '本', '不客气', '不', '菜', '茶', '吃', '出租车', '打电话', '大', '的', '点', '电脑', '电视', '电影', '东西', '都', '读', '对不起', '多', '多少', '儿子', '二', '饭馆', '飞机', '分钟', '高兴', '个', '工作', '狗', '汉语',
+  '好', '号', '喝', '和', '很', '后面', '回', '会', '几', '家', '叫', '今天', '九', '开', '看', '看见', '块', '来', '老师', '了', '冷', '里', '六', '妈妈', '吗', '买', '猫', '没关系', '没有', '米饭', '名字', '明天', '哪', '哪儿', '那', '呢', '能', '你',
+  '年', '女儿', '朋友', '漂亮', '苹果', '七', '钱', '前面', '请', '去', '热', '人', '认识', '三', '商店', '上', '上午', '少', '谁', '什么', '十', '时候', '是', '书', '水', '水果', '睡觉', '说', '四', '岁', '他', '她', '太', '天气', '听', '同学', '喂', '我',
+  '我们', '五', '喜欢', '下', '下午', '下雨', '先生', '现在', '想', '小', '小姐', '些', '写', '谢谢', '星期', '学生', '学习', '学校', '一', '衣服', '医生', '医院', '椅子', '有', '月', '再见', '在', '怎么样', '怎么', '这', '中国', '中午', '住', '桌子', '字', '昨天', '坐',
+] as const
+
+const hsk1ByZh = new Map<string, Word>([
+  ...lessons.flatMap((lesson) => lesson.vocab),
+  ...hsk1Extra,
+].map((word) => [word.zh, word]))
+
+/** คำศัพท์ HSK 1 จากชีตสำหรับหน้า HSK 1 โดยเฉพาะ */
+export const hsk1Words: Word[] = HSK1_ORDER.map((zh) => {
+  const word = hsk1ByZh.get(zh)
+  if (!word) throw new Error(`ไม่พบคำศัพท์ HSK 1: ${zh}`)
+  return word
+})

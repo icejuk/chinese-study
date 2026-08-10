@@ -1945,8 +1945,8 @@ export const lessons: Lesson[] = [
     "base": "lai",
     "tone": 2,
     "thr": "ไหล๋",
-    "th": "เอา/ซื้อ (การค้า), มา",
-    "en": "to buy; to come"
+    "th": "มา",
+    "en": "to come"
    },
    {
     "zh": "吧",
@@ -2809,7 +2809,7 @@ export const lessons: Lesson[] = [
     "base": "dou",
     "tone": 1,
     "thr": "โต",
-    "th": "ทั้งหมด (หน้า V)",
+    "th": "ทั้งหมด / ล้วน",
     "en": "all; both"
    },
    {
@@ -4216,7 +4216,7 @@ export const lessons: Lesson[] = [
     "base": "kan",
     "tone": 4,
     "thr": "ค่าน",
-    "th": "ดู / มอง / เห็น",
+    "th": "ดู / มอง / อ่าน",
     "en": "to look; to watch"
    },
    {
@@ -4333,8 +4333,8 @@ export const lessons: Lesson[] = [
     "base": "duo",
     "tone": 1,
     "thr": "ตัว",
-    "th": "กว่า / เศษ (หลังตัวเลข)",
-    "en": "more; odd (after number)"
+    "th": "มาก / เยอะ",
+    "en": "many; much"
    },
    {
     "zh": "外国",

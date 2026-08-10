@@ -301,6 +301,12 @@ input,
   box-shadow: var(--sh-brand);
 }
 
+/* ปุ่ม HSK 1 อยู่ถัดจากเลขบท 1–15 แต่ต้องกว้างพอให้อ่านชื่อเต็ม */
+.chip-num.chip-hsk1 {
+  width: auto;
+  padding: 0 12px;
+}
+
 /* ---------- ช่องพิมพ์ ---------- */
 .input {
   width: 100%;

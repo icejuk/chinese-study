@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { lessons } from '../data/lessons'
-import { hsk1Extra } from '../data/hsk1'
+import { hsk1Extra, hsk1Words } from '../data/hsk1'
 import { WORD_CATS, catOf } from '../data/wordCats'
 import type { Word } from '../data/types'
 import { starsGet, toggleStar } from '../lib/srs'
@@ -11,6 +11,14 @@ import { pyNorm } from '../lib/pinyin'
 
 type Row = Word & { lesson: number }
 type GroupBy = 'lesson' | 'cat'
+type LessonFilter = 'all' | 'hsk1' | number
+
+const lessonRows: Row[] = lessons.flatMap((lesson, index) =>
+  lesson.vocab.map((word) => ({ ...word, lesson: index + 1 })),
+)
+const lessonOf = new Map(lessonRows.map((word) => [word.zh, word.lesson]))
+const allRows: Row[] = [...lessonRows, ...hsk1Extra.map((word) => ({ ...word, lesson: 0 }))]
+const hsk1Rows: Row[] = hsk1Words.map((word) => ({ ...word, lesson: lessonOf.get(word.zh) ?? 0 }))
 
 /** คลังคำศัพท์ทุกบท — ค้นหาได้ทั้งไทยและพินอิน (ไม่ต้องพิมพ์วรรณยุกต์)
     ดูได้ 2 แบบ: ตามบท (ตามหนังสือ) หรือตามหมวดการใช้งาน (วันเวลา/ที่ทำงาน/โรงเรียน…) */
@@ -18,27 +26,19 @@ export function VocabScreen() {
   const [q, setQ] = useState('')
   const [onlyStar, setOnlyStar] = useState(false)
   const [groupBy, setGroupBy] = useState<GroupBy>('lesson')
-  const [lesson, setLesson] = useState<'all' | number>('all')
+  const [lesson, setLesson] = useState<LessonFilter>('all')
   const [cat, setCat] = useState<'all' | string>('all')
   const [stars, setStars] = useState<Set<string>>(() => starsGet())
   const { playingKey, speak } = useSpeak()
 
   useEffect(() => setStars(starsGet()), [])
 
-  // lesson 0 = คำ HSK 1 ที่หนังสือไม่มี (โชว์เป็นกลุ่มท้ายสุด)
-  const all: Row[] = useMemo(
-    () => [
-      ...lessons.flatMap((L, i) => L.vocab.map((w) => ({ ...w, lesson: i + 1 }))),
-      ...hsk1Extra.map((w) => ({ ...w, lesson: 0 })),
-    ],
-    [],
-  )
-
   const rows = useMemo(() => {
     const needleTh = thNorm(q)
     const needlePy = pyNorm(q)
-    return all.filter((w) => {
-      if (groupBy === 'lesson' && lesson !== 'all' && w.lesson !== lesson) return false
+    const source = groupBy === 'lesson' && lesson === 'hsk1' ? hsk1Rows : allRows
+    return source.filter((w) => {
+      if (groupBy === 'lesson' && typeof lesson === 'number' && w.lesson !== lesson) return false
       if (groupBy === 'cat' && cat !== 'all' && catOf(w.zh)?.k !== cat) return false
       if (onlyStar && !stars.has(w.zh)) return false
       if (!q.trim()) return true
@@ -48,7 +48,7 @@ export function VocabScreen() {
         w.zh.includes(q.trim())
       )
     })
-  }, [all, q, onlyStar, groupBy, lesson, cat, stars])
+  }, [q, onlyStar, groupBy, lesson, cat, stars])
 
   /** จัดกลุ่มเพื่อโชว์หัวข้อคั่น — ท่องเป็นชุดๆ จำง่ายกว่ากองเดียวยาว 285 คำ */
   const groups = useMemo(() => {
@@ -59,15 +59,18 @@ export function VocabScreen() {
         items: rows.filter((w) => catOf(w.zh)?.k === c.k),
       })).filter((g) => g.items.length > 0)
     }
+    if (lesson === 'hsk1') {
+      return [{ key: 'hsk1', title: '🅰 HSK 1 · ชุดจากชีต', items: rows }]
+    }
     return [
       ...lessons.map((L, i) => ({
         key: 'L' + i,
         title: `บทที่ ${i + 1} · ${L.thTitle}`,
         items: rows.filter((w) => w.lesson === i + 1),
       })),
-      { key: 'hsk1', title: '🅰 HSK 1 · คำที่หนังสือไม่มี', items: rows.filter((w) => w.lesson === 0) },
+      { key: 'hsk1-extra', title: '🅰 HSK 1 · คำที่เพิ่มจากหนังสือ', items: rows.filter((w) => w.lesson === 0) },
     ].filter((g) => g.items.length > 0)
-  }, [rows, groupBy])
+  }, [rows, groupBy, lesson])
 
   const toggle = (zh: string) => {
     toggleStar(zh)
@@ -113,12 +116,12 @@ export function VocabScreen() {
           label="เลือกบท"
           variant="num"
           items={[
-            { v: 'all', label: 'ทุกบท' },
+            { v: 'all', label: 'ทุกบท', className: 'chip-hsk1' },
             ...lessons.map((_, i) => ({ v: String(i + 1), label: String(i + 1) })),
-            { v: '0', label: 'HSK 1' },
+            { v: 'hsk1', label: 'HSK 1', className: 'chip-hsk1' },
           ]}
           value={lesson === 'all' ? 'all' : String(lesson)}
-          onChange={(v) => setLesson(v === 'all' ? 'all' : Number(v))}
+          onChange={(v) => setLesson(v === 'all' || v === 'hsk1' ? v : Number(v))}
         />
       ) : (
         <Chips

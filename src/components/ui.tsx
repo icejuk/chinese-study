@@ -7,7 +7,7 @@ export function Chips<T extends string>({
   variant = 'pill',
   label,
 }: {
-  items: { v: T; label: string }[]
+  items: { v: T; label: string; className?: string }[]
   value: T
   onChange: (v: T) => void
   variant?: 'pill' | 'num'
@@ -20,7 +20,7 @@ export function Chips<T extends string>({
           key={it.v}
           role="tab"
           type="button"
-          className={variant === 'num' ? 'chip-num' : 'chip'}
+          className={`${variant === 'num' ? 'chip-num' : 'chip'}${it.className ? ` ${it.className}` : ''}`}
           aria-selected={value === it.v}
           onClick={() => onChange(it.v)}
         >

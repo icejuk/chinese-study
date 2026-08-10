@@ -7,8 +7,10 @@ import { isStarred, toggleStar } from '../lib/srs'
 import { useSpeak } from '../components/SpeakButton'
 import { Chips } from '../components/ui'
 import { TypeDrill } from '../components/TypeDrill'
+import { Hsk1Screen } from './Hsk1Screen'
 
 type Mode = 'vocab' | 'dialogue' | 'notes' | 'drill'
+type LessonChoice = number | 'hsk1'
 
 const MODES: { v: Mode; label: string }[] = [
   { v: 'vocab', label: '📇 คำศัพท์' },
@@ -20,8 +22,10 @@ const MODES: { v: Mode; label: string }[] = [
 const isMode = (v: unknown): v is Mode => MODES.some((m) => m.v === v)
 
 export function LessonScreen() {
-  const [idx, setIdx] = useState(() => {
-    const n = parseInt(readRaw(KEYS.lesson) ?? '0', 10)
+  const [idx, setIdx] = useState<LessonChoice>(() => {
+    const saved = readRaw(KEYS.lesson)
+    if (saved === 'hsk1') return 'hsk1'
+    const n = parseInt(saved ?? '0', 10)
     return Number.isFinite(n) && n >= 0 && n < lessons.length ? n : 0
   })
   const [mode, setMode] = useState<Mode>(() => {
@@ -33,49 +37,56 @@ export function LessonScreen() {
   useEffect(() => writeRaw(KEYS.lesson, String(idx)), [idx])
   useEffect(() => saveNav({ mode }), [mode])
 
-  const L = lessons[idx]
-  const pool = useMemo(() => lessonDrillPool(L, drillSrc), [L, drillSrc])
+  const L = idx === 'hsk1' ? null : lessons[idx]
+  const pool = useMemo(() => (L ? lessonDrillPool(L, drillSrc) : []), [L, drillSrc])
 
   return (
     <div className="stack">
       <Chips
         label="เลือกบท"
         variant="num"
-        items={lessons.map((_, i) => ({ v: String(i), label: String(i + 1) }))}
+        items={[
+          ...lessons.map((_, i) => ({ v: String(i), label: String(i + 1) })),
+          { v: 'hsk1', label: 'HSK 1', className: 'chip-hsk1' },
+        ]}
         value={String(idx)}
-        onChange={(v) => setIdx(Number(v))}
+        onChange={(v) => setIdx(v === 'hsk1' ? 'hsk1' : Number(v))}
       />
 
-      <div className="card card-pad lesson-hd">
-        <div className="lesson-hd-py py">{L.py}</div>
-        <div className="lesson-hd-zh zh">{L.zh}</div>
-        <div className="lesson-hd-th">
-          บทที่ {idx + 1} · {L.thTitle}
-        </div>
-        <div className="lesson-hd-meta muted">
-          {L.vocab.length} คำ · {L.phrases.length} วลี · {L.dialogue.length} บรรทัดสนทนา · {L.notes.length} โน้ต
-        </div>
-      </div>
+      {idx === 'hsk1' ? <Hsk1Screen /> : L && (
+        <>
+          <div className="card card-pad lesson-hd">
+            <div className="lesson-hd-py py">{L.py}</div>
+            <div className="lesson-hd-zh zh">{L.zh}</div>
+            <div className="lesson-hd-th">
+              บทที่ {idx + 1} · {L.thTitle}
+            </div>
+            <div className="lesson-hd-meta muted">
+              {L.vocab.length} คำ · {L.phrases.length} วลี · {L.dialogue.length} บรรทัดสนทนา · {L.notes.length} โน้ต
+            </div>
+          </div>
 
-      <Chips label="โหมด" items={MODES.map((m) => ({ v: m.v, label: m.label }))} value={mode} onChange={setMode} />
+          <Chips label="โหมด" items={MODES.map((m) => ({ v: m.v, label: m.label }))} value={mode} onChange={setMode} />
 
-      {mode === 'vocab' && <VocabGrid words={L.vocab} phrases={L.phrases} />}
-      {mode === 'dialogue' && <Dialogue lines={L.dialogue} />}
-      {mode === 'notes' && <Notes notes={L.notes} />}
-      {mode === 'drill' && (
-        <div className="stack">
-          <Chips
-            label="ชุดคำ"
-            items={[
-              { v: 'both', label: `ทั้งหมด (${lessonDrillPool(L, 'both').length})` },
-              { v: 'vocab', label: `คำศัพท์ (${L.vocab.length})` },
-              { v: 'phrase', label: `วลี (${L.phrases.length})` },
-            ]}
-            value={drillSrc}
-            onChange={(v) => setDrillSrc(v as typeof drillSrc)}
-          />
-          <TypeDrill pool={pool} resetKey={`${idx}-${drillSrc}`} emptyMsg="บทนี้ไม่มีคำในชุดนี้" />
-        </div>
+          {mode === 'vocab' && <VocabGrid words={L.vocab} phrases={L.phrases} />}
+          {mode === 'dialogue' && <Dialogue lines={L.dialogue} />}
+          {mode === 'notes' && <Notes notes={L.notes} />}
+          {mode === 'drill' && (
+            <div className="stack">
+              <Chips
+                label="ชุดคำ"
+                items={[
+                  { v: 'both', label: `ทั้งหมด (${lessonDrillPool(L, 'both').length})` },
+                  { v: 'vocab', label: `คำศัพท์ (${L.vocab.length})` },
+                  { v: 'phrase', label: `วลี (${L.phrases.length})` },
+                ]}
+                value={drillSrc}
+                onChange={(v) => setDrillSrc(v as typeof drillSrc)}
+              />
+              <TypeDrill pool={pool} resetKey={`${idx}-${drillSrc}`} emptyMsg="บทนี้ไม่มีคำในชุดนี้" />
+            </div>
+          )}
+        </>
       )}
     </div>
   )
