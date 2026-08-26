@@ -1,6 +1,6 @@
 import type { Lesson } from './types'
 
-/** 16 บท · 322 คำศัพท์ · 134 วลี · 117 บรรทัดสนทนา · 99 โน้ต */
+/** 16 บท · 324 คำศัพท์ · 139 วลี · 117 บรรทัดสนทนา · 100 โน้ต */
 export const lessons: Lesson[] = [
  {
   "title": "บทที่ 1 — 你好 · สวัสดี",
@@ -4745,6 +4745,13 @@ export const lessons: Lesson[] = [
     "en": "to send and receive"
    },
    {
+    "zh": "收",
+    "py": "shōu",
+    "thr": "โซว",
+    "th": "รับ",
+    "en": "to receive"
+   },
+   {
     "zh": "邮件",
     "py": "yóujiàn",
     "thr": "โหยวเจี้ยน",
@@ -4766,11 +4773,11 @@ export const lessons: Lesson[] = [
     "en": "TV series"
    },
    {
-    "zh": "少",
-    "py": "shǎo",
-    "thr": "เส่า",
-    "th": "น้อย",
-    "en": "few; little"
+    "zh": "电视",
+    "py": "diànshì",
+    "thr": "เตี้ยนซื่อ",
+    "th": "ทีวี / โทรทัศน์",
+    "en": "television; TV"
    },
    {
     "zh": "休息",
@@ -4787,13 +4794,6 @@ export const lessons: Lesson[] = [
     "en": "park"
    },
    {
-    "zh": "玩儿",
-    "py": "wánr",
-    "thr": "หวานร์",
-    "th": "เล่น / เที่ยว",
-    "en": "to play; to have fun"
-   },
-   {
     "zh": "超市",
     "py": "chāoshì",
     "thr": "เชาซื่อ",
@@ -4806,6 +4806,20 @@ export const lessons: Lesson[] = [
     "thr": "ตงซี",
     "th": "ของ / สิ่งของ",
     "en": "thing"
+   },
+   {
+    "zh": "少",
+    "py": "shǎo",
+    "thr": "เส่า",
+    "th": "น้อย",
+    "en": "few; little"
+   },
+   {
+    "zh": "玩儿",
+    "py": "wánr",
+    "thr": "หวานร์",
+    "th": "เล่น / เที่ยว",
+    "en": "to play; to have fun"
    },
    {
     "zh": "但",
@@ -4919,6 +4933,12 @@ export const lessons: Lesson[] = [
     "t": "跟 … 一起 + กริยา = ทำ…ด้วยกันกับใคร",
     "b": "เรียง: ใคร + 跟 + ใคร + 一起 + กริยา — ต่างจากไทยที่เอา \"กับใคร\" ไปไว้ท้ายประโยค",
     "ex": "我跟你一起吃饭 wǒ gēn nǐ yìqǐ chī fàn = ฉันกินข้าวกับคุณ · 跟我一起去 ไปกับฉันด้วยกัน"
+   },
+   {
+    "ic": "💬",
+    "t": "\"…，好吗？\" = ชวน / ขอความเห็น",
+    "b": "เอาประโยคบอกเล่ามาต่อท้ายด้วย 好吗？ กลายเป็นคำถามเชิงชวนหรือขอร้อง (ไม่ใช่ถามว่าดีไหม)",
+    "ex": "你跟我一起去，好吗？ไปกับฉันด้วยกันไหม · 晚上咱们去看电影，好吗？ตอนเย็นพวกเราไปดูหนังกันไหม"
    },
    {
     "ic": "👥",
@@ -5089,6 +5109,36 @@ export const lessons: Lesson[] = [
     "py": "qù chāoshì mǎi dōngxi",
     "th": "ไปซื้อของที่ซูเปอร์มาร์เก็ต",
     "en": "go shopping at the supermarket"
+   },
+   {
+    "zh": "好吗",
+    "py": "hǎo ma",
+    "th": "ดีไหม / ...ไหม (ชวน)",
+    "en": "OK?"
+   },
+   {
+    "zh": "在微信聊天儿",
+    "py": "zài wēixìn liáo tiānr",
+    "th": "คุยเล่นในวีแชท",
+    "en": "to chat on WeChat"
+   },
+   {
+    "zh": "给朋友发微信",
+    "py": "gěi péngyou fā wēixìn",
+    "th": "ส่งวีแชทให้เพื่อน",
+    "en": "send a WeChat to a friend"
+   },
+   {
+    "zh": "收邮件",
+    "py": "shōu yóujiàn",
+    "th": "รับอีเมล",
+    "en": "to receive email"
+   },
+   {
+    "zh": "看电视",
+    "py": "kàn diànshì",
+    "th": "ดูทีวี",
+    "en": "to watch TV"
    }
   ]
  }

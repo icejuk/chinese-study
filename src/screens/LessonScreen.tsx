@@ -10,6 +10,10 @@ import { TypeDrill } from '../components/TypeDrill'
 import { Hsk1Screen } from './Hsk1Screen'
 
 type Mode = 'vocab' | 'dialogue' | 'notes' | 'drill'
+
+/** จำนวนบรรทัดที่ "มีคนพูด" จริง — หัวข้อคั่นฉาก ({ sec }) ไม่ใช่บทสนทนา
+    (บทที่มี 2 ฉากเคยโชว์เกินไป 2 บรรทัด) */
+const dialogueLines = (L: typeof lessons[number]) => L.dialogue.filter((d) => !('sec' in d)).length
 type LessonChoice = number | 'hsk1'
 
 const MODES: { v: Mode; label: string }[] = [
@@ -62,7 +66,7 @@ export function LessonScreen() {
               บทที่ {idx + 1} · {L.thTitle}
             </div>
             <div className="lesson-hd-meta muted">
-              {L.vocab.length} คำ · {L.phrases.length} วลี · {L.dialogue.length} บรรทัดสนทนา · {L.notes.length} โน้ต
+              {L.vocab.length} คำ · {L.phrases.length} วลี · {dialogueLines(L)} บรรทัดสนทนา · {L.notes.length} โน้ต
             </div>
           </div>
 

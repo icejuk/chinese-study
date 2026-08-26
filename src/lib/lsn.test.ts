@@ -30,7 +30,7 @@ describe('บทของคำศัพท์', () => {
 
   it('บทที่ 16 ต้องมีคำครบตามที่ใส่ไว้', () => {
     const l16 = lessons[15].vocab.map((w) => w.zh)
-    expect(l16.length).toBe(37)
+    expect(l16.length).toBe(39)
     expect(l16.filter((zh) => wordLsn(zh) !== 16)).toEqual([])
   })
 })
@@ -55,10 +55,10 @@ describe('บทของประโยค', () => {
     expect(sentencesExtra.every((s) => allSentences.find((x) => x.th === s.th)?.lsn === 'hsk1')).toBe(true)
   })
 
-  it('บทที่ 16 ได้ 28 ข้อ = 25 ที่เขียนให้บทนี้ + 3 ข้อเก่าที่ใช้คำของบทนี้', () => {
+  it('บทที่ 16 ได้ 32 ข้อ = 29 ที่เขียนให้บทนี้ + 3 ข้อเก่าที่ใช้คำของบทนี้', () => {
     // 3 ข้อเก่าใช้ 一起 / 少 ซึ่งเพิ่งมาเป็นคำของบท 16 (ก่อนหน้านี้ 一起 ไม่มีในคลังคำเลย
     // แต่ถูกใช้ในประโยค) → การถูกจัดมาบท 16 ถูกต้องแล้ว ไม่ใช่บั๊ก
-    expect(allSentences.filter((s) => s.lsn === 16).length).toBe(28)
+    expect(allSentences.filter((s) => s.lsn === 16).length).toBe(32)
     expect(sentences16.every((s) => allSentences.some((x) => x.th === s.th && x.lsn === 16))).toBe(true)
   })
 
