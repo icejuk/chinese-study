@@ -4,7 +4,9 @@ import { gradeThai } from '../lib/thai'
 import { ROUND_SENTENCES, buildRound, clearWrong, markWrong, wrongCountIn } from '../lib/session'
 import { playSound } from '../lib/tts'
 import { KEYS, readRaw, writeRaw } from '../lib/storage'
-import { Chips, DoneCard, Progress, RoundNote, ScoreBar } from '../components/ui'
+import { LSN_ALL, lsnKey } from '../lib/lsn'
+import { LessonPick, lsnLabel, useDrillLsn } from '../components/LessonPick'
+import { Chips, DoneCard, EmptyNote, Progress, RoundNote, ScoreBar } from '../components/ui'
 import { SpeakButton } from '../components/SpeakButton'
 
 const SRCS: { v: ListenSrc; label: string }[] = [
@@ -23,10 +25,17 @@ export function ListenScreen() {
     const saved = readRaw(KEYS.listen)
     return SRCS.some((s) => s.v === saved) ? (saved as ListenSrc) : 'all'
   })
+  const [lsn, setLsn] = useDrillLsn()
   const [nonce, setNonce] = useState(0)
   useEffect(() => writeRaw(KEYS.listen, src), [src])
 
-  const source = useMemo(() => listenPool(src), [src])
+  const source = useMemo(() => listenPool(src, lsn), [src, lsn])
+  // นับต่อบทจากคลังของ "แหล่ง" ที่เลือก — สลับแหล่งแล้วบทที่ว่างเปลี่ยนตามด้วย
+  const countIn = useMemo(() => {
+    const n = new Map<string, number>()
+    for (const x of listenPool(src)) n.set(lsnKey(x.lsn), (n.get(lsnKey(x.lsn)) ?? 0) + 1)
+    return (k: string) => n.get(k) ?? 0
+  }, [src])
   // รอบละ 20 ประโยค + เอาประโยคที่เคยตัดสินว่า "ยังไม่ถูก" กลับมาถามอีก
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const queue = useMemo(() => buildRound(source, ROUND_SENTENCES, (x) => x.zh), [source, nonce])
@@ -46,7 +55,7 @@ export function ListenScreen() {
     setIdx(0)
     setRight(0)
     setWrong(0)
-  }, [src])
+  }, [src, lsn])
 
   // ⚠️ ห้ามเล่นเสียงเอง — ผู้ใช้กดปุ่มฟังเองเมื่อพร้อม (เสียงเด้งตอนเข้าหน้าทำให้ตกใจ/ฟังไม่ทัน)
   useEffect(() => {
@@ -57,12 +66,26 @@ export function ListenScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, queue])
 
-  if (!queue.length) return <DoneCard right={0} total={0} onRestart={() => setNonce((n) => n + 1)} />
+  // ⚠️ ต้องโชว์แถบเลือกด้วย — เดิม return DoneCard เปล่า เลือกชุดที่ไม่มีข้อแล้วออกไม่ได้
+  if (!queue.length) {
+    return (
+      <div className="stack">
+        <Chips label="แหล่งข้อ" items={SRCS} value={src} onChange={setSrc} />
+        <LessonPick value={lsn} onChange={setLsn} count={countIn} />
+        <EmptyNote>
+          👂 ไม่มีประโยคของ{lsn === LSN_ALL ? 'แหล่งนี้' : `${lsnLabel(lsn)} ในแหล่งนี้`}
+          <br />
+          เลือกแหล่ง "ทั้งหมด" หรือเลือกบทอื่นด้านบน
+        </EmptyNote>
+      </div>
+    )
+  }
 
   if (idx >= queue.length) {
     return (
       <div className="stack">
         <Chips label="แหล่งข้อ" items={SRCS} value={src} onChange={setSrc} />
+        <LessonPick value={lsn} onChange={setLsn} count={countIn} />
         <DoneCard
           right={right}
           total={right + wrong}
@@ -105,6 +128,7 @@ export function ListenScreen() {
     <div className="stack">
       <div className="section-title">ฟังประโยคแล้วพิมพ์คำแปลไทย ({queue.length} ประโยค)</div>
       <Chips label="แหล่งข้อ" items={SRCS} value={src} onChange={setSrc} />
+      <LessonPick value={lsn} onChange={setLsn} count={countIn} />
       <RoundNote size={queue.length} total={source.length} wrong={wrongCountIn(source, (x) => x.zh)} />
       <ScoreBar right={right} wrong={wrong} />
 

@@ -4,7 +4,9 @@ import type { Sentence } from '../data/types'
 import { allSentences, shuffle } from '../lib/pools'
 import { ROUND_SENTENCES, buildRound, clearWrong, markWrong, wrongCountIn } from '../lib/session'
 import { playSound } from '../lib/tts'
-import { Chips, DoneCard, Progress, RoundNote, ScoreBar } from '../components/ui'
+import { LSN_ALL, lsnKey, matchLsn } from '../lib/lsn'
+import { LessonPick, lsnLabel, useDrillLsn } from '../components/LessonPick'
+import { Chips, DoneCard, EmptyNote, Progress, RoundNote, ScoreBar } from '../components/ui'
 
 /** คีย์ของประโยค = ตัวจีนที่ต่อกันแล้ว (ใช้จำว่าประโยคไหนเคยเรียงผิด) */
 const sentenceKey = (s: Sentence) => s.tokens.map((t) => t.zh).join('')
@@ -14,12 +16,17 @@ type Phase = 'build' | 'solved' | 'revealed'
 
 export function SentenceScreen() {
   const [cat, setCat] = useState('all')
+  const [lsn, setLsn] = useDrillLsn()
   const [nonce, setNonce] = useState(0)
 
-  const source = useMemo(
-    () => (cat === 'all' ? allSentences : allSentences.filter((s) => s.cat === cat)),
-    [cat],
-  )
+  /** ข้อของหมวดที่เลือก (ยังไม่กรองบท) — ใช้ทั้งสร้างชุดและนับว่าบทไหนมีข้อกี่ข้อ */
+  const inCat = useMemo(() => allSentences.filter((s) => cat === 'all' || s.cat === cat), [cat])
+  const source = useMemo(() => inCat.filter((s) => matchLsn(lsn, s.lsn)), [inCat, lsn])
+  const countIn = useMemo(() => {
+    const n = new Map<string, number>()
+    for (const s of inCat) n.set(lsnKey(s.lsn), (n.get(lsnKey(s.lsn)) ?? 0) + 1)
+    return (k: string) => n.get(k) ?? 0
+  }, [inCat])
 
   // รอบละ 20 ประโยค (เรียงคำใช้เวลากว่าตอบคำเดี่ยว) + เอาประโยคที่เคยผิดกลับมาถาม
   const queue = useMemo(
@@ -58,14 +65,28 @@ export function SentenceScreen() {
     setIdx(0)
     setRight(0)
     setWrong(0)
-  }, [cat])
+  }, [cat, lsn])
 
-  if (!queue.length) return <DoneCard right={0} total={0} onRestart={() => setNonce((n) => n + 1)} />
+  // ⚠️ ต้องโชว์แถบเลือกด้วย — เดิม return DoneCard เปล่า เลือกชุดที่ไม่มีข้อแล้วออกไม่ได้
+  if (!queue.length) {
+    return (
+      <div className="stack">
+        <Chips label="หมวด" items={sentenceCats.map((c) => ({ v: c.k, label: c.label }))} value={cat} onChange={setCat} />
+        <LessonPick value={lsn} onChange={setLsn} count={countIn} />
+        <EmptyNote>
+          🧩 ไม่มีประโยคของ{lsn === LSN_ALL ? 'หมวดนี้' : `${lsnLabel(lsn)} ในหมวดนี้`}
+          <br />
+          เปลี่ยนหมวดเป็น "ทั้งหมด" หรือเลือกบทอื่นด้านบน
+        </EmptyNote>
+      </div>
+    )
+  }
 
   if (idx >= queue.length) {
     return (
       <div className="stack">
         <Chips label="หมวด" items={sentenceCats.map((c) => ({ v: c.k, label: c.label }))} value={cat} onChange={setCat} />
+        <LessonPick value={lsn} onChange={setLsn} count={countIn} />
         <DoneCard right={right} total={right + wrong} onRestart={() => { setIdx(0); setRight(0); setWrong(0); setNonce((n) => n + 1) }} />
       </div>
     )
@@ -116,6 +137,7 @@ export function SentenceScreen() {
   return (
     <div className="stack">
       <Chips label="หมวด" items={sentenceCats.map((c) => ({ v: c.k, label: c.label }))} value={cat} onChange={setCat} />
+      <LessonPick value={lsn} onChange={setLsn} count={countIn} />
       <RoundNote size={queue.length} total={source.length} wrong={wrongCountIn(source, sentenceKey)} />
       <ScoreBar right={right} wrong={wrong} />
 

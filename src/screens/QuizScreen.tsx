@@ -4,6 +4,8 @@ import { allWords, addStar, dueWords, srsUpdate, starsGet, weakWords } from '../
 import { shuffle } from '../lib/pools'
 import { pickDistractors } from '../lib/quiz'
 import { ROUND_WORDS, buildRound, clearWrong, markWrong, wrongCountIn } from '../lib/session'
+import { LSN_ALL, lsnKey, matchLsn, wordLsn } from '../lib/lsn'
+import { LessonPick, lsnLabel, useDrillLsn } from '../components/LessonPick'
 import { playSound } from '../lib/tts'
 import { Chips, DoneCard, EmptyNote, Progress, RoundNote, ScoreBar } from '../components/ui'
 import { SpeakButton, TapToSpeak } from '../components/SpeakButton'
@@ -26,14 +28,25 @@ const SETS: { v: Set_; label: string }[] = [
 export function QuizScreen() {
   const [dir, setDir] = useState<Dir>('zh2th')
   const [set, setSet] = useState<Set_>('all')
+  const [lsn, setLsn] = useDrillLsn()
   const [nonce, setNonce] = useState(0)
 
   /** คลังทั้งหมดของชุดที่เลือก (ยังไม่ตัดรอบ) — ใช้บอกจำนวนรวมและนับข้อที่เคยผิด */
-  const source = useMemo(() => {
+  /** คำของชุดที่เลือก (ยังไม่กรองบท) — ใช้ทั้งสร้างชุดและนับว่าบทไหนมีคำกี่คำ */
+  const inSet = useMemo(() => {
     const stars = starsGet()
     return set === 'star' ? allWords().filter((w) => stars.has(w.zh)) : set === 'due' ? dueWords() : allWords()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [set, nonce])
+  const source = useMemo(() => inSet.filter((w) => matchLsn(lsn, wordLsn(w.zh))), [inSet, lsn])
+  const countIn = useMemo(() => {
+    const n = new Map<string, number>()
+    for (const w of inSet) {
+      const l = wordLsn(w.zh)
+      if (l !== undefined) n.set(lsnKey(l), (n.get(lsnKey(l)) ?? 0) + 1)
+    }
+    return (k: string) => n.get(k) ?? 0
+  }, [inSet])
 
   // ตัดเป็นรอบละ 50 คำ — ทำทีเดียว 330 คำมันยาวเกินจะนั่งจบ
   const pool = useMemo(() => buildRound(source, ROUND_WORDS, (w) => w.zh), [source])
@@ -60,7 +73,7 @@ export function QuizScreen() {
     setRight(0)
     setWrong(0)
     setPicked(null)
-  }, [dir, set])
+  }, [dir, set, lsn])
 
   useEffect(() => () => { if (timer.current) window.clearTimeout(timer.current) }, [])
 
@@ -86,8 +99,15 @@ export function QuizScreen() {
     return (
       <div className="stack">
         <Chips label="ชุดคำ" items={SETS} value={set} onChange={setSet} />
+        <LessonPick value={lsn} onChange={setLsn} count={countIn} />
         <EmptyNote>
-          {set === 'star' ? (
+          {lsn !== LSN_ALL ? (
+            <>
+              📖 ไม่มีคำของ{lsnLabel(lsn)} ในชุดนี้
+              <br />
+              เลือก "ทุกบท" หรือเปลี่ยนชุดคำด้านบน
+            </>
+          ) : set === 'star' ? (
             <>
               ⭐ ยังไม่มีคำที่ติดดาว
               <br />
@@ -167,6 +187,7 @@ export function QuizScreen() {
     <div className="stack">
       <Chips label="ทิศทาง" items={DIRS} value={dir} onChange={setDir} />
       <Chips label="ชุดคำ" items={SETS} value={set} onChange={setSet} />
+      <LessonPick value={lsn} onChange={setLsn} count={countIn} />
       <RoundNote size={pool.length} total={source.length} wrong={wrongInSource} />
       <ScoreBar right={right} wrong={wrong} />
 

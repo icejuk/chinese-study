@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 export function Chips<T extends string>({
   items,
@@ -13,8 +13,18 @@ export function Chips<T extends string>({
   variant?: 'pill' | 'num'
   label?: string
 }) {
+  const box = useRef<HTMLDivElement>(null)
+
+  /* แถบชิปเลื่อนแนวนอนได้ ตัวที่เลือกอาจอยู่นอกจอ (แถบเลือกบทมี 18 ตัว, หมวดประโยคมี 11 ตัว)
+     ถ้าไม่เลื่อนมาให้เห็น ผู้ใช้จะไม่รู้ว่ากรองอะไรอยู่ — เคยเจอตอนเลือกบท 16 แล้วเห็นแต่ "ทุกบท"
+     block: 'nearest' บังคับไว้ ไม่ให้มันดึงหน้าเลื่อนขึ้น-ลงตามไปด้วย · แถบที่พออยู่ในจอจะไม่ขยับ */
+  useEffect(() => {
+    box.current?.querySelector<HTMLElement>('[aria-selected="true"]')
+      ?.scrollIntoView({ block: 'nearest', inline: 'center' })
+  }, [value])
+
   return (
-    <div className="chips" role="tablist" aria-label={label}>
+    <div ref={box} className="chips" role="tablist" aria-label={label}>
       {items.map((it) => (
         <button
           key={it.v}
