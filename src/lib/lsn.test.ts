@@ -7,6 +7,7 @@ import { allSentences, listenPool } from './pools'
 import { lessons } from '../data/lessons'
 import { hsk1Extra } from '../data/hsk1'
 import { sentences16 } from '../data/sentences16'
+import { sentences17 } from '../data/sentences17'
 import { sentencesExtra } from '../data/sentencesExtra'
 
 const LESSON_KEYS = LSN_CHIPS.filter((c) => c.v !== LSN_ALL).map((c) => c.v)
@@ -33,6 +34,16 @@ describe('บทของคำศัพท์', () => {
     expect(l16.length).toBe(39)
     expect(l16.filter((zh) => wordLsn(zh) !== 16)).toEqual([])
   })
+
+  it('บทที่ 17 — คำใหม่ได้บท 17 ส่วนคำที่บทก่อนสอนไปแล้วต้องคาบทเดิมไว้', () => {
+    // หนังสือลิสต์ 5 คำนี้ซ้ำเพราะสอน "ความหมายใหม่" (在 = กำลัง, 坐 = โดยสาร, 门 = ลักษณนามวิชา)
+    // แต่คลังคำจำ "บทแรกที่เจอ" → ต้องไม่ถูกดึงมาเป็นบท 17 ไม่งั้นข้อเก่าจะย้ายบทตามไปด้วย
+    const REPEAT = ['在', '来', '没有', '坐', '门']
+    const l17 = lessons[16].vocab.map((w) => w.zh)
+    expect(l17.length).toBe(26)
+    expect(l17.filter((zh) => !REPEAT.includes(zh) && wordLsn(zh) !== 17)).toEqual([])
+    expect(REPEAT.filter((zh) => !(typeof wordLsn(zh) === 'number' && (wordLsn(zh) as number) < 17))).toEqual([])
+  })
 })
 
 describe('บทของประโยค', () => {
@@ -52,6 +63,7 @@ describe('บทของประโยค', () => {
   it('ชุดที่เขียนเจาะจงต้องติดบทตรงตามชุด ไม่ใช่เดาจากคำ', () => {
     // 电视 เป็นคำ HSK 1 — ถ้าเดาจากคำ ประโยคบท 16 ที่ใช้ 电视 จะหลุดไป hsk1
     expect(sentences16.every((s) => allSentences.find((x) => x.th === s.th)?.lsn === 16)).toBe(true)
+    expect(sentences17.every((s) => allSentences.find((x) => x.th === s.th)?.lsn === 17)).toBe(true)
     expect(sentencesExtra.every((s) => allSentences.find((x) => x.th === s.th)?.lsn === 'hsk1')).toBe(true)
   })
 
@@ -60,6 +72,12 @@ describe('บทของประโยค', () => {
     // แต่ถูกใช้ในประโยค) → การถูกจัดมาบท 16 ถูกต้องแล้ว ไม่ใช่บั๊ก
     expect(allSentences.filter((s) => s.lsn === 16).length).toBe(32)
     expect(sentences16.every((s) => allSentences.some((x) => x.th === s.th && x.lsn === 16))).toBe(true)
+  })
+
+  it('บทที่ 17 ได้ 30 ข้อ = ที่เขียนให้บทนี้ล้วน', () => {
+    // ต่างจากบท 16: คำใหม่ของบท 17 ไม่มีในประโยคชุดเดิมเลย จึงไม่มีข้อเก่าไหลมา
+    expect(allSentences.filter((s) => s.lsn === 17).length).toBe(sentences17.length)
+    expect(sentences17).toHaveLength(30)
   })
 
   it('ประโยคชุดเดิมต้องกระจายอยู่หลายบท ไม่กองที่บทเดียว', () => {
@@ -94,6 +112,13 @@ describe('กรองแบบฝึกฟังแปล', () => {
     expect(got.length).toBeGreaterThan(50)
     expect(new Set(got.map((x) => x.src))).toEqual(new Set(['sb', 'dlg', 'ph']))
     expect(got.every((x) => x.lsn === 16)).toBe(true)
+  })
+
+  it('เลือกบทที่ 17 ต้องได้ทั้งประโยค สนทนา และวลีของบทนั้น', () => {
+    const got = listenPool('all', '17')
+    expect(got.length).toBeGreaterThan(50)
+    expect(new Set(got.map((x) => x.src))).toEqual(new Set(['sb', 'dlg', 'ph']))
+    expect(got.every((x) => x.lsn === 17)).toBe(true)
   })
 
   it('ทุกบทที่มีในหนังสือต้องมีข้อให้ฝึกอย่างน้อย 1 ข้อ', () => {
