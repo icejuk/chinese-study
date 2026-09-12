@@ -10,6 +10,7 @@ export const KEYS = {
   listen: 'xy-ln',         // แหล่งข้อของแบบฝึกฟังแปล
   wrong: 'xy-wrong',       // { [zh]: จำนวนครั้งที่ตอบผิด } — ล้างทิ้งเมื่อตอบถูก
   drillLsn: 'xy-dlsn',     // บทที่กรองในแบบฝึก ('all' | '1'..'18' | 'hsk1') — คีย์ใหม่ของ v2
+  sbMode: 'xy-sbmode',     // วิธีเล่นเรียงประโยค ('guided' | 'free') — คีย์ใหม่ของ v2
 } as const
 
 export function readJson<T>(key: string, fallback: T): T {

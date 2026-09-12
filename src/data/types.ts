@@ -33,7 +33,15 @@ export type Lesson = {
 export type SbToken = { zh: string; py: string }
 
 /** ประโยคของแบบฝึกเรียงคำ — token แยกคำ (เครื่องหมายวรรคตอนติดท้าย token) */
-export type Sentence = { th: string; cat: string; note?: string; tokens: SbToken[] }
+export type Sentence = {
+  th: string
+  cat: string
+  note?: string
+  tokens: SbToken[]
+  /** ประโยคจีนที่เรียงอีกแบบก็ถูก (ต่อ token ติดกัน ไม่เว้นวรรค) เช่น 下班以后我… / 我下班以后…
+      ไม่ใส่ = ถูกได้ลำดับเดียว · ต้องใช้ token ชุดเดียวกันครบ (เทสคุมที่ lib/sentence.test.ts) */
+  alt?: string[]
+}
 
 export type SbCat = { k: string; label: string }
 

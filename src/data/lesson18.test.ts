@@ -17,9 +17,8 @@ const BOOK = [
   '没问题', '问题',        // ข้อ 20 + หัวข้อย่อย
 ]
 
-/** คำที่ใช้ในบทสนทนาหน้า 28 (ฉากที่ 1 ช่วงแรก)
-    TODO: ยังไม่ได้รูปหน้า 29 (ท้ายฉาก 1 + ฉาก 2) — ได้มาแล้วให้เปลี่ยนเทสล่างเป็นเช็คครบทั้ง BOOK */
-const IN_DIALOGUE_P28 = ['修', '顺便', '替', '盒', '曲别针', '拿', '不用', '用']
+/** 帮忙 เป็นคำที่แยกได้ — บทสนทนาใช้รูป 帮我一个忙 จึงไม่มี "帮忙" ติดกันให้เจอ */
+const SPLIT = ['帮忙']
 
 const L18 = lessons[17]
 
@@ -38,8 +37,9 @@ describe('ศัพท์บทที่ 18', () => {
     expect(bad.map((w) => w.zh)).toEqual([])
   })
 
-  it('คำของหน้า 28 ต้องโผล่ในบทสนทนาจริง', () => {
+  it('ทุกคำต้องโผล่ในบทสนทนาจริง (ไม่งั้นไม่มีที่ให้เห็นคำนั้นใช้งาน)', () => {
     const text = L18.dialogue.map((d) => ('sec' in d ? '' : d.zh)).join('')
-    expect(IN_DIALOGUE_P28.filter((zh) => !text.includes(zh))).toEqual([])
+    expect(BOOK.filter((zh) => !SPLIT.includes(zh) && !text.includes(zh))).toEqual([])
+    expect(text).toContain('帮我一个忙')
   })
 })

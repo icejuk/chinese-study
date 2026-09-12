@@ -88,10 +88,10 @@ describe('บทของประโยค', () => {
     expect(sentences17).toHaveLength(30)
   })
 
-  it('บทที่ 18 ได้ 30 ข้อ = ที่เขียนให้บทนี้ล้วน', () => {
+  it('บทที่ 18 ได้ 39 ข้อ = ที่เขียนให้บทนี้ล้วน (30 + ใบงาน 9)', () => {
     // ถ้าข้อเก่าไหลมาบท 18 แปลว่ามีตัวอักษรเดี่ยวอย่าง 用/花/当 ไปชนคำในประโยคเก่า — ต้องเช็คก่อนแก้เลข
     expect(allSentences.filter((s) => s.lsn === 18).map((s) => s.th)).toEqual(sentences18.map((s) => s.th))
-    expect(sentences18).toHaveLength(30)
+    expect(sentences18).toHaveLength(39)
   })
 
   it('ประโยคชุดเดิมต้องกระจายอยู่หลายบท ไม่กองที่บทเดียว', () => {

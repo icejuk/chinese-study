@@ -3533,6 +3533,42 @@
           "py": "yǒu wèntí",
           "th": "มีปัญหา / มีคำถาม",
           "kind": "phrase"
+        },
+        {
+          "zh": "去上海",
+          "py": "qù Shànghǎi",
+          "th": "ไปเซี่ยงไฮ้",
+          "kind": "phrase"
+        },
+        {
+          "zh": "外贸代表团",
+          "py": "wàimào dàibiǎotuán",
+          "th": "คณะผู้แทนการค้าต่างประเทศ",
+          "kind": "phrase"
+        },
+        {
+          "zh": "给他们当翻译",
+          "py": "gěi tāmen dāng fānyì",
+          "th": "เป็นล่ามให้พวกเขา",
+          "kind": "phrase"
+        },
+        {
+          "zh": "八号回来",
+          "py": "bā hào huílai",
+          "th": "กลับมาวันที่ 8",
+          "kind": "phrase"
+        },
+        {
+          "zh": "浇一下儿花",
+          "py": "jiāo yíxiàr huā",
+          "th": "รดน้ำดอกไม้หน่อย",
+          "kind": "phrase"
+        },
+        {
+          "zh": "什么事儿",
+          "py": "shénme shìr",
+          "th": "เรื่องอะไร",
+          "kind": "phrase"
         }
       ]
     }
